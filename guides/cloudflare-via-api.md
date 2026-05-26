@@ -9,10 +9,25 @@
 - Purgar cache de un sitio después de un deploy (cuando CF cachea CSS/JS más tiempo del que querés)
 - Crear/editar DNS records (subdominios nuevos, cambios de IP, TXT verifications)
 - Listar / crear / inspeccionar buckets R2
-- Subir / bajar / migrar archivos a R2
+- Subir / bajar / borrar objetos puntuales en R2
 - Cualquier operación reproducible que sería un click manual en el dashboard
 
 Para operaciones interactivas exploratorias (un solo cambio puntual), el dashboard sigue siendo más rápido. Esta guía cubre el carril script-friendly.
+
+## Dos APIs distintas: control plane vs data plane
+
+R2 se opera con dos pares de credenciales que NO son intercambiables:
+
+| Uso | Credenciales | Herramientas | Para qué sirve |
+|---|---|---|---|
+| Cloudflare control plane | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` | `wrangler`, `curl https://api.cloudflare.com/client/v4/...` | Crear/listar buckets, DNS, cache purge, settings de cuenta/zona, operaciones administrativas. |
+| R2 S3 data plane | `R2_ACCESS_KEY_ID` + `R2_SECRET_ACCESS_KEY` + endpoint R2 | SDK S3 (`@aws-sdk/client-s3`), AWS CLI con endpoint, rclone | Leer/escribir/listar objetos dentro de buckets, validar permisos runtime, migrar o inspeccionar contenido. |
+
+Regla práctica:
+
+- Si la pregunta es "existe el bucket?", "creá un bucket", "purgá cache", "tocá DNS" -> usar Cloudflare API/Wrangler.
+- Si la pregunta es "qué objetos hay dentro?", "subí/bajá este archivo", "validá que la app puede guardar archivos" -> usar S3 API/R2 credentials.
+- Wrangler es útil para bucket/admin y objetos puntuales (`put/get/delete`). No asumir que lista objetos: depende de la versión instalada. En Wrangler `4.85.0`, `wrangler r2 object list` no existe; usar S3 API o `rclone`.
 
 ## Setup (una vez por máquina)
 
@@ -207,8 +222,28 @@ wrangler r2 bucket create <bucket-name>
 **Listar objects de un bucket**:
 
 ```bash
-wrangler r2 object list <bucket-name>
-wrangler r2 object list <bucket-name> --prefix uploads/
+node <<'NODE'
+const { S3Client, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+
+const client = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
+
+client.send(new ListObjectsV2Command({
+  Bucket: process.env.R2_BUCKET_NAME,
+  Prefix: process.env.R2_PREFIX || undefined,
+  MaxKeys: 50,
+})).then((result) => {
+  for (const object of result.Contents ?? []) {
+    console.log(`${object.Key}\t${object.Size}\t${object.LastModified?.toISOString() ?? ""}`);
+  }
+});
+NODE
 ```
 
 **Subir / bajar object**:
@@ -272,11 +307,14 @@ Snapshot:
 | itera-img-gen-1 | Itera Estudio | 2026-02-14 |
 | itera-shop-all | Shopear | 2026-04-05 |
 | iteralex | IteraLex | 2026-03-06 |
+| presskit-ar | Presskit.AR | 2026-05-26 |
 
 ## Footguns
 
 - **El token aparece UNA SOLA VEZ** al crearlo. Si lo perdiste, regenerás uno nuevo.
 - **Wrangler `r2 bucket list` falla** sin `CLOUDFLARE_ACCOUNT_ID` en env (pide `/memberships` que el token no cubre). Solución: setear el env var.
+- **Wrangler y S3 API no usan el mismo token**: `cfat_...` / `CLOUDFLARE_API_TOKEN` es para Cloudflare API; Access Key ID + Secret Access Key son para S3/R2 data plane.
+- **Listar objetos no es necesariamente Wrangler**: en Wrangler `4.85.0`, `wrangler r2 object list` no existe. Para inspeccionar contenido usar S3 API (`ListObjectsV2`) o rclone.
 - **Cache purge tiene rate limit**: 1000 purges/24h por zona en plan Free. Para iteración intensiva, mejor bajar el `Cache-Control: max-age` en el origen (nginx) en lugar de purgar.
 - **Cloudflare puede override el `Cache-Control` del origen** si tenés Page Rules, Cache Rules o "Edge Cache TTL" configurado en el dashboard. Si bajaste el TTL en nginx pero seguís viendo cache largo, revisar Caching → Cache Rules.
 - **DNS records con `proxied: true`** pueden verse "lentos" en propagación porque CF mantiene el viejo en cache de su edge — purgar la zona acelera.
