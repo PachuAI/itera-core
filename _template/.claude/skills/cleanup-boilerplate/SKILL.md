@@ -69,7 +69,7 @@ Estas carpetas pertenecen al sistema itera-claude-system, NO al proyecto:
 | `skills/` | NO |
 | `global/` | NO |
 | `agents/` en raíz | NO (sí en `.claude/agents/`) |
-| `commands/` en raíz | NO (sí en `.claude/commands/`) |
+| `commands/` en raíz | NO (los comandos ahora son skills en `.claude/skills/`) |
 
 ```bash
 for dir in templates nextjs-boilerplate-betterauth nextjs-boilerplate skills global; do
@@ -177,7 +177,7 @@ ls -la
 
 echo ""
 echo "=== Sistema de memoria ==="
-ls .claude/commands/ .claude/agents/ .planning/
+ls .claude/skills/ .claude/agents/ .planning/
 
 echo ""
 echo "=== Git remote ==="
@@ -185,9 +185,9 @@ git remote -v
 ```
 
 Confirmar que:
-- ✅ `.claude/commands/` tiene load.md, save.md, check.md, commit.md, kickstart-nextjs.md, cleanup-boilerplate.md, security-audit.md, operational-audit.md
+- ✅ `.claude/skills/` tiene load, save, check, commit, kickstart-nextjs, cleanup-boilerplate, security-audit, operational-audit (cada uno como `<name>/SKILL.md`)
 - ✅ `.claude/agents/` tiene doc-changelog.md
-- ✅ `.planning/` tiene PROJECT.md, STATE.md, CHANGELOG.md, GUARDRAILS.md, CODEBASE-MAP.md, audits/
+- ✅ `.planning/` tiene PROJECT.md, STATE.md, CHANGELOG.md, CODEBASE-MAP.md, audits/
 - ✅ `CLAUDE.md` existe con datos del proyecto (no placeholders)
 - ❌ No hay carpetas/archivos del boilerplate en raíz
 

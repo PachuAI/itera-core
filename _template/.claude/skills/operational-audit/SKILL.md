@@ -1,6 +1,7 @@
 ---
+name: operational-audit
 description: 'Auditoría operacional: observabilidad, costos de IA, audit trail de acciones sensibles, cleanup de recursos externos. Ejecutar después de features con IA, integraciones externas, o acciones de dominio sensibles.'
-model: 'claude-sonnet-4-6'
+model: sonnet
 ---
 
 # Operational Audit

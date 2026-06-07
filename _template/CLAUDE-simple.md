@@ -11,7 +11,7 @@
 2. Verificar en navegador: resultado verificable en `localhost:3000` al final de cada feature.
 3. **Lint obligatorio**: correr `pnpm lint` despues de terminar cambios y ANTES de commitear.
 4. **Lint en Windows**: si `pnpm lint` falla por paths con espacios -> fallback: `pnpm exec eslint src` directo.
-5. Referencias en `.planning/` — STATE.md y GUARDRAILS.md en raiz.
+5. Referencias en `.planning/` — STATE.md en raiz. Reglas preventivas inline en la seccion Guardrails de este archivo (ya no hay `GUARDRAILS.md`).
 6. **Mini-audit por archivo**: al terminar de escribir un action, API route o page -> ANTES de pasar al siguiente archivo, verificar los 5 puntos del checklist correspondiente de Guardrails. NO acumular archivos sin verificar.
 7. **Tipos compartidos desde el primer uso**: al definir un `type` o `interface` -> si puede usarse en 2+ archivos -> crearlo en `src/lib/types/` desde el inicio. Si ya existe similar -> importar, NUNCA redefinir.
 8. **Scripts de enforcement**: si existen `scripts/check-*.sh` -> ejecutar `bash scripts/check-all.sh` antes de commitear features que tocan 3+ archivos.
@@ -24,7 +24,7 @@
 
 ## Guardrails
 
-> Errores conocidos del proyecto. Para indice completo: `.planning/GUARDRAILS.md`
+> Reglas preventivas de errores conocidos del proyecto (que / por que / cuando). Esta seccion es la SSOT — ya no hay `GUARDRAILS.md`. Un error recurrente -> agregar aca una linea concisa (lo hace `/save`).
 
 ### Checklists de Implementacion
 

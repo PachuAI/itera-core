@@ -1,6 +1,8 @@
 ---
+name: save
 description: 'Guarda progreso al finalizar sesion. Actualiza docs de planificacion.'
-model: 'claude-sonnet-4-6'
+model: sonnet
+disable-model-invocation: true
 ---
 
 # Guardado de Sesion
@@ -25,16 +27,14 @@ El `/check` del paso 1 ya cubre calidad general. Evaluar ademas:
 | Features IA, integraciones externas (Google, Gemini), acciones de dominio sensibles    | `/operational-audit` |
 | Solo docs/planning, sin codigo                                                         | ninguna              |
 
-### 3. Errores/bugs de la sesion -> GUARDRAILS.md
+### 3. Errores/bugs de la sesion -> CLAUDE.md (seccion Guardrails)
 
 Hubo bugs, ida-y-vuelta, soluciones que no funcionaron a la primera?
 
-- **SI** -> Leer `.planning/GUARDRAILS.md` y para cada error:
-  - **No esta en GUARDRAILS** -> Agregar entrada nueva (formato conciso: Problema + Check preventivo + Fecha)
-  - **Ya esta en GUARDRAILS** -> el error se REPITIO -> Promover a CLAUDE.md como bullet permanente + marcar en GUARDRAILS "-> promovido a CLAUDE.md [fecha]"
+- **SI** -> para cada error **recurrente o no-trivial** (no un typo de una sola vez), agregar UNA linea preventiva concisa (que / por que / cuando) en la subseccion que corresponda de la seccion **Guardrails** del `CLAUDE.md`. Si ya existe una linea equivalente, reforzarla — NUNCA duplicar.
 - **NO** -> saltar
 
-> **CLAUDE.md solo recibe lo que se repitio.** GUARDRAILS.md es el primer paso, CLAUDE.md es la escalacion.
+> Flujo de 1 nivel: ya NO hay `GUARDRAILS.md`. El conocimiento preventivo vive inline en la seccion Guardrails del `CLAUDE.md`. Lo cubierto por el global `~/.claude/CLAUDE.md` no se recopia. No volcar errores triviales de una sola vez ni detalle verboso (eso va a `docs/`).
 
 ### 4. Actualizar FEATURE-CHANGELOG.md (si hubo features nuevas o modificadas)
 
@@ -102,7 +102,7 @@ Tipos: feat/fix/refactor/style/test/docs/chore | Max 72 chars | Sin punto final
 ## Sesion Guardada
 
 **Auditorias**: [ejecutadas / ninguna]
-**GUARDRAILS**: [N errores nuevos / N promovidos a CLAUDE.md / sin cambios]
+**Guardrails (CLAUDE.md)**: [N lineas preventivas agregadas / sin cambios]
 **STATE.md**: actualizado
 **CHANGELOG.md**: entrada agregada
 **Commit**: `<mensaje>`

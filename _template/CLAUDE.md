@@ -8,7 +8,7 @@
 2. Verificar en navegador: resultado verificable en `localhost:3000` al final de cada feature.
 3. **Lint obligatorio**: correr `pnpm lint` despues de terminar cambios y ANTES de commitear.
 4. **Lint en Windows**: si `pnpm lint` falla por paths con espacios -> fallback: `pnpm exec eslint src prisma` directo.
-5. Referencias en `.planning/` — STATE.md y GUARDRAILS.md en raiz. Producto en `product/`. Guias operativas en `guides/`. Checklists en `audits/`.
+5. Referencias en `.planning/` — STATE.md en raiz. Producto en `product/`. Guias operativas en `guides/`. Checklists en `audits/`. Las reglas preventivas viven inline en la seccion Guardrails de este archivo (ya no hay `GUARDRAILS.md`).
 6. **Write tool**: archivos >300 lineas -> Write esqueleto base + Edit en partes -> NUNCA 1-shot con todo el contenido (falla con "missing content").
 7. **Auditoria de seguridad**: despues de agregar/modificar API routes, services con writes, modelos nuevos, o endpoints publicos -> correr `.planning/audits/SECURITY-AUDIT.md` -> cubre IDOR, ownership, campos de control, sesion vs DB.
 8. **Auditoria operacional**: despues de agregar/modificar features con IA, integraciones externas, o acciones de dominio sensibles -> correr `.planning/audits/OPERATIONAL-AUDIT.md` -> cubre observabilidad, costos IA sin techo, audit trail dentro de $transaction.
@@ -40,7 +40,7 @@ Estas convenciones son obligatorias en todo proyecto nuevo. No hay alternativas.
 
 ## Guardrails
 
-> Errores conocidos del proyecto. Para indice completo: `.planning/GUARDRAILS.md`
+> Reglas preventivas de errores conocidos del proyecto (que / por que / cuando). Esta seccion es la SSOT — ya no hay `GUARDRAILS.md`. Un error recurrente o no-trivial -> agregar aca una linea concisa (lo hace `/save`). Lo cubierto por el global `~/.claude/CLAUDE.md` queda como remision, no se recopia.
 
 ### Checklists de Implementacion
 

@@ -1,7 +1,9 @@
 ---
+name: commit
 description: Crear commits semanticos
 argument-hint: [mensaje de commit opcional]
 model: haiku
+disable-model-invocation: true
 ---
 
 # Commit - Conventional Commits

@@ -1,6 +1,8 @@
 ---
+name: load
 description: 'Carga contexto al iniciar sesion. Ejecutar despues de /clear.'
-model: 'claude-sonnet-4-6'
+model: sonnet
+disable-model-invocation: true
 ---
 
 # Carga de Contexto
@@ -26,7 +28,7 @@ Continuamos con esto o tenes algo nuevo para arrancar?
 
 ## Reglas
 
-- NO leer GUARDRAILS.md automaticamente (esta en CLAUDE.md project instructions)
+- Las reglas preventivas ya vienen cargadas en las project instructions del CLAUDE.md (seccion Guardrails) — NO leerlas aparte (ya no hay `GUARDRAILS.md`)
 - NO leer CHANGELOG.md
 - NO leer codigo fuente
 - NO asumir que quiere hacer el usuario

@@ -13,8 +13,8 @@ Este skill hace el setup técnico del proyecto. La fase de PRD y planificación 
 
 Cuando se ejecuta este skill, ya existen en la carpeta del proyecto:
 - `CLAUDE.md` — ya configurado con nombre y descripción del proyecto
-- `.claude/commands/` y `.claude/agents/` — sistema de memoria instalado
-- `.planning/` — PROJECT.md, STATE.md, CHANGELOG.md, GUARDRAILS.md, CODEBASE-MAP.md, audits/
+- `.claude/skills/` y `.claude/agents/` — sistema de memoria instalado
+- `.planning/` — PROJECT.md, STATE.md, CHANGELOG.md, CODEBASE-MAP.md, audits/ (las reglas preventivas viven inline en la seccion Guardrails del CLAUDE.md)
 
 El objetivo ahora es instalar Next.js y el stack técnico.
 
@@ -35,7 +35,7 @@ NO hacer preguntas una a una. Si el usuario ya lo aclaró, no preguntar.
 
 El template del sistema ITERA esta en `C:\ALL MY PROJECTS\itera-claude-system\_template\`:
 - `CLAUDE.md` / `CLAUDE-simple.md` — reglas del proyecto (Full SaaS / Simple)
-- `.planning/` — templates de STATE, GUARDRAILS, CODEBASE-MAP, etc.
+- `.planning/` — templates de STATE, CODEBASE-MAP, etc.
 - `scripts/` — scripts de enforcement
 
 Para configuraciones especificas de cada tecnologia (Prisma 7, BetterAuth, etc.), consultar las secciones correspondientes del CLAUDE.md del tier elegido.
@@ -421,7 +421,7 @@ Si pasa, reportar:
 - [x] Dockerfile + .dockerignore (standalone, TZ Argentina)
 - [x] Scripts de enforcement (check-all.sh + 5 verificaciones)
 - [x] Sistema de memoria (/load, /save, /check, /commit)
-- [x] .planning/ con PROJECT.md, GUARDRAILS, CODEBASE-MAP, audits/
+- [x] .planning/ con PROJECT.md, CODEBASE-MAP, audits/
 
 ### Próximo paso
 Ejecutar `/load` para iniciar la primera sesión de desarrollo.

@@ -2,7 +2,12 @@
 
 > Referencia centralizada de URLs, Coolify UUIDs, puertos, DBs y env vars por proyecto.
 > Datos obtenidos via Coolify CLI (`coolify app list` + `coolify app env list`).
-> Ultima actualizacion: 2026-04-12
+> Ultima actualizacion: 2026-06-04 (egress AR durable + autofill RN productivo en Hetzner).
+
+> **Snapshot del audit 2026-05-22** (`reports/vps-health-audit-2026-05-22.md`):
+> - Modern (`65.108.148.79`): 12 apps + 7 DBs PostgreSQL, todas healthy. No queda MySQL en este VPS.
+> - Hallazgo P0 (MySQL 3306 público) **cerrado** al decomisionar `sistema-gestion-juridico-rer` + `itera-modern-mysql-databases`.
+> - Pendientes P1: reboot + apt full-upgrade (kernel 6.8.0-71 vs 6.8.0-117 disponible), 430 zombies de Shopear (`t1ect6gnjp8068ccu7lah6n8`) por `next-server` sin reaper de hijos `ssl_client`, SSH con `PermitRootLogin yes` + `PasswordAuthentication yes`.
 
 ---
 
@@ -12,10 +17,16 @@
 | Campo | Valor |
 |-------|-------|
 | **IP** | 65.108.148.79 |
+| **Hostname** | itera-modern |
 | **Plan** | Hetzner CX32 (8 GB RAM, 76 GB disco) |
-| **OS** | Ubuntu 24.04 LTS |
-| **Panel** | Coolify — https://coolify-modern.itera.world |
+| **OS** | Ubuntu 24.04.3 LTS (kernel 6.8.0-71, reboot pendiente — ver audit 2026-05-22) |
+| **Docker** | 27.0.3 (upgrade pendiente a 29.5.2) |
+| **Coolify** | v4.0.0 |
+| **Panel** | Coolify — https://coolify-modern.itera.world (también accesible vía `http://65.108.148.79:8000` para CLI) |
 | **SSL** | Let's Encrypt via Traefik |
+| **Network Docker** | `coolify` (`br-9543db3b28c1`, subnet `10.0.1.0/24`) |
+| **Egress tunnel** | `10.0.1.1:18767` (reverse SSH desde el VPS AR `38.180.185.41` / `itera-egress`, solo accesible desde el bridge `coolify`; **NO** exponer el bind a `0.0.0.0`) |
+| **Scheduler RN Tools** | systemd de host en Hetzner: wrapper `/opt/itera-rio-negro-autofill/run.sh`, timers `itera-rio-negro-autofill-canary.timer` y `itera-rio-negro-recientes-diario.timer`; ejecuta el runner dentro del contenedor API y llama `http://127.0.0.1:8000`, no Cloudflare |
 
 ### itera-alquimica (proyectos Alquimica/Bambu)
 | Campo | Valor |
@@ -30,6 +41,18 @@
 | **Plan** | Hetzner CX23 (4 GB RAM, 40 GB disco) |
 | **OS** | Ubuntu 24.04 LTS |
 | **Panel** | Coolify — https://coolify-static.itera.world |
+
+### itera-egress (VPS AR — egress worker, sin Coolify)
+| Campo | Valor |
+|-------|-------|
+| **IP** | 38.180.185.41 |
+| **Proveedor** | is\*hosting (Buenos Aires, AR) — VPS #419614, AS58061 Scalaxy B.V. |
+| **OS** | Ubuntu 24.04.4 LTS |
+| **SSH** | alias `itera-egress` (root) / `itera-egress-ops` (iteraops, sudo) — `~/.ssh/id_ed25519` |
+| **Rol** | Worker FastAPI del egress jurisprudencial (SAIJ/RAULI/PJ Río Negro/PUMA) en `127.0.0.1:8765`, expuesto a Hetzner por reverse SSH tunnel `10.0.1.1:18767`. Reemplazó a la PC del dev (cutover 2026-06-02). |
+| **Servicios** | systemd user `itera-egress-worker.service` + `itera-egress-tunnel.service` (enabled/active, linger on) |
+| **Hardening** | UFW (inbound solo `22/tcp`) + fail2ban (jail sshd). Worker solo en loopback. |
+| **Docs** | `itera-lex-tools/egress/README.md`, `egress/docs/runbooks/`, `egress/docs/production-hardening-checklist.md`. Inventario completo: `itera-context/infra/vps-overview.md` (VPS 4). |
 
 ---
 
@@ -162,52 +185,73 @@
 
 ---
 
-### valores-juridicos-api
+### itera-lex-tools-api
 | Campo | Valor |
 |-------|-------|
 | **URL** | https://api.iteralex.com |
 | **Coolify UUID app** | `d0osocwkwc8gkcw88gww4ck4` |
+| **Coolify UUID PG** | `cvc8gi5ws0c5gff9r574gy0g` (itera-lex-tools-postgresql, dedicado al cache jurisprudencial) |
+| **Git branch** | main |
 | **Status** | running:healthy |
-| **Notas** | API Python/FastAPI para valores juridicos |
+| **Stack** | Python 3.11 + FastAPI + SQLite WAL (valores) + PostgreSQL 17 (cache jurisprudencia) |
+| **Repo local** | `/home/pachu/projects/saas/iteralex/itera-lex-tools/api/` |
+| **Notas** | Backend de ÍTERA Lex Tools: valores jurídicos, jurisprudencia SAIJ, PJ Río Negro, PJ Neuquén RAULI. Egress vía worker en el **VPS AR `38.180.185.41`** (is\*hosting, alias `itera-egress`) expuesto por reverse SSH tunnel `10.0.1.1:18767`; la PC del dev ya **no** es dependencia productiva (cutover 2026-06-02). Autofill productivo RN `fallos/stj` activo desde 2026-06-04 con systemd de host Hetzner: `/opt/itera-rio-negro-autofill/run.sh` ejecuta el runner dentro del contenedor API y llama `http://127.0.0.1:8000`; Cloudflare bloqueó la vía cron externa con `1010`, por eso el scheduler vigente es interno al host. Topología + runbooks: `itera-lex-tools/egress/README.md`, `egress/docs/runbooks/` y `api/docs/integrations/rio-negro/autofill-cron-runbook.md`. |
 
 **Env vars:**
 | Variable | Proposito |
 |----------|-----------|
 | ADMIN_TOKEN | Auth para admin endpoints |
-| CORS_ORIGINS | Origenes permitidos |
-| REFRESH_INTERVAL_HOURS | Intervalo de refresh de datos |
-| STALE_AFTER_HOURS | Tiempo hasta considerar datos stale |
+| CORS_ORIGINS | Origenes permitidos (`https://app.iteralex.com,https://iteralex.com`) |
+| REFRESH_INTERVAL_HOURS | Intervalo de refresh de valores jurídicos |
+| STALE_AFTER_HOURS | Tiempo hasta considerar valores stale |
+| JURIS_DATABASE_URL | PostgreSQL cache jurisprudencia (`postgresql://itera_lex_tools:...@cvc8gi5ws0c5gff9r574gy0g:5432/itera_lex_tools`) |
+| EGRESS_MODE | `worker` |
+| EGRESS_WORKER_BASE_URL | `http://10.0.1.1:18767` (tunnel al worker en el VPS AR `38.180.185.41`) |
+| EGRESS_WORKER_TIMEOUT | `20.0` |
+| EGRESS_WORKER_TOKEN | Bearer compartido con el worker del VPS AR (rotado 2026-06-03; rotación: `egress/docs/runbooks/rotate-egress-worker-token.md`) |
+
+**Jobs productivos RN en Hetzner:**
+
+| Unidad | Proposito | Cadencia |
+|--------|-----------|----------|
+| `itera-rio-negro-autofill-canary.timer` | Backfill gradual `fallos/stj`, límites `max_paginas=1`, `page_limit=10`, `delay_ms=1200` | cada 10 minutos durante la canary inicial |
+| `itera-rio-negro-autofill-canary-stop.timer` | Apaga la canary automáticamente | una vez, 2 horas después de activación |
+| `itera-rio-negro-recientes-diario.timer` | Ingesta diaria de recientes `fallos/stj` con límites bajos | 08:10 Argentina |
+
+Operación: `ssh itera-hetzner 'systemctl list-timers --all "itera-rio-negro-*.timer" --no-pager'`.
+No imprimir `ADMIN_TOKEN` ni envs completas; reportar sólo presencia/ausencia de variables.
 
 ---
 
-### linkea2
+### itera-lex-tools-web
 | Campo | Valor |
 |-------|-------|
-| **URL** | https://linkea2.com |
-| **Puerto dev** | 3000 |
-| **Coolify UUID app** | `h13u60btnluekuesd7gsr469` |
-| **Coolify UUID PG** | `wn5vq32bwbgdpfkamb72ajce` (puerto publico: 5433) |
+| **URL** | https://herramientas.iteralex.com |
+| **Puerto dev** | 3020 |
+| **Coolify UUID app** | `rmfj4cm2d1e328s34f0f09eh` |
 | **Git branch** | master |
-| **Notas** | Path-based tenant routing. Multi-tenant SaaS. |
+| **Status** | running:healthy |
+| **Stack** | Next.js 16 + React 19 + Tailwind v4 + shadcn/ui |
+| **Repo local** | `/home/pachu/projects/saas/iteralex/itera-lex-tools/web/` |
+| **Notas** | Frontend público de ÍTERA Lex Tools. Sin DB, sin auth en MVP. Tokens visuales clonados del SaaS `iteralex`. |
 
 **Env vars:**
 | Variable | Proposito |
 |----------|-----------|
-| DATABASE_URL | Conexion PostgreSQL |
-| BETTER_AUTH_SECRET | Firma de sesiones |
-| BETTER_AUTH_URL | URL base para auth |
-| NEXT_PUBLIC_SITE_URL | URL del sitio (client-side) |
-| DEFAULT_TENANT_SLUG | Slug del tenant por defecto |
-| R2_ACCOUNT_ID | Cloudflare R2 storage |
-| R2_ACCESS_KEY_ID | R2 auth |
-| R2_SECRET_ACCESS_KEY | R2 auth |
-| R2_BUCKET_NAME | R2 bucket |
-| R2_PUBLIC_URL | URL publica de assets |
-| ADMIN_EMAIL | Email admin seed |
-| ADMIN_PASSWORD | Password admin seed |
-| ITERA_API_KEY | API key interna ITERA |
-| CRON_SECRET | Auth para cron jobs |
+| NEXT_PUBLIC_API_URL | URL del backend (`https://api.iteralex.com`) |
 | NODE_ENV | production |
+
+---
+
+### racca-web
+| Campo | Valor |
+|-------|-------|
+| **URL** | https://raccaestudiopenal.com |
+| **Coolify UUID app** | `k119747l80uslvruti9h3kxm` |
+| **Git branch** | main |
+| **Status** | running |
+| **Stack** | Next.js (sitio institucional) |
+| **Notas** | Sitio institucional del Dr. Rodrigo Racca, abogado penalista de General Roca. Cliente ITERA. Sin DB. |
 
 ---
 
@@ -261,18 +305,11 @@
 
 ---
 
-### sistema-gestion-juridico-rer
-| Campo | Valor |
-|-------|-------|
-| **URL** | https://gestion.rerestudiojuridico.com |
-| **Coolify UUID app** | `as4o8k80kgg8s8gs4c80sww4` |
-| **Git branch** | main |
-| **Notas** | Sistema de gestion para cliente RER. Legacy. |
-
-**Env vars:**
-| Variable | Proposito |
-|----------|-----------|
-| DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASS | Conexion a BD |
+### ~~sistema-gestion-juridico-rer~~ (decomisionado 2026-05-22)
+- **Estado**: app + DB MySQL + DNS borrados.
+- **Backup**: `backups/rer-mysql-2026-05-22/` (dump SQL completo + TSVs + reporte de info útil rescatada).
+- **Reporte**: `reports/rer-estudio-juridico-informacion-util-2026-05-22.md`.
+- **Razón**: legacy de Rise CRM, clientes ya migrados a iteralex; cerraba el P0 del audit (MySQL 3306 expuesto al mundo).
 
 ---
 
@@ -287,15 +324,19 @@
 
 ### Databases — Contexto Modern
 
-| # | Nombre | UUID | Imagen | Estado | Puerto publico |
-|---|--------|------|--------|--------|---------------|
-| 1 | itera-modern-mysql-databases | `fow0gsgw4cgksogc40ogsg4o` | mysql:8 | running:healthy | — |
-| 2 | iteralex-db | `jcsokwcw0ks08k8wwwk4wwc0` | postgres:17-alpine | running:healthy | — |
-| 3 | ITERA Estudio - PostgreSQL | `m84wg4kggsgksssg8k0wc000` | postgres:17-alpine | running:healthy | — |
-| 4 | Abundancia Hogar - PostgreSQL | `qvyp1mdigluu25eu1aekpsho` | postgres:17-alpine | running:healthy | — |
-| 5 | presskit-ar-db | `sbs5tj7872hl82u51niqbtp2` | postgres:17-alpine | running:healthy | — |
-| 6 | Shopear - PostgreSQL | `uxoszayiqygjp8rib3kdddvg` | postgres:17-alpine | running:healthy | — |
-| 7 | Linkea2 - PostgreSQL | `wn5vq32bwbgdpfkamb72ajce` | postgres:17-alpine | running:healthy | 5433 |
+Datos vivos al 2026-05-22 vía `coolify database list --format json`. Todas con `is_public: false` (no expuestas al mundo). Los `public_port` listados son los configurados internamente, no bound al host.
+
+| # | Nombre | UUID | Imagen | Estado | Public port | Usado por |
+|---|--------|------|--------|--------|-------------|-----------|
+| 1 | iteralex-db | `jcsokwcw0ks08k8wwwk4wwc0` | postgres:17-alpine | running:healthy | — | `iteralex` (SaaS principal) |
+| 2 | itera-lex-tools-postgresql | `cvc8gi5ws0c5gff9r574gy0g` | postgres:17-alpine | running:healthy | — | `itera-lex-tools-api` (cache jurisprudencia) |
+| 3 | ITERA Estudio - PostgreSQL | `m84wg4kggsgksssg8k0wc000` | postgres:17-alpine | running:healthy | — | `itera-estudio` |
+| 4 | Abundancia Hogar - PostgreSQL | `qvyp1mdigluu25eu1aekpsho` | postgres:17-alpine | running:healthy | — | `abundancia-hogar` |
+| 5 | presskit-ar-db | `sbs5tj7872hl82u51niqbtp2` | postgres:17-alpine | running:healthy | — | `presskit-ar` |
+| 6 | Shopear - PostgreSQL | `uxoszayiqygjp8rib3kdddvg` | postgres:17-alpine | running:healthy | 55432 | `shopear` |
+| 7 | Linkea2 - PostgreSQL | `wn5vq32bwbgdpfkamb72ajce` | postgres:17-alpine | running:healthy | 5433 | `linkea2` |
+
+> El recurso histórico `itera-modern-mysql-databases` (`fow0gsgw4cgksogc40ogsg4o`, mysql:8) fue **decomisionado el 2026-05-22**. Era usado solo por `sistema-gestion-juridico-rer` (ya borrado) y dejaba el puerto `3306` expuesto al mundo por el bypass de UFW que hace Docker. Backup en `backups/rer-mysql-2026-05-22/`.
 
 ---
 
@@ -592,26 +633,34 @@
 
 ## Coolify CLI
 
-Instalado en ambas maquinas. Desktop: `C:\Program Files\Coolify\coolify`. Laptop: `/usr/local/bin/coolify` (v1.6.0). Usar `coolify context use <nombre>` antes de operar.
+Instalado en ambas maquinas Linux Mint. Binario en `/usr/local/bin/coolify` (v1.6.1). Usar `coolify context use <nombre>` antes de operar, o pasar `--context <nombre>` por comando. El contexto default actual es `modern-linux-desktop`.
 
 | Contexto | FQDN | VPS |
 |----------|------|-----|
-| modern | https://coolify-modern.itera.world | 65.108.148.79 |
-| alquimica | https://coolify-alquimica.itera.world | 89.167.29.201 |
-| static | https://coolify-static.itera.world | 37.27.248.173 |
+| `modern-linux-desktop` | `http://65.108.148.79:8000` | 65.108.148.79 |
+| `alquimica-linux-desktop` | `http://89.167.29.201:8000` | 89.167.29.201 |
+| `static-linux-desktop` | `http://37.27.248.173:8000` | 37.27.248.173 |
+| `cloud` | `https://app.coolify.io` | (cloud Coolify, no usado) |
 
 **Comandos frecuentes:**
 ```bash
-coolify app list                          # listar apps
-coolify app env list <uuid>               # ver env vars (keys only)
-coolify app env list <uuid> -s            # ver env vars con valores
-coolify app env create <uuid> --key X --value Y
-coolify app logs <uuid>                   # logs de la app
-coolify database list                     # listar DBs
+coolify app list                                # listar apps
+coolify app get <uuid>                          # detalle de una app
+coolify app env list <uuid>                     # env vars (keys only)
+coolify app env list <uuid> -s                  # env vars con valores
+coolify app env create <uuid> --key X --value Y [--build-time|--runtime] [--is-literal]
+coolify app env update <uuid> <key|env-uuid> --value Y
+coolify app env delete <uuid> <env-uuid> --force
+coolify app logs <uuid>                         # logs de la app
+coolify deploy uuid <uuid> [--force]            # redeploy (top-level, no `app redeploy`)
+coolify app restart <uuid>                      # restart sin rebuild
+coolify app delete <uuid> --force               # eliminar app (no es reversible)
+coolify database list [--format json]           # listar DBs
+coolify database delete <uuid>                  # eliminar DB (pide confirmación, pasar `echo y |` para skip)
 ```
 
 **Notas:**
 - Todos los deploys usan auto-deploy via GitHub App (`coolify-itera-modern`).
 - Post-deployment command estandar para proyectos con Prisma: `npx prisma db push`.
-- presskit-ar no aparece en ningún contexto Coolify — posiblemente fue eliminado del panel. Verificar.
 - itera-tube no aparece en ningún contexto Coolify — nunca fue deployado.
+- Valores con `=`, `$` u otros caracteres especiales (passwords, tokens base64) → usar `--is-literal` para evitar interpolación + 422 Validation.

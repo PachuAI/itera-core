@@ -1,6 +1,7 @@
 ---
+name: check
 description: 'Chequeo de calidad adaptativo. Detecta que cambio y ejecuta solo los checks relevantes.'
-model: 'claude-sonnet-4-6'
+model: sonnet
 ---
 
 # Check - Auditoria de Calidad Adaptativa

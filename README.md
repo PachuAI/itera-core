@@ -32,7 +32,6 @@ Sistema de productividad para proyectos Next.js con Claude Code. Contiene el tem
 │   └── .planning/          # Documentacion viva del proyecto
 │       ├── STATE.md                # Estado actual (se sobreescribe cada /save)
 │       ├── CHANGELOG.md            # Historial acumulativo
-│       ├── GUARDRAILS.md           # Errores conocidos y reglas
 │       ├── PROJECT.md              # Definicion del proyecto
 │       ├── CODEBASE-MAP.md         # Indice de donde esta cada pieza
 │       └── FEATURE-CHANGELOG.md    # Features de usuario por modulo
@@ -45,6 +44,9 @@ Sistema de productividad para proyectos Next.js con Claude Code. Contiene el tem
 │   ├── seed-via-api.md         # Carril 1 — seed / reset / provision via API
 │   ├── db-via-tunnel.md        # Carril 2 — query / pg_dump / restore via SSH tunnel
 │   └── db-schema-rollout.md    # Carril 3 — schema rollout manual (DDL / indices / enums)
+├── reference_brevo_smtp.md             # Guia de integracion Brevo SMTP (metodo: COMO)
+├── reference_brevo_usage_inventory.md  # Inventario de uso Brevo (source-of-truth: QUE proyectos)
+├── reference_itera_image_api.md        # API interna del generador de imagenes
 ├── modelo prompt.txt       # Prompt modelo para iniciar un proyecto
 ├── INFO.txt                # Descripcion general del sistema
 └── .planning/              # Planning interno de este repo
@@ -77,7 +79,7 @@ pnpm create next-app "C:/ALL MY PROJECTS/nextjs/mi-proyecto" \
 ```
 /load    →  Lee STATE.md → resume contexto → trabaja
 /check   →  Detecta que cambio → ejecuta checks relevantes → reporte
-/save    →  /check → errores → GUARDRAILS → STATE → CHANGELOG → commit
+/save    →  /check → errores → seccion Guardrails del CLAUDE.md → STATE → CHANGELOG → commit
 /commit  →  Commit intermedio sin guardar estado completo
 ```
 
@@ -92,9 +94,9 @@ bash scripts/check-all.sh  # Alternativa directa
 
 Cada script es independiente y puede ejecutarse solo. Se integran con `/check` y `/save`.
 
-### Escalacion de errores
+### Registro de errores (flujo de 1 nivel)
 
-Los errores detectados se registran en `GUARDRAILS.md`. Si un error se repite, se escala a `CLAUDE.md` como regla permanente.
+Los errores recurrentes o no-triviales detectados en la sesion se destilan a UNA linea preventiva concisa (que / por que / cuando) en la seccion **Guardrails** del `CLAUDE.md` del proyecto — sin archivo intermedio (ya no hay `GUARDRAILS.md`). Lo hace `/save`.
 
 ## Tiers
 

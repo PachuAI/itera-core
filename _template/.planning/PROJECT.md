@@ -132,7 +132,7 @@
 2. **[Nota crítica 2]**: [ej: Next.js 16 - cookies/headers/params son async]
 3. **[Nota crítica 3]**: [ej: Terminal Claude Code usa Bash, NO PowerShell]
 4. **[Nota crítica 4]**: [ej: Validar siempre con Zod antes de procesar]
-5. **[Nota crítica 5]**: [ej: Leer GUARDRAILS.md antes de implementar]
+5. **[Nota crítica 5]**: [ej: Leer la sección Guardrails del CLAUDE.md antes de implementar]
 
 ---
 
@@ -161,6 +161,6 @@
 |---------|-----------|
 | `.planning/STATE.md` | Estado actual y última sesión |
 | `.planning/ROADMAP.md` | Fases del proyecto |
-| `.planning/GUARDRAILS.md` | Checks preventivos |
+| `CLAUDE.md` (sección Guardrails) | Reglas preventivas inline |
 | `docs/technical/ARCHITECTURE.md` | Patrones y estructura |
 | `docs/ENVIRONMENT.md` | Config de entorno |
