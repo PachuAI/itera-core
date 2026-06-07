@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video to Guide"
+  short_description: "Turn tutorial videos into evidence-based guides"
+  default_prompt: "Use $video-to-guide to turn this tutorial video, transcript, and source media into an evidence-based HTML guide."

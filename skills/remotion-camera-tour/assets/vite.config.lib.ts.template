@@ -1,0 +1,50 @@
+// Vite config para build de la biblioteca en library mode.
+// Genera `dist/index.js` (ES module) + `dist/index.css` con todos los
+// CSS Modules pre-procesados. Esto permite importar la lib desde
+// proyectos Remotion (webpack) sin conflicts de CSS loaders.
+//
+// Setup:
+//   1. Copiar este archivo a `<componentsDir>/vite.config.lib.ts`
+//      (no afecta el vite.config.ts default usado para dev/gallery).
+//   2. Sumar al `package.json` el script:
+//        "build:lib": "vite build -c vite.config.lib.ts"
+//   3. Ajustar `name` abajo con el namespace del SaaS.
+//   4. Correr `pnpm build:lib`.
+//
+// Output esperado:
+//   dist/index.css  ~30 kB  (CSS consolidado)
+//   dist/index.js   ~60 kB  (ES module con classes hashed)
+
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    cssCodeSplit: false,      // un único CSS file (sin splits)
+    sourcemap: true,
+    lib: {
+      entry: path.resolve(__dirname, "src/lib/index.ts"),
+      name: "YourSaasComponents",   // ← TODO: cambiar por el namespace del SaaS
+      formats: ["es"],         // ES module, compatible con webpack moderno
+      fileName: "index",
+    },
+    rollupOptions: {
+      external: ["react", "react-dom", "react/jsx-runtime"],
+      // React es peerDependency — no se bundlea, el consumidor lo trae.
+      output: {
+        assetFileNames: (asset) => {
+          if (asset.name === "style.css") return "style.css";
+          return asset.name ?? "[name][extname]";
+        },
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+        },
+      },
+    },
+  },
+});

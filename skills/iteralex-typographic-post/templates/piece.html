@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>ÍTERA Lex · {{TITLE}} · {{RATIO}}</title>
+    <link rel="stylesheet" href="{{SHARED_CSS_PATH}}" />
+    <link rel="stylesheet" href="{{TYPO_CSS_PATH}}" />
+  </head>
+  <body data-width="{{WIDTH}}" data-height="{{HEIGHT}}">
+    <div class="feed{{ANCHOR_CLASS}}{{VERTICAL_CLASS}}">
+      <!-- Banda 1: aire arriba (110px reservados) -->
+      <div class="band-top"></div>
+
+      <!-- Banda 2: wordmark hero (centrado horizontal) -->
+      <div class="wordmark-hero">
+        <img src="{{WORDMARK_PATH}}" alt="ÍTERA Lex" />
+      </div>
+
+      <!-- Banda 3: flex-top (aire flexible para centrar el bloque) -->
+      <div class="flex-top"></div>
+
+      <!-- Banda 4: hook (frase grande con comilla apertura+cierre) -->
+      <div class="hook">
+        <p class="hook__quote">{{QUOTE_HTML}}</p>
+      </div>
+
+      <!-- Banda 5+6: hinge (cómo lo resolvemos + body con [brand]) -->
+      <div class="hinge">
+        <span class="hinge__eyebrow">{{HINGE_EYEBROW}}</span>
+        <span class="hinge__body">{{HINGE_BODY_HTML}}</span>
+      </div>
+
+      <!-- Banda 7: flex-bottom (aire flexible) -->
+      <div class="flex-bottom"></div>
+
+      <!-- Banda 8: aire abajo (100px reservados) -->
+      <div class="band-bottom"></div>
+    </div>
+  </body>
+</html>

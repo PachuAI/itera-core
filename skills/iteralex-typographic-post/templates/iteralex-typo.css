@@ -1,0 +1,200 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * iteralex-typo.css — Sistema de bandas verticales para covers de carrusel.
+ *
+ * Anatomía (orden top → bottom):
+ *   1. band-top         (fijo)    — aire reservado arriba antes del wordmark
+ *   2. wordmark-hero    (auto)    — wordmark imagen, centrado horizontal
+ *   3. flex-top         (1fr)     — aire flexible que centra el bloque
+ *   4. hook             (auto)    — frase grande con comilla apertura+cierre
+ *   5. gap (margin)     (52px)    — separación quote → hinge
+ *   6. hinge            (auto)    — divider naranja + eyebrow + body
+ *   7. flex-bottom      (1fr)     — aire flexible que centra el bloque
+ *   8. band-bottom      (fijo)    — aire reservado abajo
+ *
+ * Nota: la flecha de carrusel (CTA) se removió del default — los slides
+ * de IG ya implican navegación, la flecha agregaba ruido visual y forzaba
+ * un balance asimétrico que se descalibraba al cambiar el largo del bloque.
+ * Si una pieza puntual la necesita, se reagrega caso por caso.
+ *
+ * Cómo funciona:
+ *   • flex-top y flex-bottom comparten el aire sobrante (centra el bloque
+ *     vertical entre el wordmark y el borde inferior).
+ *   • Cambiar `--art-height` de 1350 a 1920 escala automáticamente a 9:16
+ *     (los flex absorben los 570px extra sin tocar el bloque).
+ *   • Si el quote ocupa 3 o 4 líneas, el sistema se adapta solo.
+ *   • Si querés anclar arriba o abajo en vez de centrar:
+ *       .feed.is-anchor-top    { ... flex-bottom ocupa todo }
+ *       .feed.is-anchor-bottom { ... flex-top ocupa todo }
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+body { margin: 0; }
+
+/* ─── Artboard ──────────────────────────────────────────────────────── */
+.feed {
+  --art-width: 1080px;
+  --art-height: 1350px;             /* default 4:5; override en HTML para 9:16 */
+  --band-top: 110px;
+  --band-bottom: 100px;
+  --side-padding: 96px;
+  --gap-quote-hinge: 52px;
+
+  width: var(--art-width);
+  height: var(--art-height);
+  background: #0a0a0a;              /* apenas más claro que el negro absoluto del bg de IG (#000) — separa la pieza del feed sin perder profundidad */
+  color: var(--brand-fg, #fff);
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding: 0 var(--side-padding);
+  box-sizing: border-box;
+}
+
+/* Variantes de anclaje (override del centrado por defecto). */
+.feed.is-anchor-top    .flex-top    { flex: 0 0 32px; }
+.feed.is-anchor-top    .flex-bottom { flex: 1 1 auto; }
+.feed.is-anchor-bottom .flex-top    { flex: 1 1 auto; }
+.feed.is-anchor-bottom .flex-bottom { flex: 0 0 32px; }
+
+/* Modo 9:16 (Stories / Reels cover). */
+.feed.is-vertical { --art-height: 1920px; }
+
+/* ─── Bandas ────────────────────────────────────────────────────────── */
+.band-top {
+  flex: 0 0 var(--band-top);
+}
+.wordmark-hero {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.wordmark-hero img {
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.45));
+}
+/* Default: bloque centrado vertical (1:1). El balance asimétrico previo (5:3)
+ * estaba calibrado para piezas CON flecha — al removerla, el centrado simétrico
+ * es lo que queda balanceado. */
+.flex-top {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.flex-bottom {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* Alternativas explícitas si el caso lo pide: */
+.feed.is-centered .flex-top    { flex: 1 1 auto; }
+.feed.is-centered .flex-bottom { flex: 1 1 auto; }
+.band-bottom {
+  flex: 0 0 var(--band-bottom);
+}
+
+/* ─── Hook (quote) ──────────────────────────────────────────────────── */
+.hook {
+  flex: 0 0 auto;
+  position: relative;
+}
+.hook__quote {
+  margin: 0;
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-weight: 700;
+  font-size: 92px;
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  color: var(--brand-fg, #fff);
+}
+.hook__quote::before {
+  content: '\201C';
+  position: absolute;
+  top: -64px;
+  left: -16px;
+  font-size: 200px;
+  line-height: 0.8;
+  color: var(--brand-accent, #F27A1A);
+  opacity: 0.55;
+  font-weight: 700;
+  pointer-events: none;
+}
+.hook__quote::after {
+  content: '\201D';
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-size: 96px;
+  line-height: 0;
+  color: var(--brand-accent, #F27A1A);
+  opacity: 0.55;
+  font-weight: 700;
+  margin-left: 14px;
+  vertical-align: -0.36em;
+}
+
+/* Palabra/frase con gradiente naranja del brand — uso puntual dentro del quote. */
+.grad {
+  background: linear-gradient(125deg, #F27A1A 0%, #FFB061 45%, #FF8A2E 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ─── Hinge (cómo lo resolvemos + body) ─────────────────────────────── */
+.hinge {
+  flex: 0 0 auto;
+  margin-top: var(--gap-quote-hinge);
+  padding-top: 38px;
+  border-top: 1px solid rgba(242, 122, 26, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.hinge__eyebrow {
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.005em;
+  color: var(--brand-accent, #F27A1A);
+}
+.hinge__body {
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.32;
+  letter-spacing: -0.012em;
+  color: var(--brand-fg, #fff);
+}
+
+/* Cierre acentuado del hinge body — patrón canónico: el hinge cierra con una
+ * frase corta en naranja peso 700 que sintetiza el valor. Validado en 01/02/03
+ * (mayo 2026). El hinge body NO debe terminar en una frase larga sin acento —
+ * el cierre acentuado le da punch al slide y consistencia con el resto del feed. */
+.hinge__accent {
+  color: var(--brand-accent, #F27A1A);
+  font-weight: 700;
+}
+
+/* "ÍTERA Lex" inline como texto bold (ÍTERA blanco + Lex naranja, ambos peso 800).
+ * NO usar highlight naranja sobre "ÍTERA Lex" plano — siempre o bien este patrón
+ * o bien la imagen real del wordmark. */
+.brand-text {
+  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  font-weight: 800;
+  letter-spacing: -0.018em;
+  color: var(--brand-fg, #fff);
+  margin: 0 0.08em;                /* respiro extra: el peso 800 colapsa visualmente el espacio de la palabra previa contra "ÍTERA" */
+}
+.brand-text__lex {
+  color: var(--brand-accent, #F27A1A);
+}
+
+/* ─── Spacer flex (para piezas con mockup que necesitan centrado vertical) ─
+ * Insertar dos `<div class="flex-spacer"></div>` (uno antes del bloque,
+ * otro después) hace que el bloque interior quede centrado verticalmente
+ * entre el wordmark y el band-bottom. Validado en `02-calendario-laptop.html`.
+ * Sin este patrón, las piezas con mockup quedan pegadas a un borde. */
+.flex-spacer {
+  flex: 1 1 auto;
+  min-height: 0;
+}

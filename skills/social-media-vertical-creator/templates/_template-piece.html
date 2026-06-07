@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NN · SLUG DE LA PIEZA</title>
+    <link rel="stylesheet" href="../shared.css" />
+  </head>
+  <body>
+    <!--
+      TEMPLATE BASE DE UNA PIEZA 1080×1920 (9:16)
+      ─────────────────────────────────────────────
+      Ajustar:
+        1. <title> con el número y slug
+        2. clase mode-* del artboard (dark / cream / navy / wa)
+        3. glow: atmo-glow (centro) / atmo-glow--top / atmo-glow--bottom
+        4. eyebrow de contexto (en header)
+        5. eyebrow de sección + punchline H1
+        6. bloque VISUAL CENTRAL (reemplazar con mockup/chat/card/SVG)
+        7. footer body + CTA + status-pill
+    -->
+    <div class="artboard mode-dark">
+      <!-- Capa atmósfera -->
+      <div class="atmo-glow"></div>
+      <div class="atmo-particles">
+        <span class="dot" style="left: 8%; top: 14%; opacity: 0.7"></span>
+        <span class="dot" style="left: 22%; top: 36%; width: 3px; height: 3px"></span>
+        <span class="dot" style="left: 88%; top: 12%; opacity: 0.5"></span>
+        <span class="dot" style="left: 72%; top: 40%; width: 5px; height: 5px"></span>
+        <span class="dot" style="left: 14%; top: 68%; opacity: 0.8"></span>
+        <span class="dot" style="left: 92%; top: 58%"></span>
+      </div>
+      <div class="atmo-grain"></div>
+
+      <!-- Capa contenido -->
+      <div class="content">
+        <!-- HEADER ────────────────────────────────────────── -->
+        <div class="flex between" style="align-items: center">
+          <div class="brand-lockup" style="color: var(--shope-fg)">
+            <span class="dot"></span>
+            <span>WORDMARK<span class="accent">.ar</span></span>
+          </div>
+          <span class="eyebrow" style="font-size: 18px">CONTEXTO DE LA PIEZA</span>
+        </div>
+
+        <!-- Spacer hero -->
+        <div style="height: 140px"></div>
+
+        <!-- EYEBROW + HEADLINE ─────────────────────────────── -->
+        <p class="eyebrow" style="margin-bottom: 40px">EYEBROW DE SECCIÓN</p>
+
+        <h1
+          class="display"
+          style="
+            font-size: 130px;
+            line-height: 0.96;
+            margin: 0;
+            letter-spacing: -0.03em;
+          "
+        >
+          primera linea<br />
+          <span class="hl-accent">palabra destacada</span><br />
+          tercera linea.
+        </h1>
+
+        <!-- VISUAL CENTRAL (flex grow) ────────────────────── -->
+        <div
+          class="flex center"
+          style="
+            flex: 1;
+            align-self: center;
+            width: 100%;
+            margin-top: 60px;
+          "
+        >
+          <!--
+            Opciones validadas:
+              · iPhone frame con WhatsApp chat (clase .iphone + .wa-chat)
+              · Product card en dark (.mock-window con item adentro)
+              · SVG custom (papelito, ícono, ilustración simple)
+              · Mockup admin (iPhone con captura del admin)
+              · Chat standalone (.wa-bubble in/out con bubbles)
+          -->
+          <div
+            style="
+              width: 720px;
+              height: 600px;
+              background: var(--shope-surface);
+              border: 1px solid var(--shope-border);
+              border-radius: 24px;
+              display: grid;
+              place-items: center;
+              color: var(--shope-fg-muted);
+              font-family: var(--font-ui);
+              font-size: 22px;
+            "
+          >
+            VISUAL CENTRAL — reemplazar
+          </div>
+        </div>
+
+        <!-- FOOTER ───────────────────────────────────────── -->
+        <div class="mt-auto flex col gap-24">
+          <p
+            class="body"
+            style="font-size: 30px; color: var(--shope-fg-muted); max-width: 720px; margin: 0"
+          >
+            body secundario que refuerza el headline.
+          </p>
+          <div class="flex gap-24" style="align-items: center">
+            <div class="cta-primary">
+              CTA DEL PACK <span class="arrow">→</span>
+            </div>
+            <span class="status-pill">
+              <span class="dot"></span>
+              status pill
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

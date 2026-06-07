@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Motion Plan · {{LABEL}} · {{PROJECT-NAME}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Newsreader:ital,wght@1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ─── Tokens — reemplazar --accent por el del proyecto ──────────────── */
+  :root {
+    --bg: #0a0a0a;
+    --bg-soft: #121212;
+    --bg-card: #161616;
+    --bg-card-lift: #1c1c1c;
+    --line: #232323;
+    --line-strong: #2e3244;
+    --fg: #f5f5f5;
+    --fg-mid: #c4c4c4;
+    --fg-low: #8a8a8a;
+    --fg-muted: #5a5a5a;
+
+    /* Brand accent — REEMPLAZAR por el del proyecto */
+    --accent: #F27A1A;
+    --accent-soft: rgba(242, 122, 26, 0.16);
+    --accent-line: rgba(242, 122, 26, 0.42);
+
+    /* Switches / motion graphics secondary */
+    --purple: #8B6FF0;
+    --purple-soft: rgba(139, 111, 240, 0.14);
+
+    /* Audio sync */
+    --cyan: #4FD1C5;
+    --cyan-soft: rgba(79, 209, 197, 0.14);
+
+    --rose: #F27A6E;
+    --rose-soft: rgba(242, 122, 110, 0.14);
+
+    --sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --serif: 'Newsreader', Georgia, serif;
+    --mono: 'JetBrains Mono', 'SF Mono', Monaco, Consolas, monospace;
+
+    --max-w: 1280px;
+    --pad-x: clamp(24px, 4vw, 64px);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--fg);
+    font-family: var(--sans); font-size: 16px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-image:
+      radial-gradient(ellipse at top left, rgba(242, 122, 26, 0.06), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(139, 111, 240, 0.05), transparent 50%);
+    background-attachment: fixed;
+    padding: 80px 0 160px;
+  }
+
+  /* ─── Hero ──────────────────────────────────────────────────────────── */
+  .hero { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--pad-x); }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent);
+  }
+  .kicker::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  }
+  .hero h1 {
+    margin: 22px 0 24px;
+    font-family: var(--sans); font-weight: 800;
+    font-size: clamp(72px, 9vw, 128px); line-height: 0.92;
+    letter-spacing: -0.04em; color: var(--fg);
+  }
+  .hero h1 em {
+    font-family: var(--serif); font-style: italic; font-weight: 500;
+    color: var(--accent); letter-spacing: -0.02em;
+  }
+  .lede {
+    max-width: 780px; margin: 0 0 32px;
+    font-size: 18px; line-height: 1.55; color: var(--fg-mid);
+  }
+  .lede strong { color: var(--fg); font-weight: 600; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 8px 16px; border-radius: 999px;
+    background: var(--bg-card); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; color: var(--fg-mid); text-transform: uppercase;
+  }
+  .pill strong { color: var(--accent); font-weight: 600; }
+  .pill.purple { border-color: var(--purple-soft); }
+  .pill.purple strong { color: var(--purple); }
+
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding-bottom: 36px; border-bottom: 1px solid var(--line);
+    margin-bottom: 56px;
+  }
+  .tabs a {
+    padding: 10px 18px; border-radius: 8px;
+    background: var(--bg-card); border: 1px solid var(--line);
+    text-decoration: none;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; color: var(--fg-mid); text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .tabs a:hover { border-color: var(--accent-line); color: var(--fg); }
+
+  /* ─── Timeline ──────────────────────────────────────────────────────── */
+  .timeline { max-width: var(--max-w); margin: 0 auto 96px; padding: 0 var(--pad-x); }
+  .timeline-label {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-low);
+    margin-bottom: 16px;
+  }
+  .timeline-bar {
+    display: grid;
+    /* IMPORTANT: override este grid-template-columns con fr proporcionales a la duración real */
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 3px; height: 80px; border-radius: 12px;
+    overflow: hidden; border: 1px solid var(--line);
+  }
+  .tseg {
+    position: relative;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 8px 6px; text-align: center; overflow: hidden;
+  }
+  .tseg-name {
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.2;
+  }
+  .tseg-time {
+    margin-top: 4px;
+    font-family: var(--mono); font-size: 9px; font-weight: 400;
+    color: var(--fg-muted); line-height: 1;
+  }
+  .tseg.silence { background: var(--bg-soft); color: var(--fg-muted); }
+  .tseg.beat { background: var(--accent-soft); color: var(--accent); }
+  .tseg.switch { background: var(--purple-soft); color: var(--purple); }
+
+  /* ─── Beat sections ─────────────────────────────────────────────────── */
+  .beat { max-width: var(--max-w); margin: 0 auto 32px; padding: 0 var(--pad-x); }
+  .beat-frame {
+    background: var(--bg-card); border: 1px solid var(--line);
+    border-radius: 20px; padding: 40px clamp(28px, 4vw, 56px);
+  }
+  .beat-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 32px; flex-wrap: wrap; margin-bottom: 36px;
+  }
+  .beat-id {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 18px;
+  }
+  .beat-id::before { content: '—'; color: var(--accent); font-weight: 700; }
+  .beat.switch .beat-id { color: var(--purple); }
+  .beat.switch .beat-id::before { color: var(--purple); }
+  .beat.silence .beat-id { color: var(--fg-muted); }
+  .beat.silence .beat-id::before { color: var(--fg-muted); }
+
+  .beat-title {
+    margin: 0;
+    font-family: var(--sans); font-weight: 700;
+    font-size: clamp(28px, 3vw, 42px); line-height: 1.1;
+    letter-spacing: -0.02em; color: var(--fg); max-width: 720px;
+  }
+  .beat-title em {
+    font-family: var(--serif); font-style: italic; font-weight: 500;
+    color: var(--accent); letter-spacing: -0.01em;
+  }
+  .beat.switch .beat-title em { color: var(--purple); }
+
+  .beat-time {
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    color: var(--fg-low); letter-spacing: 0.05em;
+    text-align: right; white-space: nowrap;
+  }
+
+  .beat-body {
+    display: grid; grid-template-columns: minmax(0, 320px) 1fr;
+    gap: 48px; align-items: start;
+  }
+  @media (max-width: 900px) { .beat-body { grid-template-columns: 1fr; } }
+
+  /* Preview 9:16 — cambiar aspect-ratio si formato distinto (1:1, 16:9) */
+  .preview {
+    position: relative; width: 100%; max-width: 320px;
+    aspect-ratio: 9 / 16;
+    background: var(--bg); border: 1px solid var(--line-strong);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  }
+  .preview img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .preview-tag {
+    position: absolute; bottom: 12px; left: 12px;
+    padding: 4px 10px; border-radius: 6px;
+    background: rgba(10, 10, 10, 0.85); border: 1px solid var(--line-strong);
+    font-family: var(--mono); font-size: 9px; font-weight: 500;
+    letter-spacing: 0.12em; color: var(--fg-low); text-transform: uppercase;
+    backdrop-filter: blur(4px);
+  }
+  .preview-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+    color: var(--fg-muted);
+    background: repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(255, 255, 255, 0.02) 14px, rgba(255, 255, 255, 0.02) 28px);
+  }
+  .preview-placeholder-label {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .preview-placeholder-sub {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  }
+
+  /* Panels stack */
+  .panels { display: flex; flex-direction: column; gap: 28px; }
+  .panel-h {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--fg-low); margin: 0 0 14px;
+  }
+  .panel-h.accent { color: var(--accent); }
+  .panel-h.purple { color: var(--purple); }
+  .panel-h.cyan { color: var(--cyan); }
+
+  .panel ul { list-style: none; padding: 0; margin: 0; }
+  .panel li {
+    position: relative; padding: 0 0 0 22px; margin-bottom: 10px;
+    font-size: 15px; line-height: 1.55; color: var(--fg-mid);
+  }
+  .panel li::before {
+    content: ''; position: absolute; left: 6px; top: 10px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--fg-muted);
+  }
+  .panel li strong { color: var(--fg); font-weight: 600; }
+  .panel li code {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-card-lift); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+  }
+  .panel li code.purple { color: var(--purple); }
+  .panel li code.cyan { color: var(--cyan); }
+  .panel li code.mono-time { color: var(--cyan); font-weight: 500; }
+
+  /* Audio track */
+  .audio-track {
+    background: var(--bg-card-lift); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px 20px; margin-top: 14px;
+  }
+  .audio-row {
+    display: grid; grid-template-columns: 76px 1fr; gap: 16px;
+    align-items: baseline; padding: 6px 0;
+    border-bottom: 1px dashed var(--line); font-size: 14px;
+  }
+  .audio-row:last-child { border-bottom: 0; }
+  .audio-time {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--cyan); letter-spacing: 0.04em;
+  }
+  .audio-text { color: var(--fg-mid); }
+  .audio-text .word { color: var(--fg); font-weight: 600; }
+  .audio-text .cue {
+    display: inline-block; margin-left: 10px;
+    padding: 1px 8px; border-radius: 4px;
+    background: var(--accent-soft); border: 1px solid var(--accent-line);
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .audio-text .cue.purple {
+    background: var(--purple-soft); border-color: rgba(139, 111, 240, 0.4); color: var(--purple);
+  }
+  .audio-text .cue.cyan {
+    background: var(--cyan-soft); border-color: rgba(79, 209, 197, 0.4); color: var(--cyan);
+  }
+
+  /* Note */
+  .note {
+    padding: 16px 20px; background: var(--bg-soft);
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; font-size: 14px; color: var(--fg-mid);
+    margin-top: 12px;
+  }
+  .note strong { color: var(--accent); font-weight: 600; }
+  .note.purple { border-left-color: var(--purple); }
+  .note.purple strong { color: var(--purple); }
+
+  /* Beat next pointer */
+  .beat-next {
+    margin: 24px 0 0 0; padding: 16px 24px;
+    background: var(--bg-soft); border: 1px dashed var(--line-strong);
+    border-radius: 12px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--fg-low);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 20px; flex-wrap: wrap;
+  }
+  .beat-next .next-arrow { color: var(--accent); font-weight: 700; }
+
+  .beat.switch .beat-frame {
+    border-color: rgba(139, 111, 240, 0.22);
+    background: linear-gradient(180deg, var(--bg-card), rgba(139, 111, 240, 0.04));
+  }
+  .beat.silence .beat-frame {
+    border-style: dashed; border-color: var(--line); background: var(--bg-soft);
+  }
+
+  .section-divider {
+    max-width: var(--max-w); margin: 16px auto; padding: 0 var(--pad-x);
+    display: flex; align-items: center; gap: 16px;
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--fg-muted);
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--line);
+  }
+
+  /* Outro footer */
+  .outro {
+    max-width: var(--max-w); margin: 96px auto 0; padding: 0 var(--pad-x); text-align: center;
+  }
+  .outro h2 {
+    font-family: var(--sans); font-weight: 700; font-size: 36px;
+    letter-spacing: -0.02em; margin: 0 0 16px;
+  }
+  .outro p {
+    color: var(--fg-mid); margin: 0 auto; max-width: 540px; font-size: 15px;
+  }
+  .outro .meta {
+    margin-top: 32px;
+    display: inline-flex; gap: 24px; padding: 12px 24px;
+    border-radius: 999px;
+    background: var(--bg-card); border: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    color: var(--fg-low); text-transform: uppercase;
+  }
+
+  @media print { body { background: white; color: black; } }
+</style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <header class="hero">
+    <span class="kicker">STORYBOARD · {{PROJECT-ID}} · {{LABEL}}</span>
+
+    <h1>Motion <em>Plan</em></h1>
+
+    <p class="lede">
+      {{N}} beats {{ORIENTATION}} ({{RES}}, {{FPS}}fps),
+      <strong>{{DUR}}s</strong> totales, sincronizados al audio narrado.
+      {{ONE-LINER DEL VIDEO}}.
+      Marcalo libremente — cuando el plan esté lockeado lo construyo de una
+      sola pasada en Remotion.
+    </p>
+
+    <div class="pills">
+      <span class="pill"><strong>{{N}}</strong> BEATS</span>
+      <span class="pill"><strong>{{M}}</strong> TRANSICIONES</span>
+      <span class="pill"><strong>{{DUR}}S</strong> TOTAL</span>
+      <span class="pill"><strong>{{RES}}</strong> · {{FPS}}FPS</span>
+      <span class="pill purple"><strong>{{PROJECT-ID}}</strong> · {{LABEL}}</span>
+    </div>
+
+    <nav class="tabs">
+      <a href="#intro">INTRO</a>
+      <a href="#beat-1">BEAT 1 · {{LABEL}}</a>
+      <!-- ... repetir por cada beat ... -->
+      <a href="#outro">OUTRO</a>
+    </nav>
+  </header>
+
+  <!-- ═══════════════════════════ TIMELINE ═══════════════════════════ -->
+  <!-- IMPORTANTE: el grid-template-columns inline debe usar fr proporcionales a la duración real de cada bloque -->
+  <section class="timeline">
+    <p class="timeline-label">Timeline · 0.0s → {{DUR}}s</p>
+    <div class="timeline-bar" style="grid-template-columns: {{D1}}fr {{D2}}fr {{D3}}fr;">
+      <!-- repetir un .tseg por bloque, en orden cronológico -->
+      <div class="tseg silence"><div class="tseg-name">Intro</div><div class="tseg-time">{{D1}}s</div></div>
+      <div class="tseg beat"><div class="tseg-name">B1 {{LABEL}}</div><div class="tseg-time">{{D2}}s</div></div>
+      <div class="tseg switch"><div class="tseg-name">SW</div><div class="tseg-time">{{D3}}s</div></div>
+      <!-- ... -->
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ INTRO SILENCE ═══════════════════════════ -->
+  <!-- Solo incluir si el audio empieza después de 0s -->
+  <section class="beat silence" id="intro">
+    <div class="beat-frame">
+      <div class="beat-header">
+        <div>
+          <div class="beat-id">INTRO · SILENCE</div>
+          <h2 class="beat-title">{{ONE-LINER}}</h2>
+        </div>
+        <span class="beat-time">0.00S → {{D}}S · {{D}}S</span>
+      </div>
+      <div class="beat-body">
+        <div class="preview">
+          <div class="preview-placeholder">
+            <span class="preview-placeholder-label">FADE IN</span>
+            <span class="preview-placeholder-sub">0.0s → {{D}}s</span>
+          </div>
+          <span class="preview-tag">SILENCIO</span>
+        </div>
+        <div class="panels">
+          <div class="panel">
+            <h3 class="panel-h">WHAT'S ON SCREEN</h3>
+            <ul>
+              <li>{{BULLET}}.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3 class="panel-h accent">MOTION</h3>
+            <ul>
+              <li>{{BULLET}}.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="beat-next">
+          <span><span class="next-arrow">→</span> NEXT · BEAT 01</span>
+          <span style="color: var(--fg-muted)">CUT @ {{T}}S</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider">Beat principal · narrativa</div>
+
+  <!-- ═══════════════════════════ BEAT N ═══════════════════════════ -->
+  <!-- Repetir esta sección por cada beat principal -->
+  <section class="beat" id="beat-{{N}}">
+    <div class="beat-frame">
+      <div class="beat-header">
+        <div>
+          <div class="beat-id">BEAT {{NN}} · {{LABEL}}</div>
+          <h2 class="beat-title">"{{HEADLINE}}"</h2>
+        </div>
+        <span class="beat-time">{{START}}S → {{END}}S · {{DUR}}S</span>
+      </div>
+
+      <div class="beat-body">
+        <div class="preview">
+          <img src="{{PATH-TO-PNG}}" alt="Beat {{N}} · {{LABEL}}">
+          <span class="preview-tag">{{FILENAME}}</span>
+        </div>
+
+        <div class="panels">
+          <div class="panel">
+            <h3 class="panel-h">WHAT'S ON SCREEN</h3>
+            <ul>
+              <li><strong>{{ELEMENT}}</strong> {{POSITION/DETAIL}}.</li>
+              <li>{{BULLET}}.</li>
+            </ul>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-h accent">MOTION</h3>
+            <ul>
+              <li><strong>{{ELEMENT}}</strong> · <code>{{MOTION-TYPE}}</code> {{FROM-TO}} (<code class="mono-time">{{T1}}s → {{T2}}s</code>).</li>
+              <li><strong>{{ELEMENT}}</strong> · <code>{{TYPE}}</code> con <code>{{EASING}}</code>: {{FROM-TO}}.</li>
+              <li><strong>Hold</strong> con {{LOOP-DESCRIPTION}} hasta el fin del beat.</li>
+            </ul>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-h cyan">AUDIO SYNC · {{N}} palabras</h3>
+            <div class="audio-track">
+              <div class="audio-row">
+                <span class="audio-time">{{T}}s</span>
+                <span class="audio-text"><span class="word">{{WORD}}</span> <span class="cue">{{CUE}}</span></span>
+              </div>
+              <div class="audio-row">
+                <span class="audio-time">{{T}}s</span>
+                <span class="audio-text" style="color:var(--fg-muted)"><em>fin del beat — {{NEXT}}</em></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>Nota</strong> — {{REASONING}}.
+          </div>
+        </div>
+
+        <div class="beat-next">
+          <span><span class="next-arrow">→</span> {{NEXT-EVENT}} @ {{T}}S</span>
+          <span style="color: var(--fg-muted)">{{ANNOTATION}}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ SWITCH N→M ═══════════════════════════ -->
+  <!-- Incluir solo cuando hay un frame intermedio rico (gap ≥ 0.6s o transición narrativa).
+       Es OPCIONAL — si la transición es solo cross-fade simple, no agregar switch, basta con el beat-next. -->
+  <section class="beat switch" id="switch-{{N}}-{{M}}">
+    <div class="beat-frame">
+      <div class="beat-header">
+        <div>
+          <div class="beat-id">SWITCH · {{TYPE}}</div>
+          <h2 class="beat-title">{{ONE-LINER}}</h2>
+        </div>
+        <span class="beat-time">{{START}}S → {{END}}S · {{DUR}}S</span>
+      </div>
+
+      <div class="beat-body">
+        <div class="preview">
+          <div class="preview-placeholder">
+            <span class="preview-placeholder-label" style="color:var(--purple)">{{LABEL}}</span>
+            <span class="preview-placeholder-sub">{{SUB}}</span>
+          </div>
+          <span class="preview-tag" style="color:var(--purple)">TRANSITION</span>
+        </div>
+
+        <div class="panels">
+          <div class="panel">
+            <h3 class="panel-h purple">WHAT'S HAPPENING</h3>
+            <ul>
+              <li>{{BULLET}}.</li>
+            </ul>
+          </div>
+
+          <div class="panel">
+            <h3 class="panel-h purple">MOTION TIMING</h3>
+            <ul>
+              <li><code class="mono-time">0.00s</code> — {{ACTION}}.</li>
+              <li><code class="mono-time">{{T}}s</code> — {{ACTION}}.</li>
+            </ul>
+          </div>
+
+          <div class="note purple">
+            <strong>Idea</strong> — {{REASONING}}.
+          </div>
+        </div>
+
+        <div class="beat-next">
+          <span><span class="next-arrow">→</span> NEXT · BEAT {{M}} @ {{T}}S</span>
+          <span style="color: var(--fg-muted)">{{ANNOTATION}}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ OUTRO SILENCE ═══════════════════════════ -->
+  <section class="beat silence" id="outro">
+    <div class="beat-frame">
+      <div class="beat-header">
+        <div>
+          <div class="beat-id">OUTRO · FADE</div>
+          <h2 class="beat-title">{{ONE-LINER}}</h2>
+        </div>
+        <span class="beat-time">{{START}}S → {{END}}S · {{DUR}}S</span>
+      </div>
+
+      <div class="beat-body">
+        <div class="preview">
+          <div class="preview-placeholder">
+            <span class="preview-placeholder-label">FADE OUT</span>
+            <span class="preview-placeholder-sub">→ negro</span>
+          </div>
+          <span class="preview-tag">FIN</span>
+        </div>
+
+        <div class="panels">
+          <div class="panel">
+            <h3 class="panel-h">WHAT'S ON SCREEN</h3>
+            <ul>
+              <li>{{BULLET}}.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3 class="panel-h accent">EXPORT</h3>
+            <ul>
+              <li><strong>Render</strong> · {{RES}} · {{FPS}}fps · H.264 · CRF 18.</li>
+              <li><strong>Audio</strong> · MP3 fuente downmixed a AAC 192kbps embedded.</li>
+              <li><strong>Duración final</strong> · <code class="mono-time">{{DUR}}s</code>.</li>
+              <li><strong>Filename</strong> · <code>{{FILENAME}}.mp4</code> en <code>{{PATH}}</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer class="outro">
+    <h2>Plan listo. Esperando lock.</h2>
+    <p>Marcá libremente este storyboard — cambios de timing, de motion, de copy, de orden. Una vez lockeado, lo construyo en Remotion siguiendo este doc al pie de la letra.</p>
+    <div class="meta">
+      <span>{{PROJECT-ID}} · {{LABEL}}</span>
+      <span>v{{VERSION}} · {{DATE}}</span>
+      <span>STORYBOARD</span>
+    </div>
+  </footer>
+
+</body>
+</html>

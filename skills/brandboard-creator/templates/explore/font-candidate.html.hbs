@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>font candidate · {{pair-label}}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{font-display-google-query}}&family={{font-ui-google-query}}&display=swap" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { width: 800px; height: 500px; background: {{color-ink}}; color: {{color-white}}; font-family: '{{font-ui-family}}', system-ui, sans-serif; }
+      .board { width: 800px; height: 500px; padding: 40px; display: flex; flex-direction: column; gap: 24px; justify-content: space-between; }
+      .head { display: flex; justify-content: space-between; align-items: baseline; }
+      .label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.55; font-weight: 500; }
+      .pair-name { font-size: 16px; font-weight: 600; color: {{color-accent}}; }
+      .wm { font-family: '{{font-display-family}}', system-ui, sans-serif; font-weight: {{font-display-weight-display}}; font-size: 100px; line-height: 0.9; letter-spacing: -0.02em; color: {{color-white}}; margin: 0; }
+      .wm .ac { color: {{color-accent}}; }
+      .rationale { font-family: '{{font-ui-family}}', system-ui, sans-serif; font-weight: 400; font-size: 14px; opacity: 0.72; line-height: 1.5; }
+      .samples { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+      .sample-card h4 { font-family: '{{font-display-family}}', system-ui, sans-serif; font-weight: 600; font-size: 24px; margin: 0 0 6px; color: {{color-white}}; letter-spacing: -0.01em; }
+      .sample-card p { font-family: '{{font-ui-family}}', system-ui, sans-serif; font-weight: 400; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.7); margin: 0; }
+      .eyebrow { font-family: '{{font-ui-family}}', system-ui, sans-serif; font-weight: 500; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: {{color-accent}}; margin-bottom: 4px; }
+      .cta { display: inline-flex; padding: 10px 18px; border-radius: 999px; background: {{color-accent}}; color: {{color-accent-ink}}; font-family: '{{font-ui-family}}', system-ui, sans-serif; font-weight: 600; font-size: 12px; }
+    </style>
+  </head>
+  <body data-width="800" data-height="500">
+    <div class="board">
+      <div class="head">
+        <div>
+          <div class="label">fuente · option {{pair-index}}</div>
+          <div class="pair-name" style="margin-top:4px;">{{pair-label}}</div>
+        </div>
+        <div class="label">{{font-display-family}} + {{font-ui-family}}</div>
+      </div>
+      <p class="wm">{{wordmark-first}}<span class="ac">{{wordmark-accent}}</span></p>
+      <div class="samples">
+        <div class="sample-card">
+          <div class="eyebrow">display · sample</div>
+          <h4>headings cortos que venden.</h4>
+          <p>Baloo-style display para H1, wordmark y punchlines. Peso recomendado {{font-display-weight-display}}.</p>
+        </div>
+        <div class="sample-card">
+          <div class="eyebrow">UI · sample</div>
+          <h4>body text & controls</h4>
+          <p>El body legible a 13-14px en párrafos largos. Los botones y labels también van acá: <span class="cta">empezar</span></p>
+        </div>
+      </div>
+      <div class="rationale">{{pair-rationale}}</div>
+    </div>
+  </body>
+</html>

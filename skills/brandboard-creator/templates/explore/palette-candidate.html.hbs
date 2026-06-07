@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>palette candidate · {{preset-label}}</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { width: 800px; height: 500px; background: {{color-ink}}; color: {{color-white}}; font-family: system-ui, sans-serif; }
+      .board { width: 800px; height: 500px; display: grid; grid-template-columns: 1fr 1fr; padding: 32px; gap: 32px; }
+      .left { display: flex; flex-direction: column; gap: 20px; justify-content: space-between; }
+      .right { display: flex; flex-direction: column; gap: 12px; }
+      .label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.6; font-weight: 500; }
+      .preset-name { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: {{color-accent}}; line-height: 1; margin-top: 4px; }
+      .rationale { font-size: 13px; opacity: 0.75; line-height: 1.45; }
+      .logo-block { width: 100%; aspect-ratio: 2/1; background: {{color-ink}}; border-radius: 12px; display: grid; place-items: center; overflow: hidden; }
+      .logo-block img { width: 60%; height: 60%; object-fit: contain; }
+      .logo-block.accent { background: {{color-accent}}; }
+      .wm-sample { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: {{color-white}}; }
+      .wm-sample .ac { color: {{color-accent}}; }
+      .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .sw { height: 56px; border-radius: 8px; display: flex; align-items: flex-end; justify-content: flex-start; padding: 6px 8px; font-size: 9px; font-family: ui-monospace, Menlo, monospace; opacity: 0.85; }
+      .sw.ink { background: {{color-ink}}; color: {{color-white}}; border: 1px solid rgba(255,255,255,0.1); }
+      .sw.white { background: {{color-white}}; color: {{color-ink}}; }
+      .sw.accent { background: {{color-accent}}; color: {{color-accent-ink}}; }
+      .sw.accent-ink { background: {{color-accent-ink}}; color: {{color-accent}}; }
+      .sw.cream { background: {{color-cream}}; color: {{color-ink}}; }
+      .sw.navy { background: {{color-navy}}; color: {{color-white}}; }
+      .sw.slate { background: {{color-slate}}; color: {{color-white}}; }
+    </style>
+  </head>
+  <body data-width="800" data-height="500">
+    <div class="board">
+      <div class="left">
+        <div>
+          <div class="label">paleta · option {{preset-index}}</div>
+          <div class="preset-name">{{preset-label}}</div>
+        </div>
+        <div class="logo-block">
+          <img src="{{isotipo-white-path}}" alt="" />
+        </div>
+        <div class="rationale">{{preset-rationale}}</div>
+      </div>
+      <div class="right">
+        <div class="label">swatches</div>
+        <div class="swatches">
+          <div class="sw ink">ink</div>
+          <div class="sw white">white</div>
+          <div class="sw accent">accent</div>
+          <div class="sw accent-ink">accent-ink</div>
+          <div class="sw cream">cream</div>
+          <div class="sw navy">navy</div>
+          <div class="sw slate">slate</div>
+        </div>
+        <div class="label" style="margin-top: 12px;">wordmark · sample</div>
+        <div style="background:{{color-ink}}; border-radius:10px; padding:22px; text-align:center; border:1px solid rgba(255,255,255,0.1);">
+          <span class="wm-sample">{{wordmark-first}}<span class="ac">{{wordmark-accent}}</span></span>
+        </div>
+        <div class="logo-block accent" style="aspect-ratio: 4/1;"><img src="{{isotipo-white-path}}" style="width: 36%; height: 80%;" /></div>
+      </div>
+    </div>
+  </body>
+</html>

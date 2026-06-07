@@ -1,0 +1,4 @@
+interface:
+  display_name: "Retail Catalog Ingestion"
+  short_description: "Scrape and curate retail catalogs."
+  default_prompt: "Use this skill to extract a retail catalog into raw and normalized artifacts, then classify and prefilter it into seed candidates without losing resume checkpoints."

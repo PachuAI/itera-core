@@ -1,0 +1,57 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * {{brand-name}} · shared.css
+ * Generado por brandboard-creator. Tokens base para todas las piezas
+ * del brandboard + web-assets. Extensible con estilos específicos de
+ * pieces sociales si sumás a este proyecto.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family={{font-display-google-query}}&family={{font-ui-google-query}}&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: '{{font-ui-family}}', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Tokens brand ─────────────────────────────────────────────────── */
+:root {
+  /* Acento principal */
+  --brand-accent: {{color-accent}};
+  --brand-accent-ink: {{color-accent-ink}};
+  --brand-accent-soft: {{color-accent-soft}};
+  --brand-accent-glow: {{color-accent-glow}};
+  --brand-accent-ring: {{color-accent-ring}};
+
+  /* Superficies */
+  --brand-bg: {{color-ink}};
+  --brand-surface: {{color-slate}};
+  --brand-surface-raised: {{color-navy}};
+  --brand-border: rgba(255, 255, 255, 0.08);
+  --brand-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Foreground */
+  --brand-fg: {{color-white}};
+  --brand-fg-muted: rgba(255, 255, 255, 0.68);
+  --brand-fg-dim: rgba(255, 255, 255, 0.4);
+  --brand-fg-disabled: rgba(255, 255, 255, 0.24);
+
+  /* Modos alternativos */
+  --brand-ink: {{color-ink}};
+  --brand-white: {{color-white}};
+  --brand-cream: {{color-cream}};
+  --brand-navy: {{color-navy}};
+  --brand-slate: {{color-slate}};
+
+  /* Fuentes */
+  --font-display: '{{font-display-family}}', system-ui, sans-serif;
+  --font-ui: '{{font-ui-family}}', system-ui, sans-serif;
+}

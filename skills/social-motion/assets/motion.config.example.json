@@ -1,0 +1,31 @@
+{
+  "project": {
+    "name": "shope.ar",
+    "slug": "shope-ar"
+  },
+  "brand": {
+    "accent": "#25d366",
+    "accentSoft": "rgba(37, 211, 102, 0.14)",
+    "accentGlow": "rgba(37, 211, 102, 0.35)",
+    "accentRing": "rgba(37, 211, 102, 0.45)",
+    "ink": "#111111",
+    "inkMuted": "rgba(17, 17, 17, 0.5)",
+    "surface": "#faf6f0",
+    "surfaceDark": "#0a0a0a",
+    "fontDisplay": "Baloo 2",
+    "fontDisplayUrl": "https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap",
+    "fontBody": "Poppins",
+    "fontBodyUrl": "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap",
+    "logoDark": "./logo-shope/social/assets/logo-white.png",
+    "logoLight": "./logo-shope/social/assets/logo-black.png"
+  },
+  "defaults": {
+    "viewport": [1080, 1920],
+    "fps": 30,
+    "durationSeconds": 6
+  },
+  "paths": {
+    "pieces": "./motion-pieces",
+    "out": "./motion-out"
+  }
+}

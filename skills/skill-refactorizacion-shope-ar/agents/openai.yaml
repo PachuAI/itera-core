@@ -1,0 +1,4 @@
+interface:
+  display_name: "Refactorizacion Shope Ar"
+  short_description: "Seam refactors for Shopear"
+  default_prompt: "Use this skill when a Shopear feature needs an iterative seam-based refactor that preserves tenant-by-host, stable client-to-API flows, and Next.js runtime behavior."

@@ -1,0 +1,21 @@
+<!-- Laptop frame standalone — copiar este bloque dentro de cualquier pieza.
+     Requiere: device-mockup.css cargado; screenshot en path indicado. -->
+
+<div class="laptop">
+  <div class="laptop__screen">
+    <div class="laptop__topbar">
+      <span class="laptop__dot"></span>
+      <span class="laptop__dot"></span>
+      <span class="laptop__dot"></span>
+      <span class="laptop__url">{{URL_OR_BRAND}}</span>
+    </div>
+    <img class="laptop__img" src="{{SCREENSHOT_PATH}}" alt="{{ALT_TEXT}}" />
+  </div>
+  <div class="laptop__base"></div>
+</div>
+
+<!-- Variantes:
+     <div class="laptop is-sm">    width 600px
+     <div class="laptop is-lg">    width 880px
+     <div class="laptop is-flat">  sin drop-shadow naranja, solo sombra de profundidad
+-->

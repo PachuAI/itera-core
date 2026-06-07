@@ -1,0 +1,4 @@
+interface:
+  display_name: "Extractos Jurisprudenciales ÍTERA"
+  short_description: "Extractos jurídicos anclados al fallo"
+  default_prompt: "Use $extractos-jurisprudenciales-itera to generate a conservative judicial extract with anchors and needs_review checks."

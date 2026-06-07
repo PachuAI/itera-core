@@ -1,0 +1,192 @@
+[
+  {
+    "key": "baloo-poppins",
+    "label": "Baloo 2 + Poppins",
+    "rationale": "Rounded display + geometric UI. shope.ar default. Para SaaS latam-friendly, playful sin ser infantil.",
+    "display": {
+      "family": "Baloo 2",
+      "google_query": "Baloo+2:wght@500;600;700;800",
+      "weights": [500, 600, 700, 800],
+      "recommended_weight": 700,
+      "letter_spacing": "-0.02em"
+    },
+    "ui": {
+      "family": "Poppins",
+      "google_query": "Poppins:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "inter-inter",
+    "label": "Inter × Inter",
+    "rationale": "Un solo family en dos pesos. Safe default, súper legible, cero personalidad — para cuando el contenido manda y querés que la tipo sea invisible.",
+    "display": {
+      "family": "Inter",
+      "google_query": "Inter:wght@400;500;600;700;800",
+      "weights": [400, 500, 600, 700, 800],
+      "recommended_weight": 800,
+      "letter_spacing": "-0.03em"
+    },
+    "ui": {
+      "family": "Inter",
+      "google_query": "Inter:wght@400;500;600;700;800",
+      "weights": [400, 500, 600, 700, 800],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "space-grotesk-inter",
+    "label": "Space Grotesk + Inter",
+    "rationale": "Modern tech / startup. Space Grotesk para headings con personalidad geométrica, Inter para body legible. Para SaaS con vibe Framer/Linear.",
+    "display": {
+      "family": "Space Grotesk",
+      "google_query": "Space+Grotesk:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 700,
+      "letter_spacing": "-0.02em"
+    },
+    "ui": {
+      "family": "Inter",
+      "google_query": "Inter:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "fraunces-inter",
+    "label": "Fraunces + Inter",
+    "rationale": "Editorial serif display + clean sans body. Fraunces tiene personalidad pero es contemporáneo. Para productos con storytelling fuerte.",
+    "display": {
+      "family": "Fraunces",
+      "google_query": "Fraunces:wght@400;500;600;700;800",
+      "weights": [400, 500, 600, 700, 800],
+      "recommended_weight": 700,
+      "letter_spacing": "-0.02em"
+    },
+    "ui": {
+      "family": "Inter",
+      "google_query": "Inter:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "dm-serif-display-dm-sans",
+    "label": "DM Serif Display + DM Sans",
+    "rationale": "Par oficial de Google Fonts. Serif punchy + sans neutral. Para media, blog, luxury sin cartoon.",
+    "display": {
+      "family": "DM Serif Display",
+      "google_query": "DM+Serif+Display:ital@0;1",
+      "weights": [400],
+      "recommended_weight": 400,
+      "letter_spacing": "-0.01em"
+    },
+    "ui": {
+      "family": "DM Sans",
+      "google_query": "DM+Sans:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "bricolage-inter",
+    "label": "Bricolage Grotesque + Inter",
+    "rationale": "Display variable con mucha personalidad + Inter body. Para brands que quieren identidad tipográfica fuerte pero body neutro.",
+    "display": {
+      "family": "Bricolage Grotesque",
+      "google_query": "Bricolage+Grotesque:wght@400;500;600;700;800",
+      "weights": [400, 500, 600, 700, 800],
+      "recommended_weight": 800,
+      "letter_spacing": "-0.03em"
+    },
+    "ui": {
+      "family": "Inter",
+      "google_query": "Inter:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "nunito-work-sans",
+    "label": "Nunito + Work Sans",
+    "rationale": "Humanist friendly. Nunito rounded con warmth + Work Sans body neutro. Para products con target no técnico (wellness, education, community).",
+    "display": {
+      "family": "Nunito",
+      "google_query": "Nunito:wght@400;500;600;700;800",
+      "weights": [400, 500, 600, 700, 800],
+      "recommended_weight": 800,
+      "letter_spacing": "-0.02em"
+    },
+    "ui": {
+      "family": "Work Sans",
+      "google_query": "Work+Sans:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "playfair-source-sans",
+    "label": "Playfair Display + Source Sans 3",
+    "rationale": "Luxury editorial clásico. Playfair para headings con contraste alto + Source Sans neutra legible. Para hospitality, moda, editorial de lujo.",
+    "display": {
+      "family": "Playfair Display",
+      "google_query": "Playfair+Display:wght@400;500;600;700;800",
+      "weights": [400, 500, 600, 700, 800],
+      "recommended_weight": 700,
+      "letter_spacing": "0"
+    },
+    "ui": {
+      "family": "Source Sans 3",
+      "google_query": "Source+Sans+3:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "archivo-archivo",
+    "label": "Archivo × Archivo",
+    "rationale": "Industrial single-family. Archivo en 900 para display + 400 para body. Para brands con aire técnico / arquitectónico / editorial contemporáneo.",
+    "display": {
+      "family": "Archivo",
+      "google_query": "Archivo:wght@400;500;600;700;800;900",
+      "weights": [400, 500, 600, 700, 800, 900],
+      "recommended_weight": 900,
+      "letter_spacing": "-0.03em"
+    },
+    "ui": {
+      "family": "Archivo",
+      "google_query": "Archivo:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  },
+  {
+    "key": "instrument-serif-geist",
+    "label": "Instrument Serif + Geist",
+    "rationale": "Nueva editorial moderna. Instrument Serif (400 elegante) + Geist (Vercel new sans) body. Para productos 2026 con vibe diseño contemporáneo.",
+    "display": {
+      "family": "Instrument Serif",
+      "google_query": "Instrument+Serif:ital@0;1",
+      "weights": [400],
+      "recommended_weight": 400,
+      "letter_spacing": "-0.01em"
+    },
+    "ui": {
+      "family": "Geist",
+      "google_query": "Geist:wght@400;500;600;700",
+      "weights": [400, 500, 600, 700],
+      "recommended_weight": 400,
+      "letter_spacing": "normal"
+    }
+  }
+]

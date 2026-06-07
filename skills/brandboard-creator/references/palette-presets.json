@@ -1,0 +1,162 @@
+[
+  {
+    "key": "saas-dark",
+    "label": "SaaS dark",
+    "rationale": "Negro pleno + accent vibrante. Para apps estilo linear / vercel / shope.ar. Primer default razonable cuando el SaaS quiere verse técnico y moderno.",
+    "theme": "dark",
+    "primary_bg": "ink",
+    "tokens": {
+      "ink": "#111111",
+      "white": "#ffffff",
+      "accent": "#25D366",
+      "accent-ink": "#073019",
+      "cream": "#F7F3EC",
+      "navy": "#0F172A",
+      "slate": "#1F2937"
+    }
+  },
+  {
+    "key": "warm-cream",
+    "label": "Warm cream",
+    "rationale": "Fondos cálidos tipo notebook / journaling. Para productos que quieren sentirse analógicos, artesanales, personales. Accent terracota sin gritar.",
+    "theme": "light",
+    "primary_bg": "cream",
+    "tokens": {
+      "ink": "#1A1613",
+      "white": "#FFFFFF",
+      "accent": "#D97757",
+      "accent-ink": "#2B0F07",
+      "cream": "#F5EEDD",
+      "navy": "#2A2520",
+      "slate": "#4A3F36"
+    }
+  },
+  {
+    "key": "corporate-trust",
+    "label": "Corporate trust",
+    "rationale": "Navy + white + gold accent. Para B2B, banking, healthcare, legal. Transmite seriedad y confianza institucional.",
+    "theme": "light",
+    "primary_bg": "white",
+    "tokens": {
+      "ink": "#0F1729",
+      "white": "#FFFFFF",
+      "accent": "#C9A961",
+      "accent-ink": "#1F1709",
+      "cream": "#F4F1E8",
+      "navy": "#1E293B",
+      "slate": "#334155"
+    }
+  },
+  {
+    "key": "playful-punch",
+    "label": "Playful punch",
+    "rationale": "Bg blanco + accent vivo (coral / magenta). Para community / creator / consumer tools que quieren sentirse amistosos y modernos.",
+    "theme": "light",
+    "primary_bg": "white",
+    "tokens": {
+      "ink": "#1A0F2E",
+      "white": "#FFFFFF",
+      "accent": "#FF4D6D",
+      "accent-ink": "#450817",
+      "cream": "#FFF4E6",
+      "navy": "#2D1B4E",
+      "slate": "#4A3570"
+    }
+  },
+  {
+    "key": "editorial-serif",
+    "label": "Editorial serif",
+    "rationale": "Ivory + charcoal + sienna muted. Para media, blog, revistas digitales. Pensado para pair con serif display.",
+    "theme": "light",
+    "primary_bg": "cream",
+    "tokens": {
+      "ink": "#2B2B2B",
+      "white": "#FFFFFF",
+      "accent": "#A0522D",
+      "accent-ink": "#FFFFFF",
+      "cream": "#FAF8F3",
+      "navy": "#3E3A36",
+      "slate": "#5A5551"
+    }
+  },
+  {
+    "key": "dev-neutral",
+    "label": "Dev neutral",
+    "rationale": "Grayscale + single color accent (indigo / violet). Para dev tools, docs, CLIs con presencia web. Cero calentura decorativa.",
+    "theme": "dark",
+    "primary_bg": "ink",
+    "tokens": {
+      "ink": "#0A0A0A",
+      "white": "#FFFFFF",
+      "accent": "#4F46E5",
+      "accent-ink": "#FFFFFF",
+      "cream": "#F5F5F5",
+      "navy": "#171717",
+      "slate": "#262626"
+    }
+  },
+  {
+    "key": "bio-organic",
+    "label": "Bio organic",
+    "rationale": "Verdes sage + beiges wheat. Para wellness, food, farming, cosmética natural. Vibra botánica sin caer en cliché.",
+    "theme": "light",
+    "primary_bg": "cream",
+    "tokens": {
+      "ink": "#1A1F1A",
+      "white": "#FFFFFF",
+      "accent": "#6B9E4E",
+      "accent-ink": "#FFFFFF",
+      "cream": "#F0E9D2",
+      "navy": "#1E2922",
+      "slate": "#3A4638"
+    }
+  },
+  {
+    "key": "tech-neon",
+    "label": "Tech neon",
+    "rationale": "Black pleno + accent neón (magenta / cyan / lime). Para gaming, web3, dev-tooling edgy. Alta energía, cuidar contrastes.",
+    "theme": "dark",
+    "primary_bg": "ink",
+    "tokens": {
+      "ink": "#000000",
+      "white": "#FAFAFA",
+      "accent": "#FF00AA",
+      "accent-ink": "#1A0011",
+      "cream": "#F7EBF3",
+      "navy": "#0A0118",
+      "slate": "#1F0B3E"
+    }
+  },
+  {
+    "key": "minimal-mono",
+    "label": "Minimal mono",
+    "rationale": "Negro + blanco + grays, sin accent de color. Para portfolios, productos donde el contenido manda y la identidad es ser agnóstico.",
+    "theme": "light",
+    "primary_bg": "white",
+    "tokens": {
+      "ink": "#000000",
+      "white": "#FFFFFF",
+      "accent": "#525252",
+      "accent-ink": "#FFFFFF",
+      "cream": "#F5F5F5",
+      "navy": "#1A1A1A",
+      "slate": "#333333"
+    }
+  },
+  {
+    "key": "latam-warm",
+    "label": "Latam warm",
+    "rationale": "Terracota / mostaza + cream + warm black. Feeling de feria / cerámica / crafts argentinos sin caer en folklore. Para brands con identidad LATAM fuerte.",
+    "theme": "light",
+    "primary_bg": "cream",
+    "tokens": {
+      "ink": "#1C1917",
+      "white": "#FFFFFF",
+      "accent": "#D6763C",
+      "accent-ink": "#FFFFFF",
+      "cream": "#EFE6D5",
+      "navy": "#2C1810",
+      "slate": "#524131"
+    }
+  }
+]

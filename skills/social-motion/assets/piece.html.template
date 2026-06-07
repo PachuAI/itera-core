@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!--
+  social-motion · piece template
+  ──────────────────────────────────────────────
+  Placeholders (sustituir al generar la pieza):
+    {{TITLE}}          Título visible en <title> (corto, para debugging)
+    {{DURATION_S}}     Duración total en segundos (ej: 6)
+    {{VIEWPORT_W}}     Ancho del viewport (ej: 1080)
+    {{VIEWPORT_H}}     Alto del viewport (ej: 1920)
+    {{FPS}}            FPS opcional (default viene del config)
+
+    {{BRAND_ACCENT}}, {{BRAND_ACCENT_SOFT}}, {{BRAND_ACCENT_GLOW}}, {{BRAND_ACCENT_RING}}
+    {{BRAND_INK}}, {{BRAND_INK_MUTED}}, {{BRAND_SURFACE}}, {{BRAND_SURFACE_DARK}}
+    {{BRAND_FONT_DISPLAY}}, {{BRAND_FONT_BODY}}
+    {{BRAND_FONT_DISPLAY_URL}}, {{BRAND_FONT_BODY_URL}}
+    {{BRAND_LOGO_DARK}}, {{BRAND_LOGO_LIGHT}}   (paths relativos al HTML generado)
+
+    {{KEYFRAMES_BLOCK}}     Keyframes CSS de la pieza (@keyframes ...)
+    {{ANIMATION_BLOCK}}     Reglas CSS con animation-name/delay/duration por clase
+    {{BODY_CONTENT}}        Markup HTML de la pieza
+    {{OUTRO_BLOCK}}         Outro lockup o CTA (opcional, puede ser vacío)
+-->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{TITLE}}</title>
+    <!-- Meta tags que el renderer lee para overrides per-piece -->
+    <meta name="motion-duration" content="{{DURATION_S}}" />
+    <meta name="motion-viewport" content="{{VIEWPORT_W}}x{{VIEWPORT_H}}" />
+    <meta name="motion-fps" content="{{FPS}}" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="{{BRAND_FONT_DISPLAY_URL}}" />
+    <link rel="stylesheet" href="{{BRAND_FONT_BODY_URL}}" />
+
+    <style>
+      :root {
+        --accent: {{BRAND_ACCENT}};
+        --accent-soft: {{BRAND_ACCENT_SOFT}};
+        --accent-glow: {{BRAND_ACCENT_GLOW}};
+        --accent-ring: {{BRAND_ACCENT_RING}};
+        --ink: {{BRAND_INK}};
+        --ink-muted: {{BRAND_INK_MUTED}};
+        --surface: {{BRAND_SURFACE}};
+        --surface-dark: {{BRAND_SURFACE_DARK}};
+        --font-display: "{{BRAND_FONT_DISPLAY}}", system-ui, sans-serif;
+        --font-body: "{{BRAND_FONT_BODY}}", system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        width: {{VIEWPORT_W}}px;
+        height: {{VIEWPORT_H}}px;
+        background: var(--surface);
+        color: var(--ink);
+        font-family: var(--font-body);
+        overflow: hidden;
+      }
+
+      .artboard {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        padding: 120px 80px;
+        overflow: hidden;
+      }
+
+      .content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        justify-content: space-between;
+      }
+
+      .display {
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        line-height: 0.98;
+        margin: 0;
+      }
+
+      .body { font-family: var(--font-body); margin: 0; }
+      .eyebrow {
+        font-family: var(--font-body);
+        font-weight: 500;
+        text-transform: lowercase;
+      }
+      .hl-accent { color: var(--accent); }
+      .flex { display: flex; }
+      .flex.col { flex-direction: column; }
+      .flex.between { justify-content: space-between; }
+
+      /* ═══════════════ KEYFRAMES BASE (siempre presentes) ═══════════════ */
+      @keyframes fade-slide-up {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pop-in {
+        0%   { opacity: 0; transform: translateY(28px) scale(0.92); }
+        70%  { opacity: 1; transform: translateY(0)    scale(1.06); }
+        100% { opacity: 1; transform: translateY(0)    scale(1); }
+      }
+      @keyframes fade-out {
+        from { opacity: 1; }
+        to   { opacity: 0; }
+      }
+      @keyframes dark-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes outro-in {
+        from { opacity: 0; transform: scale(0.92); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes dot-pulse {
+        0%, 100% {
+          box-shadow: 0 0 14px var(--accent-glow), 0 0 0 0 var(--accent-ring);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 0 24px var(--accent-glow), 0 0 0 10px rgba(0, 0, 0, 0);
+          transform: scale(1.14);
+        }
+      }
+
+      /* ═══════════════ KEYFRAMES ESPECÍFICOS DE LA PIEZA ═══════════════ */
+      {{KEYFRAMES_BLOCK}}
+
+      /* ═══════════════ REGLAS DE ANIMACIÓN (delays + duraciones) ═══════════════ */
+      {{ANIMATION_BLOCK}}
+
+      /* ═══════════════ OVERLAY DARK (para crossfade a outro) ═══════════════ */
+      .overlay-dark {
+        position: absolute;
+        inset: 0;
+        background: var(--surface-dark);
+        opacity: 0;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      /* ═══════════════ OUTRO LOCKUP ═══════════════ */
+      .phase-outro {
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        padding: 120px 80px;
+        opacity: 0;
+      }
+      .phase-outro .silueta {
+        width: 520px;
+        height: auto;
+        opacity: 0.96;
+        filter: drop-shadow(0 0 40px var(--accent-glow));
+      }
+      .phase-outro .wordmark {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 180px;
+        letter-spacing: -0.035em;
+        line-height: 0.9;
+        color: #ffffff;
+        margin: 0;
+      }
+      .phase-outro .wordmark .dot-text { color: var(--accent); }
+      .phase-outro .outro-date {
+        font-family: var(--font-body);
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        color: rgba(255, 255, 255, 0.48);
+        text-transform: lowercase;
+        margin-top: 24px;
+      }
+      .phase-outro .outro-glow {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        width: 1200px;
+        height: 1200px;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(closest-side, var(--accent-soft) 0%, transparent 70%);
+        filter: blur(80px);
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="artboard">
+      {{BODY_CONTENT}}
+
+      {{OUTRO_BLOCK}}
+    </div>
+  </body>
+</html>

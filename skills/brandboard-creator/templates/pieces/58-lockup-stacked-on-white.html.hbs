@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{brand-name}} · lockup stacked on white · 1080×1080</title>
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      body { margin: 0; }
+      .board { width: 1080px; height: 1080px; position: relative; display: grid; place-items: center; overflow: hidden; background: var(--brand-white); }
+      .lock { display: flex; flex-direction: column; align-items: center; gap: 48px; }
+      .symbol { width: 600px; height: 600px; object-fit: contain; }
+      .wm { font-family: var(--font-display); font-weight: {{font-display-weight-display}}; font-size: 200px; line-height: 1; letter-spacing: {{font-display-letter-spacing}}; color: var(--brand-ink); }
+      .wm .accent { color: var(--brand-accent); }
+    </style>
+  </head>
+  <body data-width="1080" data-height="1080">
+    <div class="board">
+      <div class="lock">
+        <img class="symbol" src="../assets/logo-black.png" alt="" />
+        <span class="wm">{{wordmark-first}}<span class="accent">{{wordmark-accent}}</span></span>
+      </div>
+    </div>
+  </body>
+</html>

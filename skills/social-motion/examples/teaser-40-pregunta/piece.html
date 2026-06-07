@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>40 · teaser pregunta · motion</title>
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      /* ═══════════════════════════════════════════════════════════════════
+       * Timeline — 6s total
+       * 0.0–1.2s  línea 1 aparece
+       * 1.2–2.5s  línea 2 + 3 aparecen (staggered), highlight verde en "un link"
+       * 2.5–3.5s  subtitle + hold (dot pulsando de fondo)
+       * 3.5–4.5s  fade cream → dark (overlay)
+       * 4.5–6.0s  outro lockup (silueta + wordmark) scale-in, fecha fade-in tardío
+       * ═══════════════════════════════════════════════════════════════════ */
+
+      @keyframes fade-slide-up {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pop-in {
+        0%   { opacity: 0; transform: translateY(28px) scale(0.92); }
+        70%  { opacity: 1; transform: translateY(0)    scale(1.06); }
+        100% { opacity: 1; transform: translateY(0)    scale(1); }
+      }
+      @keyframes fade-out {
+        from { opacity: 1; }
+        to   { opacity: 0; }
+      }
+      @keyframes dark-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes outro-in {
+        from { opacity: 0; transform: scale(0.92); }
+        to   { opacity: 1; transform: scale(1); }
+      }
+      @keyframes dot-pulse {
+        0%, 100% {
+          box-shadow: 0 0 14px var(--shope-accent-glow), 0 0 0 0 var(--shope-accent-ring);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 0 24px var(--shope-accent-glow), 0 0 0 10px rgba(37, 211, 102, 0);
+          transform: scale(1.14);
+        }
+      }
+
+      .phase-intro     { animation: fade-out 0.9s ease-in 3.9s both; }
+      .line-1          { animation: fade-slide-up 0.7s ease-out 0.2s both; opacity: 0; }
+      .line-2          { animation: fade-slide-up 0.7s ease-out 1.2s both; opacity: 0; }
+      /* Linea 3 NO se anima entera: cada palabra entra en su propio tiempo */
+      .l3-en           { animation: fade-slide-up 0.55s ease-out 1.7s both; opacity: 0; display: inline-block; }
+      .l3-hl           { animation: pop-in 0.75s ease-out 2.1s both;         opacity: 0; display: inline-block; }
+      .l3-q            { animation: fade-slide-up 0.5s ease-out 2.75s both;  opacity: 0; display: inline-block; }
+      .subtitle        { animation: fade-slide-up 0.7s ease-out 3.1s both; opacity: 0; }
+      .eyebrow-top     { animation: fade-slide-up 0.6s ease-out 0.0s both; opacity: 0; }
+      .dot-top         { animation: fade-slide-up 0.6s ease-out 0.1s both, dot-pulse 1.4s ease-in-out 1.0s infinite; opacity: 0; }
+      .footer-row      { animation: fade-slide-up 0.6s ease-out 0.4s both; opacity: 0; }
+
+      .overlay-dark {
+        position: absolute;
+        inset: 0;
+        background: #0a0a0a;
+        opacity: 0;
+        z-index: 5;
+        animation: dark-in 0.9s ease-out 3.95s both;
+        pointer-events: none;
+      }
+
+      .phase-outro {
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 36px;
+        padding: 120px 80px;
+        opacity: 0;
+        animation: outro-in 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 4.75s both;
+      }
+      .phase-outro .silueta {
+        width: 520px;
+        height: auto;
+        opacity: 0.96;
+        filter: drop-shadow(0 0 40px rgba(37, 211, 102, 0.18));
+      }
+      .phase-outro .wordmark {
+        font-family: var(--font-baloo);
+        font-weight: 700;
+        font-size: 180px;
+        letter-spacing: -0.035em;
+        line-height: 0.9;
+        color: #ffffff;
+        margin: 0;
+      }
+      .phase-outro .wordmark .dot-text { color: var(--shope-accent); }
+      .phase-outro .outro-date {
+        font-family: var(--font-poppins);
+        font-size: 22px;
+        font-weight: 500;
+        letter-spacing: 0.32em;
+        color: rgba(255, 255, 255, 0.48);
+        text-transform: lowercase;
+        margin-top: 24px;
+        opacity: 0;
+        animation: fade-slide-up 0.7s ease-out 5.4s both;
+      }
+      .phase-outro .outro-glow {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        width: 1200px;
+        height: 1200px;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(closest-side, rgba(37, 211, 102, 0.18) 0%, transparent 70%);
+        filter: blur(80px);
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="artboard mode-cream">
+      <!-- ───── FASE 1–3: contenido cream ───── -->
+      <div class="phase-intro" style="position: relative; width: 100%; height: 100%;">
+        <!-- Glow verde sutil en esquina -->
+        <div
+          style="
+            position: absolute;
+            right: -200px;
+            top: -200px;
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(closest-side, var(--shope-accent-soft) 0%, transparent 70%);
+            filter: blur(70px);
+            z-index: 0;
+          "
+        ></div>
+
+        <div class="content" style="justify-content: space-between; position: relative; z-index: 1;">
+          <!-- Top: eyebrow + dot -->
+          <div class="flex between" style="align-items: center">
+            <span
+              class="eyebrow eyebrow-top"
+              style="
+                font-size: 18px;
+                color: rgba(17, 17, 17, 0.4);
+                letter-spacing: 0.32em;
+              "
+            >
+              una pregunta
+            </span>
+            <span
+              class="dot-top"
+              style="
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: var(--shope-accent);
+              "
+            ></span>
+          </div>
+
+          <!-- Pregunta grande -->
+          <div class="flex col" style="justify-content: center; flex: 1; gap: 48px">
+            <h1
+              class="display"
+              style="
+                font-size: 124px;
+                line-height: 0.98;
+                margin: 0;
+                letter-spacing: -0.03em;
+                color: var(--shope-ink);
+                font-weight: 600;
+              "
+            >
+              <span class="line-1" style="display: block">¿y si tu tienda</span>
+              <span class="line-2" style="display: block">cupiera</span>
+              <span class="line-3" style="display: block"
+                ><span class="l3-en">en&nbsp;</span
+                ><span class="l3-hl hl-accent">un link</span
+                ><span class="l3-q">?</span></span
+              >
+            </h1>
+
+            <p
+              class="body subtitle"
+              style="
+                font-size: 30px;
+                color: rgba(17, 17, 17, 0.5);
+                margin: 0;
+                max-width: 680px;
+                line-height: 1.4;
+              "
+            >
+              te estamos por contar.
+            </p>
+          </div>
+
+          <!-- Bottom: silueta chica + fecha -->
+          <div class="flex footer-row" style="align-items: center; justify-content: space-between">
+            <img
+              src="../assets/logo-black.png"
+              alt=""
+              aria-hidden="true"
+              style="width: 110px; height: auto; opacity: 0.85"
+            />
+            <span
+              class="eyebrow"
+              style="
+                font-size: 16px;
+                color: rgba(17, 17, 17, 0.4);
+                letter-spacing: 0.32em;
+              "
+            >
+              abril · 2026
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───── FASE 4: overlay que oscurece ───── -->
+      <div class="overlay-dark"></div>
+
+      <!-- ───── FASE 5: outro lockup dark ───── -->
+      <div class="phase-outro">
+        <div class="outro-glow"></div>
+        <img class="silueta" src="../assets/logo-white.png" alt="" aria-hidden="true" />
+        <p class="wordmark">shope<span class="dot-text">.</span>ar</p>
+        <p class="outro-date">abril · 2026</p>
+      </div>
+    </div>
+  </body>
+</html>

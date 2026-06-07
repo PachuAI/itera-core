@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Protection Suite"
+  short_description: "Build risk-based test suites and protection audits for repos."
+  default_prompt: "Set up a risk-based test strategy and baseline protection suite for this repository."

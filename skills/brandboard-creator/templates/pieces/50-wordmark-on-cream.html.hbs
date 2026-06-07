@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{brand-name}} · wordmark on cream · 1500×500</title>
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      body { margin: 0; }
+      .board { width: 1500px; height: 500px; position: relative; display: grid; place-items: center; overflow: hidden; background: var(--brand-cream); }
+      .wm { font-family: var(--font-display); font-weight: {{font-display-weight-display}}; font-size: 280px; line-height: 1; letter-spacing: {{font-display-letter-spacing}}; color: var(--brand-ink); }
+      .wm .accent { color: var(--brand-accent); }
+    </style>
+  </head>
+  <body data-width="1500" data-height="500">
+    <div class="board">
+      <span class="wm">{{wordmark-first}}<span class="accent">{{wordmark-accent}}</span></span>
+    </div>
+  </body>
+</html>

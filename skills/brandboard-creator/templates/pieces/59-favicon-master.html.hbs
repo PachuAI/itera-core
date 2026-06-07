@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{brand-name}} · favicon master · 512×512</title>
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      body { margin: 0; }
+      /* Canónico: black-bg + white logo. Padding 8% por lado. */
+      .board { width: 512px; height: 512px; position: relative; display: grid; place-items: center; overflow: hidden; background: var(--brand-bg); }
+      .symbol { width: 84%; height: 84%; object-fit: contain; }
+    </style>
+  </head>
+  <body data-width="512" data-height="512">
+    <div class="board">
+      <img class="symbol" src="../assets/logo-white.png" alt="{{brand-name}} favicon" />
+    </div>
+  </body>
+</html>

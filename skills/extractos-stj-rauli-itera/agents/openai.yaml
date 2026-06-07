@@ -1,0 +1,4 @@
+interface:
+  display_name: "Extractos STJ RAULI ÍTERA"
+  short_description: "Extractos STJ ricos con clasificación"
+  default_prompt: "Use $extractos-stj-rauli-itera to generate a RAULI-style STJ extract with anchors and classification metadata."

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!--
+  social-motion · viewer template (portable, self-contained)
+  ──────────────────────────────────────────────────────────
+  Placeholders:
+    {{PROJECT_NAME}}     Nombre del proyecto (ej: "shope.ar")
+    {{ACCENT}}           Color acento del branding
+    {{INK_DARK}}         Surface dark (por default #0a0a0a)
+    {{FONT_DISPLAY}}     Fuente display
+    {{FONT_BODY}}        Fuente body
+    {{FONT_DISPLAY_URL}} URL de Google Fonts para display
+    {{FONT_BODY_URL}}    URL de Google Fonts para body
+    {{PIECES_JSON}}      JSON array: [{number, name, slug, videoSrc, duration, timeline:[{range,desc}], frames:[path1..path6]}]
+    {{GENERATED_AT}}     ISO timestamp de generación
+-->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{PROJECT_NAME}} · motion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="{{FONT_DISPLAY_URL}}" />
+    <link rel="stylesheet" href="{{FONT_BODY_URL}}" />
+    <style>
+      :root {
+        --accent: {{ACCENT}};
+        --bg: {{INK_DARK}};
+        --fg: #ffffff;
+        --muted: rgba(255, 255, 255, 0.55);
+        --muted-2: rgba(255, 255, 255, 0.4);
+        --border: rgba(255, 255, 255, 0.08);
+        --panel: rgba(255, 255, 255, 0.03);
+        --panel-hover: rgba(255, 255, 255, 0.06);
+        --font-display: "{{FONT_DISPLAY}}", system-ui, sans-serif;
+        --font-body: "{{FONT_BODY}}", system-ui, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+      body {
+        font-family: var(--font-body);
+        padding: 48px 32px 96px;
+        min-height: 100vh;
+      }
+      .page { max-width: 1400px; margin: 0 auto; }
+
+      h1 {
+        font-family: var(--font-display);
+        font-size: 40px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 6px;
+      }
+      .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 40px; }
+      h2 {
+        font-family: var(--font-display);
+        font-size: 22px;
+        margin: 36px 0 16px;
+        font-weight: 600;
+      }
+      h3 {
+        font-family: var(--font-display);
+        font-size: 18px;
+        margin: 0 0 12px;
+        font-weight: 600;
+      }
+
+      .piece-section {
+        margin-bottom: 72px;
+        padding-bottom: 48px;
+        border-bottom: 1px solid var(--border);
+      }
+      .piece-section:last-child { border-bottom: 0; }
+
+      .piece-head {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .piece-head .num {
+        font-family: ui-monospace, monospace;
+        color: var(--muted-2);
+        font-size: 14px;
+      }
+      .piece-head .name {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .piece-head .duration {
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        color: var(--muted-2);
+        margin-left: auto;
+      }
+
+      .wrap {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 40px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .wrap { grid-template-columns: 1fr; }
+      }
+
+      .video-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      video {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 9/16;
+        display: block;
+        background: #000;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        padding: 14px 18px;
+        border-top: 1px solid var(--border);
+      }
+      .controls a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        padding: 8px 14px;
+        background: var(--panel-hover);
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .controls a:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+      .meta { font-size: 14px; color: var(--muted-2); }
+      .meta dt {
+        color: var(--muted);
+        display: inline-block;
+        min-width: 110px;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+      }
+      .meta dd { display: inline; margin: 0; color: #fff; }
+      .meta div { margin-bottom: 10px; line-height: 1.4; }
+      .meta em { color: var(--accent); font-style: normal; font-weight: 500; }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+      }
+      @media (max-width: 900px) {
+        .timeline { grid-template-columns: repeat(3, 1fr); }
+      }
+      .tl-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .tl-card img {
+        width: 100%;
+        display: block;
+        background: #000;
+        aspect-ratio: 9/16;
+        object-fit: contain;
+      }
+      .tl-card .cap {
+        padding: 8px 10px;
+        font-size: 11px;
+        color: var(--muted);
+        font-family: ui-monospace, monospace;
+      }
+
+      .footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--muted-2);
+        font-family: ui-monospace, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>{{PROJECT_NAME}} · motion</h1>
+      <div class="subtitle">Piezas animadas · loopeadas automáticamente · click para controlar</div>
+
+      <div id="pieces"></div>
+
+      <div class="footer">
+        generado: {{GENERATED_AT}} · pipeline: social-motion skill
+      </div>
+    </div>
+
+    <script>
+      const PIECES = {{PIECES_JSON}};
+
+      const root = document.getElementById('pieces');
+
+      for (const p of PIECES) {
+        const section = document.createElement('section');
+        section.className = 'piece-section';
+        section.innerHTML = `
+          <div class="piece-head">
+            <span class="num">${p.number ?? ''}</span>
+            <span class="name">${p.name}</span>
+            <span class="duration">${p.duration}s · ${p.viewport?.join('×') ?? ''}</span>
+          </div>
+
+          <div class="wrap">
+            <div class="video-card">
+              <video src="${p.videoSrc}" autoplay loop muted playsinline controls></video>
+              <div class="controls">
+                <a href="${p.videoSrc}" download>Descargar MP4</a>
+                ${p.htmlSrc ? `<a href="${p.htmlSrc}" target="_blank">HTML source</a>` : ''}
+              </div>
+            </div>
+            <div>
+              <h3>Timeline</h3>
+              <dl class="meta">
+                ${(p.timeline || []).map(t => `<div><dt>${t.range}</dt><dd>${t.desc}</dd></div>`).join('')}
+              </dl>
+              ${p.specs ? `
+                <h3 style="margin-top: 24px">Specs</h3>
+                <dl class="meta">
+                  ${Object.entries(p.specs).map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}
+                </dl>
+              ` : ''}
+            </div>
+          </div>
+
+          <h3 style="margin-top: 32px">Frames clave</h3>
+          <div class="timeline">
+            ${(p.frames || []).map((f, i) => `
+              <div class="tl-card">
+                <img src="${f}" alt="frame ${i+1}" />
+                <div class="cap">${p.frameCaptions?.[i] ?? `t ≈ ${(i * p.duration / 5).toFixed(1)}s`}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        root.appendChild(section);
+      }
+    </script>
+  </body>
+</html>

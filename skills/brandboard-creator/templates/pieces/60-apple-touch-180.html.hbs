@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{brand-name}} · apple-touch-icon · 180×180</title>
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      body { margin: 0; }
+      /* Canónico: bg accent + white logo. iOS aplica su mask rounded al instalar. */
+      .board { width: 180px; height: 180px; position: relative; display: grid; place-items: center; overflow: hidden; background: var(--brand-accent); }
+      .symbol { width: 82%; height: 82%; object-fit: contain; }
+    </style>
+  </head>
+  <body data-width="180" data-height="180">
+    <div class="board">
+      <img class="symbol" src="../assets/logo-white.png" alt="{{brand-name}} apple touch icon" />
+    </div>
+  </body>
+</html>

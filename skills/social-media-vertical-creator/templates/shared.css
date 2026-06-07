@@ -1,0 +1,467 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * <BRAND> · social pack (9:16)
+ * Workspace dev-only. Gitignorearlo. No empaquetar con la app.
+ *
+ * Tokens + utilidades reusables para artboards 1080×1920.
+ *
+ * Para adaptar a otro proyecto:
+ *   1. Reemplazar todos los --shope-* por --<brand>-*
+ *   2. Cambiar paleta en :root
+ *   3. Cambiar fuentes en @import + --font-display/--font-ui
+ *   4. Ajustar .brand-lockup al wordmark del proyecto
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Caveat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Tokens brand ───────────────────────────────────────────────────── */
+:root {
+  /* ACENTO PRINCIPAL — cambiar estos 5 por la paleta del proyecto */
+  --shope-accent: #25d366;
+  --shope-accent-ink: #073019;
+  --shope-accent-soft: rgba(37, 211, 102, 0.12);
+  --shope-accent-glow: rgba(37, 211, 102, 0.42);
+  --shope-accent-ring: rgba(37, 211, 102, 0.22);
+
+  /* FONDOS OSCUROS */
+  --shope-bg: #000000;
+  --shope-surface: #0a0a0a;
+  --shope-surface-raised: #141414;
+
+  /* BORDES (2 tiers) */
+  --shope-border: #1f1f1f;
+  --shope-border-strong: #2e2e2e;
+
+  /* TEXTO (jerarquía 4 niveles) */
+  --shope-fg: #ffffff;
+  --shope-fg-muted: rgba(255, 255, 255, 0.68);
+  --shope-fg-dim: rgba(255, 255, 255, 0.4);
+  --shope-fg-disabled: rgba(255, 255, 255, 0.24);
+
+  /* FONDOS ALTERNATIVOS (para variar piezas dentro del pack) */
+  --shope-ink: #111111;
+  --shope-cream: #f7f3ec;
+  --shope-navy: #0f172a;
+  --shope-slate: #1f2937;
+
+  /* FUENTES — cambiar los family-name si el proyecto usa otras */
+  --font-display: 'Baloo 2', system-ui, sans-serif;
+  --font-ui: 'Poppins', system-ui, sans-serif;
+  --font-handwritten: 'Caveat', 'Comic Sans MS', cursive;
+
+  /* Alias legacy del caso de uso shope.ar — remover si no lo usás */
+  --font-baloo: var(--font-display);
+  --font-poppins: var(--font-ui);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * ARTBOARD — base 1080×1920 ready-to-rasterize
+ * ═══════════════════════════════════════════════════════════════════════ */
+.artboard {
+  width: 1080px;
+  height: 1920px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modos de fondo */
+.mode-dark {
+  background: var(--shope-bg);
+  color: var(--shope-fg);
+}
+.mode-cream {
+  background: var(--shope-cream);
+  color: var(--shope-ink);
+}
+.mode-navy {
+  background: var(--shope-navy);
+  color: var(--shope-fg);
+}
+.mode-wa {
+  background: var(--shope-accent);
+  color: var(--shope-accent-ink);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * ATMOSFERA — glow + grain + particulas
+ * Copiable tal cual entre proyectos (solo usa var(--shope-accent))
+ * ═══════════════════════════════════════════════════════════════════════ */
+.atmo-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.atmo-glow::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 1400px;
+  height: 1400px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    closest-side,
+    var(--shope-accent-glow) 0%,
+    var(--shope-accent-soft) 45%,
+    transparent 72%
+  );
+  filter: blur(90px);
+  opacity: 0.7;
+}
+.atmo-glow--top::before {
+  top: 20%;
+}
+.atmo-glow--bottom::before {
+  top: 82%;
+}
+
+.atmo-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  mix-blend-mode: soft-light;
+  z-index: 1;
+}
+
+/* Particulas de color acento (distribuir manualmente en cada pieza) */
+.atmo-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.atmo-particles .dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--shope-accent);
+  box-shadow: 0 0 8px var(--shope-accent-glow);
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * CONTENT — capa por encima de la atmosfera (padding outer 96/80px)
+ * ═══════════════════════════════════════════════════════════════════════ */
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 96px 80px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * TIPOGRAFIA
+ * ═══════════════════════════════════════════════════════════════════════ */
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.04;
+}
+.display-bold {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+.wordmark .accent {
+  color: var(--shope-accent);
+}
+
+.body {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  line-height: 1.5;
+}
+.eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--shope-accent);
+}
+.eyebrow--muted {
+  color: var(--shope-fg-muted);
+}
+.eyebrow--ink {
+  color: var(--shope-ink);
+  opacity: 0.55;
+}
+
+/* Highlight dentro del display (palabras en peso 800 / color acento) */
+.hl {
+  font-weight: 800;
+}
+.hl-accent {
+  color: var(--shope-accent);
+  font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * ELEMENTOS UI — CTA, pills, chips, brand lockup
+ * ═══════════════════════════════════════════════════════════════════════ */
+.cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 26px 44px;
+  border-radius: 999px;
+  background: var(--shope-accent);
+  color: var(--shope-accent-ink);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+  box-shadow:
+    0 0 60px var(--shope-accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  text-decoration: none;
+}
+.cta-primary .arrow {
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--shope-accent-soft);
+  border: 1px solid rgba(37, 211, 102, 0.4);
+  color: var(--shope-accent);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 18px;
+}
+.status-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--shope-accent);
+  box-shadow: 0 0 10px var(--shope-accent-glow);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: 999px;
+  border: 1px solid var(--shope-border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--shope-fg);
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 22px;
+}
+.chip .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--shope-accent);
+  box-shadow: 0 0 12px var(--shope-accent-glow);
+}
+.chip.cream {
+  background: rgba(17, 17, 17, 0.06);
+  border-color: rgba(17, 17, 17, 0.15);
+  color: var(--shope-ink);
+}
+
+/* Brand lockup — dot + wordmark (ajustar al proyecto) */
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.01em;
+}
+.brand-lockup .dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--shope-accent);
+  box-shadow: 0 0 14px var(--shope-accent-glow);
+}
+.brand-lockup .accent {
+  color: var(--shope-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * IPHONE FRAME — CSS puro, mobile portrait
+ * Dimensiones base: 520×1080 (escala x1 dentro de 1080×1920)
+ * ═══════════════════════════════════════════════════════════════════════ */
+.iphone {
+  position: relative;
+  width: 520px;
+  height: 1080px;
+  background: #000;
+  border-radius: 72px;
+  padding: 18px;
+  box-shadow:
+    0 0 0 3px #222,
+    0 0 0 6px #0a0a0a,
+    0 40px 80px rgba(0, 0, 0, 0.55),
+    0 0 60px var(--shope-accent-soft);
+}
+.iphone::before {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 36px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 3;
+}
+.iphone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 56px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * WHATSAPP CHAT MOCK
+ * ═══════════════════════════════════════════════════════════════════════ */
+.wa-chat {
+  width: 100%;
+  height: 100%;
+  background: #0b141a;
+  color: #e9edef;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  font-size: 22px;
+}
+.wa-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+}
+.wa-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 600;
+}
+.wa-header-info .name {
+  font-weight: 600;
+  font-size: 22px;
+}
+.wa-header-info .status {
+  font-size: 16px;
+  color: rgba(233, 237, 239, 0.6);
+}
+.wa-bubble {
+  max-width: 75%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 26px;
+  line-height: 1.35;
+  position: relative;
+}
+.wa-bubble.in {
+  background: #202c33;
+  align-self: flex-start;
+  border-top-left-radius: 4px;
+}
+.wa-bubble.out {
+  background: #005c4b;
+  align-self: flex-end;
+  border-top-right-radius: 4px;
+  color: #fff;
+}
+.wa-time {
+  font-size: 14px;
+  opacity: 0.55;
+  margin-left: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * BROWSER / APP WINDOW MOCK
+ * ═══════════════════════════════════════════════════════════════════════ */
+.mock-window {
+  background:
+    radial-gradient(120% 80% at 50% 0%, var(--shope-accent-soft) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(18, 18, 18, 0.92) 0%, rgba(8, 8, 8, 0.96) 100%);
+  border: 1px solid var(--shope-border);
+  border-radius: 28px;
+  box-shadow:
+    0 40px 80px -24px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * DIVIDERS
+ * ═══════════════════════════════════════════════════════════════════════ */
+.divider-h {
+  width: 80px;
+  height: 4px;
+  background: var(--shope-accent);
+  border-radius: 4px;
+  box-shadow: 0 0 20px var(--shope-accent-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * LAYOUT HELPERS
+ * ═══════════════════════════════════════════════════════════════════════ */
+.flex { display: flex; }
+.col { flex-direction: column; }
+.grow { flex: 1; }
+.center { align-items: center; justify-content: center; }
+.between { justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
+.gap-32 { gap: 32px; }
+.gap-48 { gap: 48px; }
+.mt-auto { margin-top: auto; }
+.text-center { text-align: center; }

@@ -1,0 +1,180 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * device-mockup.css — Frames reusables de laptop y mobile para ÍTERA Lex.
+ *
+ * Dos componentes independientes:
+ *   - .laptop  → 740 × ~480 px (16:10 screen interno)
+ *   - .phone   → 360 × ~780 px (9:19.5 screen interno)
+ *
+ * Convención visual compartida:
+ *   - Chassis dark (#1a1a1a) + screen bg (#0e0e0e / #0a0a0a)
+ *   - Drop-shadow naranja-itera muy sutil (rgba(255,115,30,0.10))
+ *   - Sombra de profundidad debajo (rgba(0,0,0,0.6))
+ *   - Hairline borders + inset highlight para sensación de superficie real
+ *
+ * Cada componente es autónomo: se puede usar suelto en cualquier pieza
+ * (carrusel slide, story 9:16, animación frame-by-frame, etc.) sin
+ * necesidad de un artboard específico.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tokens compartidos (se pueden override por pieza) ──────────────── */
+:root {
+  --device-shadow-color: rgba(255, 115, 30, 0.10);  /* glow naranja itera muy sutil */
+  --device-shadow-blur: 38px;
+  --device-shadow-spread: 2px;
+  --device-depth-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  --device-hairline: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --device-inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * Laptop frame
+ * Width default 740px. Aspect ratio del screen 16:10 (1.6:1).
+ * Estructura: chassis = screen + base
+ * ═══════════════════════════════════════════════════════════════════ */
+.laptop {
+  width: 740px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.laptop__screen {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #0e0e0e;
+  border: 14px solid #1a1a1a;
+  border-radius: 14px;
+  box-shadow:
+    0 0 var(--device-shadow-blur) var(--device-shadow-spread) var(--device-shadow-color),
+    var(--device-depth-shadow),
+    var(--device-hairline),
+    var(--device-inset-highlight);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Topbar simulado tipo browser chrome (3 dots + URL fake). */
+.laptop__topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 28px;
+  background: #161616;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 8px;
+  z-index: 2;
+}
+.laptop__dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+.laptop__dot:first-child { background: rgba(242, 122, 26, 0.55); }
+
+.laptop__url {
+  margin-left: 12px;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.laptop__url::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--brand-accent, #F27A1A);
+  box-shadow: 0 0 6px rgba(242, 122, 26, 0.42);
+}
+
+/* Imagen del screenshot ocupa el área debajo del topbar. */
+.laptop__img {
+  position: absolute;
+  top: 28px; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  height: calc(100% - 28px);
+  object-fit: cover;
+  object-position: top left;
+  display: block;
+}
+
+/* Lid base — la "tapa" de la laptop que sobresale a los lados. */
+.laptop__base {
+  width: 110%;
+  height: 14px;
+  margin-top: -1px;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  border-radius: 0 0 18px 18px;
+  position: relative;
+}
+.laptop__base::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 90px; height: 5px;
+  background: #050505;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * Phone frame
+ * Width default 360px. Aspect ratio del screen 9:19.5 (iPhone 13/14/15).
+ * Estructura: chassis = frame + dynamic island + screen
+ * ═══════════════════════════════════════════════════════════════════ */
+.phone {
+  width: 360px;
+  position: relative;
+}
+
+.phone__frame {
+  width: 100%;
+  aspect-ratio: 9 / 19.5;
+  background: #0a0a0a;
+  border: 10px solid #1a1a1a;
+  border-radius: 42px;
+  box-shadow:
+    0 0 var(--device-shadow-blur) var(--device-shadow-spread) var(--device-shadow-color),
+    var(--device-depth-shadow),
+    var(--device-hairline),
+    var(--device-inset-highlight);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Imagen del screenshot ocupa todo el screen del frame. */
+.phone__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * Modificadores de tamaño (presets útiles)
+ * ═══════════════════════════════════════════════════════════════════ */
+.laptop.is-sm { width: 600px; }
+.laptop.is-lg { width: 880px; }
+
+.phone.is-sm { width: 280px; }
+.phone.is-lg { width: 440px; }
+
+/* Sin drop-shadow naranja (para piezas donde el frame solo lleva sombra de profundidad). */
+.laptop.is-flat .laptop__screen,
+.phone.is-flat  .phone__frame {
+  box-shadow:
+    var(--device-depth-shadow),
+    var(--device-hairline),
+    var(--device-inset-highlight);
+}

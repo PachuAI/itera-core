@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>social pack · preview</title>
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      body {
+        background: #0a0a0a;
+        color: #fff;
+        min-height: 100vh;
+        padding: 48px 32px 96px;
+        font-family: var(--font-ui);
+      }
+      .header {
+        max-width: 1600px;
+        margin: 0 auto 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      h1 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 40px;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+      }
+      .subtitle {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 16px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 32px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      @media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+      @media (max-width: 900px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
+      .card { display: flex; flex-direction: column; gap: 12px; }
+      .card-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+      .card-title .num {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--shope-accent);
+      }
+      .card-title .label {
+        flex: 1;
+        font-family: var(--font-ui);
+        font-weight: 500;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .card-title .badge {
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.35);
+      }
+      .thumb {
+        aspect-ratio: 9 / 16;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: #000;
+        position: relative;
+      }
+      .thumb iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 1920px;
+        border: 0;
+        pointer-events: none;
+        transform-origin: top left;
+        transform: scale(0.27);
+      }
+      footer {
+        max-width: 1600px;
+        margin: 64px auto 0;
+        padding-top: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      footer code {
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>
+        <h1>social pack · preview</h1>
+        <div class="subtitle">artboards 1080×1920 · 9:16 · instagram story / reel</div>
+      </div>
+      <div class="subtitle">
+        <span class="status-pill"><span class="dot"></span>workspace dev</span>
+      </div>
+    </div>
+
+    <!--
+      Cada pieza:
+        <div class="card">
+          <div class="card-title">
+            <span class="num">NN</span>
+            <span class="label">nombre corto</span>
+            <span class="badge">brand | hook | producto | social proof | educativo | feature</span>
+          </div>
+          <div class="thumb"><iframe src="pieces/NN-slug.html"></iframe></div>
+        </div>
+    -->
+    <div class="grid">
+      <!-- Agregar una card por pieza -->
+    </div>
+
+    <footer>
+      <strong>rasterizar a PNG:</strong>
+      <code>node render-social.mjs</code>
+      &nbsp;→&nbsp; outputs en <code>out/</code> (1080×1920).
+      <br /><br />
+      todos los artboards comparten <code>shared.css</code>. cambiar un token en
+      <code>:root</code> → todas las piezas se regeneran consistentes.
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Refactorizacion Linkea2"
+  short_description: "Refactor por seams para este SaaS"
+  default_prompt: "Use $skill-refactorizacion-linkea2 to split this Next 16 multi-tenant SaaS area by seams without breaking guards, cache tags, or public/admin parity."
+
+policy:
+  allow_implicit_invocation: true
