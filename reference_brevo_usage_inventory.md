@@ -1,6 +1,7 @@
 # Brevo — Inventario de uso en proyectos ITERA
 
-> Snapshot al 2026-05-12. Complementa la guia canonica `reference_brevo_smtp.md`.
+> Snapshot al 2026-05-12. Actualizado 2026-05-27 (sumado **ÍTERA Lex Tools**).
+> Complementa la guia canonica `reference_brevo_smtp.md`.
 > Objetivo: tener visibilidad de que SaaS estan conectados a la cuenta Brevo
 > ITERA, con que sender/dominio/key, para que envian emails y si consumen cuota.
 >
@@ -24,6 +25,7 @@ envio salga — ver `reference_brevo_smtp.md` § "Las 3 capas de Brevo".
 | Proyecto / SaaS | Repo local | Dominio Brevo | Sender | SMTP key name | Tipo de uso | Implementacion | Runtime env | Estado | Riesgo / nota |
 |---|---|---|---|---|---|---|---|---|---|
 | **ITERA Lex** | `itera-lex` | `iteralex.com` | `noreply@iteralex.com` (display name `ITERA Lex`) | `ITERA Lex` (sufijo `-WnssuAyCuLHowDgc`, longitud 95) | Transaccional con tres flujos: (a) **lead pipeline** completo (6 etapas, ver detalle abajo), (b) **soporte tickets** (3 templates), (c) **smoke test CLI**. Más una plantilla legacy sin call site activo. | `src/lib/email/send.ts` (nodemailer SMTP) + `src/lib/email/templates.ts` (12 builders, todos en tema oscuro tras migración 2026-05-12) | Coolify app `r40kockgo40wowg4w84soc4s` (contexto `modern-linux-desktop`). Vars `BREVO_SMTP_HOST/PORT/USER/KEY/SENDER_EMAIL/SENDER_NAME` confirmadas en runtime. `.env.local` espejo. | **Activo** (May 2026) | Tema 100% oscuro post 2026-05-12 → asset inline único es `logo-wordmark-inverse.png` (CID `itera-logo-wordmark-inverse@iteralex`). El PNG `logo-lockup-light.png` ya **no se adjunta** desde send.ts (se sigue usando solo en marketing/docs). Footgun histórico: key truncada en Coolify → validar longitud+hash post-update. |
+| **ÍTERA Lex Tools** | `itera-lex-tools/web` | `iteralex.com` (compartido con el SaaS; mismo domain auth) | `noreply@iteralex.com` (display name efectivo `ÍTERA Lex`; `send.ts` normaliza el legacy `ÍTERA Lex Tools`) | Key SMTP **dedicada**, distinta de la del SaaS (longitud 90, sha256 `ee83c672…`; nombre Brevo probable `ÍTERA Lex Tools`, confirmar en dashboard) | Transaccional self-serve para abogados: (a) **verificación de email** BetterAuth (activo), (b) **reset de contraseña** (activo), (c) **bienvenida** (pending wiring). | `src/lib/email/send.ts` (nodemailer SMTP; bloquea links localhost salvo `ITERA_TOOLS_ALLOW_LOCALHOST_EMAILS=true`) + builders en `src/lib/email/` + wrapper branded `wrap.ts` (paleta del SaaS, encabezado textual `ÍTERA Lex`) + registry `registry.ts`. Visor de previews propio en `/admin/dev/emails` (gated `requireAdminSession`). | Coolify app `rmfj4cm2d1e328s34f0f09eh` (`ITERA Lex Tools Web`, contexto `modern-linux-desktop`, `herramientas.iteralex.com`). Vars `BREVO_SMTP_*` + `BREVO_SENDER_*` confirmadas en runtime; `.env.local` espejo. | **Activo** (May 2026) | Comparte sender + dominio `iteralex.com` con el SaaS → reputación de bounce/IP compartida. Desde 2026-05-27 el header del email no usa imagen remota, para evitar íconos de imagen rota en Gmail. Volumen depende de `SELF_SERVICE_SIGNUP_ENABLED`. |
 | **Shope.AR** | `shope-ar` | `shope.ar` | `noreply@shope.ar` | `Shope.AR` (termina en `KT8Z1f`) | Transaccional: onboarding self-service, invitations a store members, account management, contact form, BetterAuth verification, impersonation | `src/lib/email/send.ts` (nodemailer SMTP) | Coolify (VPS modern). Vars `BREVO_*` completas. `.env` local + Coolify. Toggle `E2E_DISABLE_TRANSACTIONAL_EMAIL=1` para tests. | **Activo** (Abr 2026) | Es el que mas tipos de email envia. Multiple flows. |
 | **Presskit.AR** | `presskit-ar` | `presskit.ar` | `noreply@presskit.ar` | `Presskit.AR` (termina en `BBfDfZ`) | Transaccional: confirmacion de pre-registro de tag/perfil | `src/lib/services/email.service.ts` → `src/lib/email.ts` (nodemailer SMTP, vars genericas `SMTP_*`) | `.env` local + presuntamente Coolify. Tambien tiene `BREVO_API_KEY` declarada en `.env.example` pero el codigo activo usa SMTP. | **Activo** (presunto) | Codigo usa env vars **genericas** `SMTP_HOST/USER/PASS/FROM` apuntando a Brevo, no convencion `BREVO_*`. Si se cambia de proveedor no hay que tocar codigo. |
 | **ÍTERA Estudio** | `itera-estudio` | `iteraestudio.com` | `noreply@iteraestudio.com` (default `EMAIL_FROM`) | `ÍTERA Estudio` | Transaccional: BetterAuth verification email (15 creditos free al verificar) | `lib/mail.ts` (nodemailer SMTP, vars genericas `SMTP_*`) | `.env`/`.env.local` local + Coolify. | **Activo** (presunto) | Igual que Presskit: usa `SMTP_*` genericas, no `BREVO_*`. Compatible con Brevo si el host apunta al relay. |
@@ -39,7 +41,7 @@ envio salga — ver `reference_brevo_smtp.md` § "Las 3 capas de Brevo".
 
 | Estado | Proyectos |
 |---|---|
-| **Activo** (envia hoy o esta semana) | ITERA Lex, Shope.AR, Presskit.AR, ÍTERA Estudio, Bambu Web Corporativa |
+| **Activo** (envia hoy o esta semana) | ITERA Lex, ÍTERA Lex Tools, Shope.AR, Presskit.AR, ÍTERA Estudio, Bambu Web Corporativa |
 | **Preparado** (codigo listo, falta dato de runtime / sender real / confirmacion) | Linkea2 |
 | **Pendiente** (sin codigo, key/sender pre-creados) | Alquímica Web Corporativa, ITERA Lat, Racca Web |
 | **Desconocido** | (ninguno por ahora — todos los repos enumerados en la captura tienen estado claro) |
@@ -48,7 +50,7 @@ envio salga — ver `reference_brevo_smtp.md` § "Las 3 capas de Brevo".
 
 | Metodo | Proyectos | Cuando |
 |---|---|---|
-| **SMTP via nodemailer** (canonico ITERA) | ITERA Lex, Shope.AR, Presskit.AR, ÍTERA Estudio | SaaS con multiples tipos de email |
+| **SMTP via nodemailer** (canonico ITERA) | ITERA Lex, ÍTERA Lex Tools, Shope.AR, Presskit.AR, ÍTERA Estudio | SaaS con multiples tipos de email |
 | **API REST (`api.brevo.com/v3/smtp/email`)** | Bambu Web, Linkea2 | Sites estaticos con contact form / cron emails con un solo template |
 | **No implementado todavia** | Alquímica, ITERA Lat, Racca Web | — |
 
@@ -83,39 +85,90 @@ ese email cuenta para la cuota.
 | **Presskit.AR** | Bajo (1 por pre-registro) | 1 email por pre-registro publico. |
 | **ÍTERA Estudio** | Medio (1 por signup) | Solo verification email. Crece con signups. |
 | **Bambu Web** | Muy bajo (<5/dia) | Solo cuando alguien llena el form de contacto. |
+| **ÍTERA Lex Tools** | Muy bajo (hoy) | 1 verificación por alta self-serve + (cuando se cablee) 1 por reset de contraseña. Crece con registros de abogados; gated por `SELF_SERVICE_SIGNUP_ENABLED`. |
 
 **Total combinado hoy**: muy por debajo de 300/dia (free tier alcanza). El driver
 principal es **Shope.AR onboarding** + **ITERA Lex lista de espera**. Si alguno
 de los dos hace una campana o se vuelve viral, conviene revisar plan.
 
-### Detalle ITERA Lex — plantillas activas (snapshot 2026-05-12)
+### Detalle ITERA Lex — templates (snapshot 2026-05-16)
 
 > Todos los builders viven en `src/lib/email/templates.ts`. Tras la migración
-> 2026-05-12 todas usan el wrapper oscuro (`wrapEmailDark` para emails al
-> usuario, `wrapEmailDarkCompact` para emails internos/admin). Plain-text
-> fallbacks intactos.
+> 2026-05-12 todos los activos usan el wrapper oscuro (`wrapEmailDark` para
+> emails al usuario, `wrapEmailDarkCompact` para emails internos/admin).
+> Plain-text fallbacks intactos.
+>
+> Cada fila incluye:
+> - **Key**: identificador estable usado en la timeline (`trial-email-timeline.service.ts`) y en el visor de previews. Si no participa de la timeline de trial, queda fuera de scope del enum `TrialEmailTimelineKey` y se nombra ad-hoc.
+> - **Builder**: nombre del export en `templates.ts`. `—` = pendiente de crear.
+> - **Estado**: `Activo` (productivo) · `Pendiente` (en pipeline pero falta builder + wiring) · `Legacy` (existe el builder pero sin call site productivo, candidato a remover).
 
-| # | Template | Receptor | Disparador (call site) | Frecuencia esperada |
-|---|---|---|---|---|
-| 1 | `buildLeadReceivedEmailHtml` | `admin@itera.lat` (constante `CONTACT_NOTIFICATION_RECIPIENT` en `src/app/(marketing)/contacto/actions.ts`) | Submit del form `/contacto` o `/acceso` (público, sin auth). Subject distinto si `asunto === 'Solicitar acceso anticipado'`. | 1 por submit. Hoy ~2-5/semana. |
-| 2 | `buildLeadOnboardingInvitationEmailHtml` | Lead | Acción admin desde `src/lib/admin/trial-email-action-helpers.ts` y `src/lib/services/trial-email-timeline.service.ts`. Manual. | 1 por lead aprobado. |
-| 3 | `buildLeadAccessReadyEmailHtml` | Lead | Acción admin (idem helpers + timeline service). También se dispara al crear tenant desde `src/app/(admin)/admin/__tests__/tenant-actions.test.ts` flow. Manual. | 1 por activación. |
-| 4 | `buildTrialDay10ReminderEmailHtml` | Cliente en trial | Acción admin (helpers + timeline service). **No hay cron** — se dispara manual desde el panel admin. | 1 por cliente, día 10/14. |
-| 5 | `buildTrialEndedDecisionEmailHtml` | Cliente en trial | Acción admin (idem). Incluye `BankDetails` (envs `BANK_TITULAR/CBU/ALIAS/BANCO`, override desde dialog admin). Manual. | 1 por cliente, día 14. |
-| 6 | `buildFounderPaymentReceivedEmailHtml` | Cliente | Acción admin tras confirmar transferencia. Manual. | 1 por pago confirmado. |
-| 7 | `buildPreNormalPricingNoticeEmailHtml` | Cliente fundador | Acción admin ~3 meses post-pago, antes de pasar a precio normal. Manual. Incluye `BankDetails`. | 1 por cliente, mes 3 del período fundador. |
-| 8 | `buildSupportTicketCreatedCustomerEmailHtml` | Usuario que creó el ticket | `src/app/(app)/soporte/actions.ts → createSupportTicketAction`. | 1 por ticket. Hoy <5/semana. |
-| 9 | `buildSupportTicketCreatedAdminEmailHtml` | `SUPPORT_ADMIN_EMAIL ?? SUPERADMIN_EMAIL` (= `admin@itera.lat` hoy, no hay `SUPPORT_ADMIN_EMAIL` seteado) | Idem `createSupportTicketAction`. | 1 por ticket. |
-| 10 | `buildSupportTicketReplyEmailHtml` | Usuario dueño del ticket | `src/app/(admin)/admin/tickets/actions.ts → adminReplySupportTicketAction` (skip si `isInternalNote`). | 1 por respuesta no interna. |
-| 11 | `buildTransactionalTestEmailHtml` | A elección por CLI | Script `pnpm email:test <addr>` (`scripts/send-test-transactional-email.ts`). | On-demand (smoke test dev). |
-| 12 | `buildTrialInvitationEmailHtml` | — (legacy) | Sin call site productivo. Solo se ejercita en tests para garantizar el escape. Candidato a remover si no vuelve a usarse. | 0 |
+| # | Key | Builder | Receptor | Estado | Call site / disparador | Frecuencia esperada |
+|---|---|---|---|---|---|---|
+| 1 | `lead_received` (form público) | `buildLeadReceivedEmailHtml` | `admin@itera.lat` (constante `CONTACT_NOTIFICATION_RECIPIENT`) | **Activo** | `src/app/(marketing)/contacto/actions.ts` — submit de `/contacto` o `/acceso`. Subject distinto si `asunto === 'Solicitar acceso anticipado'`. | 1 por submit. Hoy ~2-5/semana. |
+| 2 | `onboarding_invitation` | `buildLeadOnboardingInvitationEmailHtml` | Lead | **Activo** | `src/lib/admin/trial-email-action-helpers.ts → createInvitationEmailSender()`. Se dispara desde panel admin (`src/app/(admin)/admin/trial-email-actions.ts`) o flujo lead. Manual. | 1 por lead aprobado. |
+| 3 | `first_access` (acceso listo) | `buildLeadAccessReadyEmailHtml` | Usuario del tenant recién creado | **Activo** | `trial-email-action-helpers.ts → createAccessEmailSender()` + `sendProvisionedFirstAccessEmail()` (auto al crear tenant desde el lead). Manual o auto post-provisioning. | 1 por activación. |
+| 4 | `trial_day_2` | `—` (pendiente) | Tenant admin | **Pendiente** | Timeline ya define key + audience + scheduling (día 2 desde `trialStartsAt`). Falta: (a) builder en `templates.ts`, (b) sender en `trial-email-action-helpers.ts`, (c) wiring en `trial-email-timeline.service.ts` (hoy retorna `unavailableReason: 'Template pendiente'`). Trigger = `automatic` (eventualmente cron, hoy ni eso). | 1 por tenant, día 2 del trial. |
+| 5 | `trial_day_5` | `—` (pendiente) | Tenant admin | **Pendiente** | Igual que `trial_day_2` pero día 5. Subject sugerido (ya en service): "Una causa completa de punta a punta". | 1 por tenant, día 5 del trial. |
+| 6 | `trial_day_10` | `buildTrialDay10ReminderEmailHtml` | Tenant admin | **Activo** | `trial-email-action-helpers.ts → createTrialDay10ReminderEmailSender()`. Trigger en timeline = `manual` (no hay cron). Subject incluye `daysLeft` dinámico. | 1 por cliente, día 10/14. |
+| 7 | `trial_ended_decision` | `buildTrialEndedDecisionEmailHtml` | Tenant admin | **Activo** | `trial-email-action-helpers.ts → createTrialEndedDecisionEmailSender(bankDetails)`. Incluye `BankDetails` (envs `BANK_TITULAR/CBU/ALIAS/BANCO`, override desde dialog admin). Manual. | 1 por cliente, día 14. |
+| 8 | `founder_payment_received` | `buildFounderPaymentReceivedEmailHtml` | Tenant admin | **Activo** | `trial-email-action-helpers.ts → createFounderPaymentReceivedEmailSender({ founderStartAt, founderEndAt, normalStartAt, normalPriceLabel })`. Manual, tras confirmar transferencia. | 1 por pago confirmado. |
+| 9 | `pre_normal_pricing_notice` | `buildPreNormalPricingNoticeEmailHtml` | Tenant admin (fundador) | **Activo** | `trial-email-action-helpers.ts → createPreNormalPricingNoticeEmailSender(bankDetails)`. Manual, ~7 días antes del fin del período fundador. Incluye `BankDetails`. | 1 por cliente, mes 3 del fundador. |
+| 10 | `support_ticket_created_customer` | `buildSupportTicketCreatedCustomerEmailHtml` | Usuario que creó el ticket | **Activo** | `src/app/(app)/soporte/actions.ts → sendTicketCreatedEmails()`. | 1 por ticket. Hoy <5/semana. |
+| 11 | `support_ticket_created_admin` | `buildSupportTicketCreatedAdminEmailHtml` | `SUPPORT_ADMIN_EMAIL ?? SUPERADMIN_EMAIL` (= `admin@itera.lat` hoy) | **Activo** | Idem `sendTicketCreatedEmails()`. | 1 por ticket. |
+| 12 | `support_ticket_reply` | `buildSupportTicketReplyEmailHtml` | Usuario dueño del ticket | **Activo** | `src/app/(admin)/admin/tickets/actions.ts → adminReplySupportTicketAction` (skip si `isInternalNote`). | 1 por respuesta no interna. |
+| 13 | `transactional_test` (smoke test) | `buildTransactionalTestEmailHtml` | A elección por CLI | **Activo** (no productivo) | Script `pnpm email:test <addr>` (`scripts/send-test-transactional-email.ts`). | On-demand (smoke test dev). |
+| 14 | `trial_invitation_legacy` | `buildTrialInvitationEmailHtml` | — | **Legacy** | Sin call site productivo. Solo se ejercita en tests para garantizar el escape. Candidato a remover si no vuelve a usarse. | 0 |
 
-**Sumario para ITERA Lex hoy**:
-- Driver dominante: pipeline manual de leads. 1 lead que recorre todo el embudo dispara ~6-7 emails repartidos en 3 meses (templates 2 → 7).
-- Form público (template 1) suma ~2-5 emails/semana al admin.
-- Soporte (templates 8-10): hoy <5/semana, dos emails por cada ticket creado + uno por cada respuesta del admin.
-- Smoke test (template 11): cuenta para la cuota cada vez que se corre `pnpm email:test`. No abusarlo.
+**Sumario para ITERA Lex hoy** (sólo activos productivos):
+- Driver dominante: pipeline manual de leads. 1 lead que recorre todo el embudo dispara ~6-7 emails repartidos en 3 meses (rows 2 → 9).
+- Form público (row 1) suma ~2-5 emails/semana al admin.
+- Soporte (rows 10-12): hoy <5/semana, dos emails por cada ticket creado + uno por cada respuesta del admin.
+- Smoke test (row 13): cuenta para la cuota cada vez que se corre `pnpm email:test`. No abusarlo.
 - Total estimado actual: **~10-15 emails/semana**, lejos del free-tier de 300/día. Si se abre la beta o entran 10 leads en una semana, podría picar a ~50-80 emails/semana — sigue holgado.
+
+**Pendientes (rows 4-5)**: cuando se implementen y queden en automático, suman 2 emails extra por cada tenant nuevo durante los primeros 5 días. Con 10 nuevos tenants/mes el impacto sigue siendo despreciable (20/mes). Cuando se implementen, mover su fila a `Activo` y confirmar trigger (manual vs cron `/api/cron/...`).
+
+### Visor de previews local
+
+Para inspeccionar el HTML de cada template renderizado con datos de ejemplo
+sin disparar envíos reales, ITERA Lex expone un visor interno bajo
+`/admin/dev/emails` (gated por `getSuperAdminOrRedirect`). El visor:
+
+- Lista todos los templates de la tabla anterior (activos, pendientes y legacy) leyendo el registry central en `src/lib/email/registry.ts`.
+- Renderiza el HTML en un iframe con viewport toggleable (desktop / mobile).
+- Permite editar los `input` props (form auto-generado a partir del registry).
+- Reemplaza la imagen embedida vía CID (`cid:itera-logo-wordmark-inverse@iteralex`) por el asset local `/logo-wordmark-inverse.png` para que se vea en el browser sin pasar por Brevo.
+- Para templates con estado `Pendiente` muestra un placeholder con la metadata + link a la fila correspondiente de este inventario.
+
+Disponible en este repo. Otros SaaS de la cuenta Brevo (Shope.AR, ÍTERA Lex Tools)
+mantienen su propio inventario y su propio visor.
+
+### Detalle ÍTERA Lex Tools — templates (snapshot 2026-05-27)
+
+> Portal público `herramientas.iteralex.com` con cuentas self-serve para abogados
+> (Google o email/password con verificación). Builders en `web/src/lib/email/` con
+> wrapper branded dark `wrap.ts` (replica la paleta de `wrapEmailDark` del SaaS).
+> Desde 2026-05-27 el encabezado usa texto `ÍTERA Lex`, no imagen remota, para
+> evitar logos rotos cuando Gmail bloquea imágenes. `send.ts` bloquea links
+> `localhost` salvo opt-in explícito `ITERA_TOOLS_ALLOW_LOCALHOST_EMAILS=true`.
+> Visor de previews propio en `/admin/dev/emails` (gated `requireAdminSession`), registry en
+> `web/src/lib/email/registry.ts`.
+
+| # | Key | Builder | Estado | Disparador / nota |
+|---|---|---|---|---|
+| 1 | `email_verification` | `buildVerificationEmailHtml` | **Activo** | `src/lib/auth.ts` → BetterAuth `emailVerification.sendVerificationEmail`. Branded. |
+| 2 | `password_reset` | `buildPasswordResetEmailHtml` | **Activo** | UI `/recuperar` + `/restablecer-contrasena` + cableado BetterAuth (`sendResetPassword` + `authClient.resetPassword`). |
+| 3 | `welcome` | `buildWelcomeEmailHtml` | **Diseñado (pending wiring)** | Onboarding post-verificación (jurisprudencia / valores UMA-IUS-JUS / fallos guardados). HTML listo; falta cablear el hook que lo dispara. |
+| 4 | `saved_rulings_digest` | `buildSavedRulingsDigestEmailHtml` | **Diseñado (pending wiring)** | Digest de novedades de fallos guardados (lista título/tribunal/fecha/link → `/cuenta?tab=fallos`). Falta detección de novedades + cron. |
+| 5 | `email_change` | `buildEmailChangeEmailHtml` | **Diseñado (pending wiring)** | Confirmación al nuevo correo. Falta habilitar BetterAuth `changeEmail` + UI de cuenta. |
+| 6 | `account_deletion` | `buildAccountDeletionEmailHtml` | **Diseñado (pending wiring)** | Confirmación con link de baja (borra cuenta + fallos guardados). Falta habilitar BetterAuth `deleteUser` + UI de cuenta. |
+
+> "Diseñado (pending wiring)": el HTML branded está listo y se previsualiza en el visor (status `pending` + builder presente), pero todavía no hay disparador que los envíe.
+
+Sender `noreply@iteralex.com` (display `ÍTERA Lex Tools`), key SMTP **dedicada** (≠
+key del SaaS, verificado por hash). Vars `BREVO_*` confirmadas en runtime Coolify
+(`rmfj4cm2d1e328s34f0f09eh`). El volumen real depende de `SELF_SERVICE_SIGNUP_ENABLED`.
 
 ### Solo preparado / pendiente (no consumen)
 

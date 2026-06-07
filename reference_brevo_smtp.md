@@ -1,7 +1,20 @@
 # Brevo SMTP — Guia de integracion
 
-> Metodo validado en produccion con Shopear (abril 2026).
+> Metodo validado en produccion con Shopear (abril 2026) e ITERA Lex (mayo 2026).
 > Aplica a todos los proyectos ITERA que necesiten email transaccional.
+
+> **Antes de empezar**: este doc es el **COMO** (metodo de integracion). El **QUE**
+> (que SaaS estan ya conectados a la cuenta Brevo, con que sender/key, para que
+> envian emails, y como esta el consumo de cuota) vive en
+> [`reference_brevo_usage_inventory.md`](./reference_brevo_usage_inventory.md).
+>
+> **Si vas a sumar un SaaS nuevo a Brevo, leer los dos**:
+> 1. Inventario → para entender que ya existe, evitar duplicados de sender/key
+>    y dimensionar el impacto en cuota compartida.
+> 2. Esta guia → para ejecutar la integracion paso a paso.
+> 3. Al terminar → **registrar el nuevo SaaS en el inventario** (ultima fila de
+>    la tabla "Inventario por proyecto"). Sin ese paso el inventario queda
+>    desactualizado y el siguiente agente no sabe que ya existis.
 
 ## Metodo elegido: SMTP via nodemailer
 
@@ -111,6 +124,7 @@ Se configuran en: Brevo Dashboard → Settings → Senders, Domains & Dedicated 
 
 | Dominio | Estado | Sender |
 |---------|--------|--------|
+| iteralex.com | Authenticated | noreply@iteralex.com (SaaS ITERA Lex + Tools) |
 | iteraestudio.com | Authenticated | (varios) |
 | shope.ar | Authenticated | noreply@shope.ar |
 | linkea2.com | Authenticated | (pendiente) |
@@ -137,6 +151,11 @@ BREVO_SENDER_NAME="Nombre del Proyecto"
 - `BREVO_SMTP_KEY`: runtime only, usar `--is-literal` por el prefijo `xsmtpsib-`
 - `BREVO_SENDER_EMAIL`: runtime only, usar `--is-literal` por el `@`
 - `BREVO_SENDER_NAME`: runtime only
+
+**Footgun real (ITERA Lex, 2026-05-09)**: una key pegada por CLI quedo truncada en Coolify
+(local tenia 90 caracteres, container tenia 83) y Brevo respondia:
+`Invalid login: 535 5.7.8 Authentication failed`. Siempre verificar longitud/hash despues de
+cargar secrets largos.
 
 ## Implementacion de referencia (nodemailer)
 
@@ -191,6 +210,89 @@ export async function sendTransactionalEmail(
 }
 ```
 
+## Verificacion operativa validada
+
+### 1) Smoke test desde la app
+
+Si el proyecto tiene un script equivalente al de ITERA Lex:
+
+```bash
+pnpm email:test admin@itera.lat
+```
+
+Esto valida codigo de app + nodemailer + Brevo desde el entorno donde se corre el comando.
+
+### 2) Comparar local vs Coolify sin imprimir la key
+
+Usar longitud + hash para evitar exponer el secret:
+
+```bash
+# Local (.env.local)
+node -e "const fs=require('fs'); const crypto=require('crypto'); const raw=fs.readFileSync('.env.local','utf8'); const m=raw.match(/^BREVO_SMTP_KEY=\"?([^\"\n]+)\"?/m); console.log('local', m[1].length, crypto.createHash('sha256').update(m[1]).digest('hex'))"
+
+# Coolify config
+coolify app env list <APP_UUID> --format json -s | \
+  jq -r '.[] | select(.key == "BREVO_SMTP_KEY") | .value' | \
+  node -e "const crypto=require('crypto'); let s=''; process.stdin.on('data',d=>s+=d); process.stdin.on('end',()=>{s=s.trimEnd(); console.log('coolify', s.length, crypto.createHash('sha256').update(s).digest('hex'))})"
+```
+
+Si no coinciden: actualizar el env de Coolify usando el valor desde archivo local, no pegando a mano:
+
+```bash
+KEY=$(node -e "const fs=require('fs'); const raw=fs.readFileSync('.env.local','utf8'); const m=raw.match(/^BREVO_SMTP_KEY=\"?([^\"\n]+)\"?/m); process.stdout.write(m[1])")
+coolify app env update <APP_UUID> BREVO_SMTP_KEY --value "$KEY" --is-literal
+```
+
+### 3) Verificar que el container activo tomo la env nueva
+
+Coolify puede tener el env correcto pero el container seguir con el valor viejo hasta redeploy.
+
+```bash
+ssh root@<VPS> '
+APP=$(docker ps --format "{{.Names}}" | grep <APP_UUID> | head -1)
+VAL=$(docker inspect "$APP" --format "{{range .Config.Env}}{{println .}}{{end}}" |
+  grep ^BREVO_SMTP_KEY= | sed "s/^BREVO_SMTP_KEY=//")
+printf "%s %s\n" "${#VAL}" "$(printf "%s" "$VAL" | sha256sum | cut -d" " -f1)"
+'
+```
+
+Si el container no coincide con Coolify/local:
+
+```bash
+coolify deploy uuid <APP_UUID> --force
+```
+
+Esperar el deploy y repetir la verificacion del container.
+
+### 4) Probar autenticacion SMTP desde el container productivo
+
+En containers Next standalone puede no existir `require('nodemailer')` disponible para scripts
+ad-hoc aunque la app lo tenga bundleado. Para validar credenciales sin depender del bundle,
+usar `openssl s_client` con STARTTLS:
+
+```bash
+ssh root@<VPS> '
+APP=$(docker ps --format "{{.Names}}" | grep <APP_UUID> | head -1)
+docker exec "$APP" sh -lc '"'"'
+AUTH=$(node -e "process.stdout.write(Buffer.from(\"\0\"+process.env.BREVO_SMTP_USER+\"\0\"+process.env.BREVO_SMTP_KEY).toString(\"base64\"))")
+{
+  printf "EHLO app.dominio.com\r\n"
+  printf "AUTH PLAIN %s\r\n" "$AUTH"
+  printf "QUIT\r\n"
+} | openssl s_client -starttls smtp -crlf -quiet -connect "$BREVO_SMTP_HOST:$BREVO_SMTP_PORT" 2>/dev/null | grep -E "^(235|535|550)"
+'"'"'
+'
+```
+
+Resultado esperado:
+
+```text
+235 2.0.0 Authentication succeeded
+```
+
+Si devuelve `535`, la key/login SMTP del container estan mal. Si devuelve `550 Sender not allowed`
+durante un envio real, revisar sender/dominio en Brevo.
+
 ## Errores comunes
 
 ### Email no llega, sin error visible
@@ -199,6 +301,17 @@ export async function sendTransactionalEmail(
 o el sender (`noreply@...`) como login SMTP, la autenticacion falla silenciosamente.
 
 **Fix**: Usar el login SMTP real: `a730df001@smtp-brevo.com`
+
+### Invalid login: 535 5.7.8 Authentication failed
+
+**Causa**: credenciales SMTP invalidas en runtime. Caso real: `BREVO_SMTP_KEY` truncada al cargarla
+en Coolify por CLI/pegado manual.
+
+**Fix**:
+1. Comparar longitud/hash local vs Coolify vs container.
+2. Actualizar `BREVO_SMTP_KEY` con `coolify app env update ... --is-literal`.
+3. Forzar redeploy (`coolify deploy uuid <APP_UUID> --force`).
+4. Confirmar `235 2.0.0 Authentication succeeded` desde el container.
 
 ### 550 Sender not allowed
 
@@ -215,13 +328,19 @@ no esta creado en la lista de Senders.
 
 ## Checklist para proyecto nuevo
 
-1. [ ] Generar SMTP key en Brevo (Settings → SMTP & API → Generate)
+0. [ ] **Leer `reference_brevo_usage_inventory.md`** — confirmar que el dominio/sender
+       no esta ya tomado por otro proyecto, y dimensionar impacto en cuota compartida
+1. [ ] Generar SMTP key en Brevo (Settings → SMTP & API → Generate). El **name** de la
+       key debe ser identico al del proyecto — ese mismo name se usa en el inventario
 2. [ ] Verificar dominio del proyecto en Brevo (Settings → Domains)
 3. [ ] Agregar DNS records (SPF, DKIM, DMARC) en Cloudflare
 4. [ ] Crear sender en Brevo (Settings → Senders)
 5. [ ] Agregar env vars en Coolify (6 vars, ver seccion arriba)
 6. [ ] Copiar `src/lib/email/send.ts` de Shopear como referencia
 7. [ ] Verificar envio con un test real (no confiar en logs)
+8. [ ] **Agregar fila al inventario** (`reference_brevo_usage_inventory.md`,
+       tabla "Inventario por proyecto") con: repo, dominio, sender, key name,
+       tipo de uso, ruta del codigo, fuente del runtime env, estado, riesgo
 
 ## Notas
 

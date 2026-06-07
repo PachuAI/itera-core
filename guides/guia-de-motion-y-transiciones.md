@@ -118,7 +118,48 @@ Para entrada de secciones y stagger escalonado **cuando NO se usa la route trans
 
 ---
 
-## 3. Microinteracciones (hover/active/focus)
+## 3. Collapsible reveal — abrir espacio en el layout
+
+Para barras contextuales, filtros avanzados, acciones bulk, avisos no críticos o paneles compactos que aparecen/desaparecen **empujando suavemente** la tabla o contenido de abajo.
+
+**Nombre del patrón:** `collapsible reveal`, `expand/collapse animation` o `smooth layout reveal`.
+
+**Cuándo usarlo:**
+- Cuando el elemento debe ocupar espacio real en el flujo del documento.
+- Cuando la tabla/lista de abajo tiene que correrse mientras aparece la fila.
+- Cuando `slide-in` sería demasiado teatral o haría sentir que el elemento flota sobre el contenido.
+
+**Técnica canónica:** workaround de `height: auto` con CSS Grid. No animar `height: 0 -> auto`; usar `grid-template-rows: 0fr -> 1fr`, con un hijo `overflow-hidden`.
+
+```tsx
+<div
+  aria-hidden={!open}
+  className={cn(
+    'grid transition-[grid-template-rows,margin-bottom,opacity] duration-200 ease-out motion-reduce:duration-0',
+    open ? 'mb-3 opacity-100' : 'mb-0 opacity-0',
+  )}
+  style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+>
+  <div className="min-h-0 overflow-hidden">
+    <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/35 px-3 py-2">
+      {/* contenido contextual */}
+    </div>
+  </div>
+</div>
+```
+
+**Reglas:**
+- El wrapper debe quedar siempre montado. Si se renderiza condicional (`open && ...`), no hay transición de layout.
+- El hijo inmediato lleva `min-h-0 overflow-hidden`; sin eso, `0fr` puede seguir ocupando altura por contenido mínimo.
+- Animar también `opacity` y `margin-bottom` para que no quede un salto seco al final.
+- Mantener duración 150–220ms. Para barras de tabla, `duration-200 ease-out` es el default.
+- Si los controles quedan montados mientras `open=false`, agregar `disabled={!open}` o evitar foco/tab accidental según el caso.
+
+**Implementación de referencia:** `alquimica-crm/resources/js/Pages/Productos/Index.tsx` — barra bulk de Productos y Stock.
+
+---
+
+## 4. Microinteracciones (hover/active/focus)
 
 Tabla canónica en `guides/guia-de-ui-admin-panels.md` (sección Microinteracciones). Resumen de las más usadas:
 
@@ -135,7 +176,7 @@ Tabla canónica en `guides/guia-de-ui-admin-panels.md` (sección Microinteraccio
 
 ---
 
-## 4. Footguns transversales
+## 5. Footguns transversales
 
 - **Dialog con form + fade-out**: NUNCA `{open && <FormFields />}`. Al cerrar, React desmonta el form al instante mientras Radix anima el fade-out → flash de dialog vacío. Usar `<FormFields key={formKey} />` con `formKey` que incrementa **solo al abrir** (`if (newOpen) setFormKey(k => k+1)`). (Origen: `shope-ar`.)
 - **Dropdowns admin**: nunca `<select>` nativo → siempre shadcn `<Select>` (el nativo no acepta estilos ni animaciones).
@@ -150,6 +191,7 @@ Tabla canónica en `guides/guia-de-ui-admin-panels.md` (sección Microinteraccio
 | Route transition — Next imperativa | `itera-lex/src/components/layout/app-route-transition.tsx` |
 | Route transition — Inertia event-driven | `alquimica-crm/resources/js/components/layout/route-transition.tsx` |
 | `<FadeIn>` | `itera-lex/src/components/shared/fade-in.tsx` |
+| Collapsible reveal | `alquimica-crm/resources/js/Pages/Productos/Index.tsx` |
 | Microinteracciones (doctrina) | `itera-claude-system/guides/guia-de-ui-admin-panels.md` |
 
 ---
