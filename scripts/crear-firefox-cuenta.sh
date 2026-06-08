@@ -34,12 +34,12 @@ fi
 
 # --- API key ---------------------------------------------------------
 if [[ -z "${ITERA_API_KEY:-}" ]]; then
-  if [[ -f "$HOME/projects/linkea2/.env" ]]; then
-    ITERA_API_KEY=$(grep "^ITERA_API_KEY" "$HOME/projects/linkea2/.env" | cut -d'"' -f2)
+  if [[ -f "$HOME/projects/saas/linkea2/.env" ]]; then
+    ITERA_API_KEY=$(grep "^ITERA_API_KEY" "$HOME/projects/saas/linkea2/.env" | cut -d'"' -f2)
   fi
 fi
 if [[ -z "${ITERA_API_KEY:-}" ]]; then
-  echo "Error: ITERA_API_KEY no esta en el environment ni en ~/projects/linkea2/.env" >&2
+  echo "Error: ITERA_API_KEY no esta en el environment ni en ~/projects/saas/linkea2/.env" >&2
   exit 1
 fi
 

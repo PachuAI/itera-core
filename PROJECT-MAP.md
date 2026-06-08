@@ -3,7 +3,25 @@
 > Indice priorizado de todos los proyectos en `~/projects/`.
 > La seccion **Tiers** refleja prioridad real de negocio (compromiso 2026).
 > La seccion **Stack** sigue clasificando por capas tecnicas para propagar reglas via `/sync`.
-> Ultima actualizacion: 2026-04-26
+> Ultima actualizacion: 2026-06-08
+
+---
+
+## Estructura fisica (`~/projects/`)
+
+Reorganizado 2026-06-08 por categorias (antes: ~28 carpetas planas).
+
+| Carpeta | Contenido |
+|---------|-----------|
+| `saas/` | SaaS propios directos: shope-ar, linkea2, itera-estudio, itera-chatbots-platform, itera-lat, presskit-ar + `iteralex/` (ecosistema agrupado: itera-lex, -docs, -mcp, -tools) |
+| `clientes/` | racca-web, alquimica-{crm,hub,web-corporativa}, bambu-web-corporativa-catalogo, abundancia-hogar, jubilo-refactor-visual |
+| `personal/` | pachu-dev, my-voice |
+| `archive/` | itera-tube, wsp-facil, itera-yt-downloader (sin foco) |
+| `scratch/` | solodev, open-design, ultimate-ux-ui (experimentos / material) |
+| root (meta-infra, NO mover) | `itera-core`, `itera-context`, `itera-social` |
+
+> `iteralex/` es la unica agrupacion por ecosistema (4 repos); el resto de SaaS va directo en `saas/`.
+> Las 3 meta-infra quedan en root (cableadas por path absoluto en CLAUDE.md/skills).
 
 ---
 

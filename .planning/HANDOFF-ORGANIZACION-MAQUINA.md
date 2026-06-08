@@ -170,8 +170,13 @@ Son normales del sistema. NO tocar salvo `.cache` si se quiere liberar espacio (
   itera-lat, presskit-ar, …). **NO** se crea carpeta "ecosistema" por SaaS.
 - **Única excepción: `saas/iteralex/`** — agrupa los 4 repos del ecosistema ÍTERA Lex (itera-lex,
   itera-lex-docs, itera-lex-mcp, itera-lex-tools) porque es extenso. Ya ejecutado (sub-hito iteralex cerrado).
-- Resto del Frente 1 (mover shope-ar/linkea2/clientes/personal/archive/scratch + renombrar
-  `ultimate ux and ui` → sin espacios) → SIGUE PENDIENTE, próxima corrida dedicada.
+- **Frente 1 COMPLETO ✅ EJECUTADO 2026-06-08.** Movidos los ~20 repos a `saas/` (6) /
+  `clientes/` (7) / `personal/` (2) / `archive/` (3) / `scratch/` (3, incl. `ultimate-ux-ui`
+  renombrado sin espacios). `worktrees/` vacío borrado. Git + cambios sin commitear preservados en
+  todos. Cross-refs de paths arregladas (sed, 181 archivos; 0 rotos en fuente — `.next/` builds se
+  regeneran). Namespaces de memoria de Claude de 9 repos renombrados a
+  `-home-pachu-projects-<cat>-<repo>`. Estructura final en root: solo `itera-core` / `itera-context`
+  / `itera-social` + las 6 categorías. Mapa en `PROJECT-MAP.md` § Estructura física.
 
 ### Rename de la meta-infra: `itera-claude-system` → `itera-core` ✅ EJECUTADO 2026-06-08
 Motivo: el nombre venía de "guías para un Claude viejo que trabajaba solo". Hoy es cross-agent

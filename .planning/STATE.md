@@ -54,7 +54,7 @@ Continuamos el revamp y **lo construimos completo localmente**. El detalle del r
 - **Schema worker** definido: paquete JSON con mode/checks/state/guardrails/changelog/commit/audits. El orquestador piensa, el worker ejecuta.
 - **Brainstorm** destilado del skill homonimo de superpowers, en español, sin spec formal — actualiza STATE.md directo. Integrado al setup T1 como offer post-scaffold + standalone en cualquier tier.
 
-**Estructura del plugin** (en `~/projects/solodev/`):
+**Estructura del plugin** (en `~/projects/scratch/solodev/`):
 
 ```
 solodev/
@@ -74,7 +74,7 @@ solodev/
 
 ### Estrategia de contenido + video pilot (LOCKED IN)
 
-Tambien cerramos la filosofia de contenido para el canal de YouTube de Pachu sobre el plugin. Vive en `~/projects/solodev/content/video-pilot.md`. Resumen:
+Tambien cerramos la filosofia de contenido para el canal de YouTube de Pachu sobre el plugin. Vive en `~/projects/scratch/solodev/content/video-pilot.md`. Resumen:
 
 - **Filosofia:** el plugin es sistema de memoria, no kickstarter de proyectos. Demos sobre trabajo real propio (doble valor: plugin + showcase del autor). Casos demo armados se reservan solo para contenido trending puntual.
 - **Script del video pilot** (7-9 min, 6 beats): hook before/after → apertura conceptual → instalacion → setup en proyecto real propio → brainstorm de decision real chica (no "diseñar app") → save+load entre sesiones → cierre.
@@ -92,9 +92,9 @@ Tambien cerramos la filosofia de contenido para el canal de YouTube de Pachu sob
 
 ### Inmediato (proxima sesion)
 
-1. **Instalar localmente** el plugin desde `~/projects/solodev/`:
+1. **Instalar localmente** el plugin desde `~/projects/scratch/solodev/`:
    ```
-   /plugin marketplace add ~/projects/solodev
+   /plugin marketplace add ~/projects/scratch/solodev
    /plugin install session@solodev
    /reload-plugins
    ```
@@ -106,7 +106,7 @@ Tambien cerramos la filosofia de contenido para el canal de YouTube de Pachu sob
    - Tier 1 con offer de brainstorm → confirmar que la integracion inline (setup leyendo brainstorm SKILL.md) funciona.
    - Por ultimo, `itera-lex` real → simular tier 3, confirmar que NO sobrescribe nada existente.
 
-3. **Iterar sobre lo que falle** — primer build siempre tiene gaps. Editar archivos en `~/projects/solodev/`, correr `/reload-plugins`, re-probar.
+3. **Iterar sobre lo que falle** — primer build siempre tiene gaps. Editar archivos en `~/projects/scratch/solodev/`, correr `/reload-plugins`, re-probar.
 
 ### Despues del test exitoso
 
@@ -125,4 +125,4 @@ Tambien cerramos la filosofia de contenido para el canal de YouTube de Pachu sob
 ## Referencias
 
 - Plan completo del revamp y su contexto: [`revamping-save-system.md`](./revamping-save-system.md). Cuando los tests del plugin pasen y este pusheado, ese doc se mueve a `archive/`.
-- Plugin construido: `~/projects/solodev/`.
+- Plugin construido: `~/projects/scratch/solodev/`.

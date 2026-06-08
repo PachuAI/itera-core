@@ -208,7 +208,7 @@ Genera en un comando: icono coloreado (via API ITERA), perfil de Firefox, `.desk
 
 Pre-condiciones:
 - Firefox debe estar **cerrado** (todas las ventanas) — si no, falla con mensaje claro.
-- `ITERA_API_KEY` en environment, o el script lo lee de `~/projects/linkea2/.env` automaticamente.
+- `ITERA_API_KEY` en environment, o el script lo lee de `~/projects/saas/linkea2/.env` automaticamente.
 
 Idempotente: si volves a correrlo con el mismo slug, respeta el icono y el perfil existentes y solo regenera el `.desktop`. Para regenerar el icono: `rm ~/.local/share/icons/firefox-<slug>.png` y volver a correr.
 
