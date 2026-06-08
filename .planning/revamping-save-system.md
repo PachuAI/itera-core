@@ -168,7 +168,7 @@ Tres modos. Cada paso del pipeline activo segun esta matriz:
 
 Cuando este validado en uso real:
 
-1. **Hacer repo aparte** o subdirectorio dedicado dentro de `itera-claude-system`. NO contaminar el monolitico actual.
+1. **Hacer repo aparte** o subdirectorio dedicado dentro de `itera-core`. NO contaminar el monolitico actual.
 2. **Stack-agnostic core**: el flujo (STATE / GUARDRAILS / CLAUDE.md escalation / CHANGELOG / commit) aplica a cualquier proyecto. Los pedazos stack-specific (audits con vocabulario Prisma/BetterAuth) van como adapters opcionales.
 3. **Plugin de Claude Code**: empaquetar como plugin instalable.
 4. **README rico** explicando la filosofia, no solo el "como instalar". El "por que" es lo que diferencia el paquete.
@@ -176,7 +176,7 @@ Cuando este validado en uso real:
 
 ### E. Decisiones laterales tomadas hoy (no son pendientes, ya estan)
 
-- Eliminado el folder duplicado `itera-claude-system/bambu-web-corporativa-catalogo/` (la copia activa esta en `~/projects/`, sincronizada con `master` de GitHub).
+- Eliminado el folder duplicado `itera-core/bambu-web-corporativa-catalogo/` (la copia activa esta en `~/projects/`, sincronizada con `master` de GitHub).
 - Cambio de `model: 'claude-sonnet-4-6'` → `model: sonnet` en los 5 commands del template + propagado a itera-lex.
 - Pendiente propagar el cambio del `model:` al resto de repos Tier 1 + 2 (shope-ar, linkea2, itera-estudio). Pero ojo: si vamos a migrar el sistema entero a skills, esto puede ser efimero — quizas conviene esperar a tener la version skill lista y propagar todo de una.
 

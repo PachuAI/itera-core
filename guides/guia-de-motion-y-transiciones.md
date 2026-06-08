@@ -192,7 +192,7 @@ Tabla canónica en `guides/guia-de-ui-admin-panels.md` (sección Microinteraccio
 | Route transition — Inertia event-driven | `alquimica-crm/resources/js/components/layout/route-transition.tsx` |
 | `<FadeIn>` | `itera-lex/src/components/shared/fade-in.tsx` |
 | Collapsible reveal | `alquimica-crm/resources/js/Pages/Productos/Index.tsx` |
-| Microinteracciones (doctrina) | `itera-claude-system/guides/guia-de-ui-admin-panels.md` |
+| Microinteracciones (doctrina) | `itera-core/guides/guia-de-ui-admin-panels.md` |
 
 ---
 

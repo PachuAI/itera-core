@@ -4,7 +4,7 @@
 >
 > Este método (generar hash bcrypt local + UPSERT SQL directo en psql desde Coolify Terminal) fue **reemplazado** por el método canónico de seed via API protegida.
 >
-> **Método vigente**: `~/projects/itera-claude-system/guides/seed-via-api.md`
+> **Método vigente**: `~/projects/itera-core/guides/seed-via-api.md`
 >
 > **Se preserva este archivo** únicamente por trazabilidad: documenta un método que funcionó históricamente cuando no existía una API `/api/admin/seed` en el repo. Si ves código o docs que referencian este archivo como canónico, están desactualizados — apuntarlos a la guía nueva.
 >

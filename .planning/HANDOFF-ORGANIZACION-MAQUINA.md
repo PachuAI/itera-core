@@ -48,16 +48,16 @@ conocimiento (notas, business context, análisis) con Obsidian. NO mezclar (ver 
 ├── itera-lex-calendar-outbox/  ← root (worktree de itera-lex, NO tocar)
 ├── itera-lex-wt-archivos-ux/   ← root (worktree de itera-lex, NO tocar)
 ├── worktrees/                  ← root (worktrees de itera-lex-tools api/web, resuelto)
-├── itera-claude-system/  ← root (META-INFRA, NO MOVER)
+├── itera-core/  ← root (META-INFRA, NO MOVER)
 ├── itera-context/        ← root (META-INFRA, NO MOVER)
 ├── itera-social/         ← root (META-INFRA, NO MOVER)
 └── .claude/              ← root (config workspace, NO MOVER)
 ```
 
 ### Decisiones firmes (ya consultadas con el usuario)
-- **Las 3 meta-infra (`itera-claude-system`, `itera-context`, `itera-social`) QUEDAN en el root.**
+- **Las 3 meta-infra (`itera-core`, `itera-context`, `itera-social`) QUEDAN en el root.**
   Están cableadas por path absoluto ~42 veces en `~/.claude/CLAUDE.md` + skills (itera-social 21,
-  itera-claude-system 14, itera-context 7). Moverlas rompe skills (brandboard, guías Coolify/DB/seed,
+  itera-core 14, itera-context 7). Moverlas rompe skills (brandboard, guías Coolify/DB/seed,
   API imágenes). NO mover, NO reescribir esos paths.
 - **`itera-lex` NO se toca** — hay tests corriendo. Se migra a `saas/` en otra sesión. Sus 2 worktrees
   (`itera-lex-calendar-outbox`, `itera-lex-wt-archivos-ux`) quedan en root.
@@ -72,7 +72,7 @@ conocimiento (notas, business context, análisis) con Obsidian. NO mezclar (ver 
 - Cerrar dev servers / procesos de un repo ANTES de `mv` (un mv con proceso adentro lo rompe).
 - `git mv` no aplica (son repos enteros): mover la carpeta con `mv`, el `.git` viaja con ella.
 - Tras mover: `git -C <nueva-ruta> status && git remote -v` para verificar integridad.
-- Actualizar **`itera-claude-system/PROJECT-MAP.md`** con las rutas nuevas (es el índice que lee `/sync`).
+- Actualizar **`itera-core/PROJECT-MAP.md`** con las rutas nuevas (es el índice que lee `/sync`).
 - Cross-refs opcionales en docs de meta-infra (~10 links a linkea2/shope-ar/itera-estudio/itera-lex) → opcional actualizar.
 
 ### Estado de backup de repos (al 2026-06-05) — TODO RESPALDADO
@@ -160,5 +160,36 @@ Son normales del sistema. NO tocar salvo `.cache` si se quiere liberar espacio (
 5. Triage del home (Frente 2).
 6. Instalar + montar Obsidian (Frente 3).
 7. Actualizar PROJECT-MAP.md.
-```
-```
+
+---
+
+## Actualización 2026-06-08 — decisiones nuevas (sesión cierre iteralex)
+
+### Frente 1 — ajuste a la estructura objetivo
+- **`saas/` lleva los repos DIRECTOS** (shope-ar, linkea2, itera-estudio, itera-chatbots-platform,
+  itera-lat, presskit-ar, …). **NO** se crea carpeta "ecosistema" por SaaS.
+- **Única excepción: `saas/iteralex/`** — agrupa los 4 repos del ecosistema ÍTERA Lex (itera-lex,
+  itera-lex-docs, itera-lex-mcp, itera-lex-tools) porque es extenso. Ya ejecutado (sub-hito iteralex cerrado).
+- Resto del Frente 1 (mover shope-ar/linkea2/clientes/personal/archive/scratch + renombrar
+  `ultimate ux and ui` → sin espacios) → SIGUE PENDIENTE, próxima corrida dedicada.
+
+### Rename de la meta-infra: `itera-claude-system` → `itera-core` ✅ EJECUTADO 2026-06-08
+Motivo: el nombre venía de "guías para un Claude viejo que trabajaba solo". Hoy es cross-agent
+(Claude + Codex) y heterogéneo (skills, _template, guides, scripts, reports, PROJECT-MAP,
+TOOLING-STANDARD, INFRA). `itera-core` lo describe como núcleo técnico-operativo y cierra el trío
+`itera-core / itera-context / itera-social`.
+
+Qué se hizo:
+- `mv ~/projects/itera-claude-system ~/projects/itera-core` (git intacto, rama main).
+- `sed itera-claude-system→itera-core` en: `~/.claude/CLAUDE.md` (13), `~/.codex/AGENTS.md` (5),
+  **62 archivos** en `~/projects` (docs/CLAUDE.md/guides/scripts/SKILL.md de ~12 repos) y memorias.
+- **Re-symlink de los skills:** `itera-core/scripts/link-skill.sh --all` (los symlinks en
+  `~/.claude/skills` + `~/.codex/skills` apuntaban al path viejo; 0 rotos tras el re-link).
+- Commit del rename en `itera-core`. Los OTROS repos quedaron con la ref actualizada en working
+  tree SIN commitear (1 línea c/u) — commitearlos cuando se decida (varios tienen trabajo ajeno).
+
+- Repo GitHub renombrado a `PachuAI/itera-core` (`gh repo rename`; remote local actualizado).
+  El commit del rename quedó local (sin pushear, según convención).
+
+Pendiente:
+- Limpiar ruido suelto del root (`INFO.txt`, `modelo prompt.txt`, `*.OBSOLETE.md`, changelogs sueltos).

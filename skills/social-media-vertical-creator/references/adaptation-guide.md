@@ -10,7 +10,7 @@ Antes de generar piezas, el proyecto debe tener resuelto:
 
 - **Paleta de marca** — mínimo 5-6 colores con roles claros (accent, accent-ink, fondo, borde, texto)
 - **2 fuentes** — una display (redonda/chunky, para wordmark y headings) + una UI (sans neutra, para body)
-- **Logo PNG** transparente en negro y blanco (si no existe, generar primero con el pipeline de `~/projects/itera-claude-system/guide_mockups_con_logos.md`)
+- **Logo PNG** transparente en negro y blanco (si no existe, generar primero con el pipeline de `~/projects/itera-core/guide_mockups_con_logos.md`)
 - **Voice & tone** — reglas de copy (ej. voseo, lowercase sistemático, sin exclamaciones)
 - **Punchline / value prop** — 1-2 líneas que resuman el producto
 - **CTA canónico** — qué decirle al usuario al final de cada pieza ("entrá a X", "probá gratis", "escribinos", etc.)
@@ -150,7 +150,7 @@ El componente `.brand-lockup` está hardcodeado con `shope.ar`. Ajustar el wordm
 
 ## 6. Procesar logos a PNG transparente
 
-Si el proyecto todavía no tiene los masters, generar usando el script de Sharp de `~/projects/itera-claude-system/guide_mockups_con_logos.md` §6.
+Si el proyecto todavía no tiene los masters, generar usando el script de Sharp de `~/projects/itera-core/guide_mockups_con_logos.md` §6.
 
 Resultado esperado:
 

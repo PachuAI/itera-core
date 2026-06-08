@@ -18,7 +18,7 @@ Skill que automatiza lo que hicimos manualmente para shope.ar (2026-04-23): gene
 - **Social packs 9:16** (stories, reels, hooks) → usar `social-media-vertical-creator`. Este skill cubre brandboard + web-assets, no piezas sociales.
 - **Videos animados** → usar `social-motion`.
 - **Tanda 2 de web-assets** (twitter card, linkedin banner, hero web 16:9, youtube cover) → pendiente, se agrega después.
-- **Generar el isotipo desde cero**: este skill no crea isotipos. Si el usuario no tiene uno, sugerir la ITERA API de imágenes (ver `~/projects/itera-claude-system/reference_itera_image_api.md`) o activar el modo `wordmark-only` (brand basada sólo en tipografía).
+- **Generar el isotipo desde cero**: este skill no crea isotipos. Si el usuario no tiene uno, sugerir la ITERA API de imágenes (ver `~/projects/itera-core/reference_itera_image_api.md`) o activar el modo `wordmark-only` (brand basada sólo en tipografía).
 - **Escribir el `brand.md` del SaaS en su repo**: por ahora queda manual. El brandboard HTML generado acá cumple la función de source of truth visual, pero no reemplaza el `brand.md` escrito a mano.
 
 ## Flow al ser invocado

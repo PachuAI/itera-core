@@ -1,4 +1,4 @@
-# Estado Actual - itera-claude-system
+# Estado Actual - itera-core
 
 **Ultima actualizacion**: 2026-06-04
 **Sesion**: infra docs — egress AR + autofill RN Tools
@@ -35,7 +35,7 @@ Tools:
 
 ### Sesion #4 (cerrada antes)
 
-- Eliminado folder duplicado `itera-claude-system/bambu-web-corporativa-catalogo/`.
+- Eliminado folder duplicado `itera-core/bambu-web-corporativa-catalogo/`.
 - Migrado `model: 'claude-sonnet-4-6'` → `model: sonnet` en 5 commands del template + propagado a `itera-lex`.
 
 ### Sesion #5 — Construido el plugin `solodev/session` (LOCKED IN)

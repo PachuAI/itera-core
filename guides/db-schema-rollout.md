@@ -95,7 +95,7 @@ Backup es requisito, no sugerencia.
 
 Usar el carril 2 para abrir tunnel y sacar dump fresco:
 
-- método: `~/projects/itera-claude-system/guides/db-via-tunnel.md`
+- método: `~/projects/itera-core/guides/db-via-tunnel.md`
 - caso típico: `pg_dump -Fc --no-owner --no-privileges ...`
 
 No duplicar acá los comandos del tunnel; el método ya vive en esa guía.

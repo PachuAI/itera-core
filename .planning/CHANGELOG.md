@@ -1,4 +1,4 @@
-# Changelog - itera-claude-system
+# Changelog - itera-core
 
 ---
 
@@ -44,7 +44,7 @@ Limpiamos duplicados con global:
 - Lista de archivos actualizada
 
 #### 6. Repositorio publicado
-- https://github.com/PachuAI/itera-claude-system
+- https://github.com/PachuAI/itera-core
 - Commit: `db473b8` - feat: sistema de memoria para Claude Code
 
 #### 7. Análisis de calidad de proyectos

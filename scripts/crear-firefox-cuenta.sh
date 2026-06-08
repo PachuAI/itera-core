@@ -13,7 +13,7 @@
 #
 # Idempotente: si el icono / perfil / launcher ya existen, los respeta y solo regenera lo faltante.
 #
-# Ver guia completa: ~/projects/itera-claude-system/guides/qa-firefox-multicuenta.md
+# Ver guia completa: ~/projects/itera-core/guides/qa-firefox-multicuenta.md
 
 set -euo pipefail
 

@@ -194,7 +194,7 @@ coolify app env list t1ect6gnjp8068ccu7lah6n8 --format json -s
 # 3. Para scripts locales que apuntan a prod, descomentar las PROD_* y rellenar
 ```
 
-**Template ITERA** (`~/projects/itera-claude-system/_template/.env.example`): base genérica con las vars comunes del stack (BetterAuth, Brevo, R2, Itera Estudio). Cada proyecto extiende o recorta según sus features.
+**Template ITERA** (`~/projects/itera-core/_template/.env.example`): base genérica con las vars comunes del stack (BetterAuth, Brevo, R2, Itera Estudio). Cada proyecto extiende o recorta según sus features.
 
 **Gaps:** Ninguno.
 
@@ -440,7 +440,7 @@ WHERE "userId" = '<id>';
 |-------|-----------|--------|-----------|
 | Confirmar subcomando Coolify CLI para redeploy con rebuild vs restart sin rebuild | 5 | ✅ Resuelto | Doc actualizada: `coolify deploy uuid <app>` (rebuild) vs `coolify app restart <app>` (runtime solo). `coolify app redeploy` no existe en 1.6.x. Propagado a `~/.claude/CLAUDE.md` |
 | Crear y committear `.env.example` en shope-ar | 6 | ✅ Resuelto | Ya existía committeado pero desfasado — sincronizado con `.env` real. Agregados ADMIN_SEED_SECRET, los 6 Brevo; PROD_* comentadas como opcional-ops |
-| Crear `.env.example` base en `_template/` ITERA | 6 | ✅ Resuelto | Creado `~/projects/itera-claude-system/_template/.env.example` con vars comunes del stack |
+| Crear `.env.example` base en `_template/` ITERA | 6 | ✅ Resuelto | Creado `~/projects/itera-core/_template/.env.example` con vars comunes del stack |
 | Leer `manual-de-marca.md` y `estrategia-contenido.md` en detalle | 9 | ✅ Resuelto | Ambos leídos. El scope es ÍTERA agencia + pachu.dev personal, no shope-ar producto. Doc operación 9 actualizada con los tres niveles |
 | Listar `STORE_TEMPLATE_KEYS` disponibles | 16 | ✅ Resuelto | Inline en `shope-ar/CLAUDE.md` sección "Seed en prod" con matiz de DEMO_TENANT_KEYS de prod |
 | Crear doc de cuentas sociales shope-ar | 10 | ✅ Resuelto | Creado `itera-context/proyectos/shope-ar/social-accounts.md`. Instagram @shope_ar documentada, el resto como pendiente. Regla de separación por producto definida |
@@ -457,4 +457,4 @@ Con los gaps arriba cerrados, este doc ya puede usarse como **insumo de destilac
 2. **Proyecto → `shope-ar/CLAUDE.md`**: mayoría ya documentada. Pendiente agregar sección "Ops sobre users" con los snippets de búsqueda/cambio password para cuando aparece ese caso.
 3. **`itera-context/`**: crear `social-accounts.md` cuando se destrabe operación 10.
 
-Una vez hecha la destilación, archivar este doc en `itera-claude-system/archive/operaciones-comunes-developer-YYYYMMDD.md` para trazabilidad.
+Una vez hecha la destilación, archivar este doc en `itera-core/archive/operaciones-comunes-developer-YYYYMMDD.md` para trazabilidad.

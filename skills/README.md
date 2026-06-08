@@ -18,9 +18,9 @@ Esta carpeta es la **fuente de verdad** de los skills del ecosistema ÍTERA, com
    reintroduce el drift que este directorio elimina.
 2. Después, symlinkearlo a ambos agentes:
    ```bash
-   ~/projects/itera-claude-system/scripts/link-skill.sh <name>
+   ~/projects/itera-core/scripts/link-skill.sh <name>
    # o re-linkear todo de una (idempotente):
-   ~/projects/itera-claude-system/scripts/link-skill.sh --all
+   ~/projects/itera-core/scripts/link-skill.sh --all
    ```
 3. **Renombrar** un skill: renombrar la carpeta acá y volver a correr `link-skill.sh <nuevo-name>`
    (borrá el symlink viejo si quedó). 

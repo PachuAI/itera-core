@@ -60,7 +60,7 @@ done
 
 ### 3. Carpetas del sistema en raíz (si el paso 0 falló parcialmente)
 
-Estas carpetas pertenecen al sistema itera-claude-system, NO al proyecto:
+Estas carpetas pertenecen al sistema itera-core, NO al proyecto:
 
 | Carpeta | Debería estar en proyecto final |
 |---------|---------------------------------|
@@ -82,20 +82,20 @@ done
 
 ### 4. Git del sistema
 
-Si quedó el `.git` del repo itera-claude-system:
+Si quedó el `.git` del repo itera-core:
 
 ```bash
 git remote -v
 ```
 
-Si el remote apunta a `itera-claude-system` en vez del proyecto nuevo → NO eliminar automáticamente. Reportar al usuario — es un problema que requiere intervención manual.
+Si el remote apunta a `itera-core` en vez del proyecto nuevo → NO eliminar automáticamente. Reportar al usuario — es un problema que requiere intervención manual.
 
 ### 5. Archivos de planning con referencias al sistema
 
-Si `.planning/` tiene contenido genérico del template (menciona "itera-claude-system" o tiene placeholders sin completar):
+Si `.planning/` tiene contenido genérico del template (menciona "itera-core" o tiene placeholders sin completar):
 
 ```bash
-grep -l "itera-claude-system\|\[Nombre del Proyecto\]" .planning/*.md 2>/dev/null
+grep -l "itera-core\|\[Nombre del Proyecto\]" .planning/*.md 2>/dev/null
 ```
 
 Si hay matches → esos archivos necesitan ser completados con datos del proyecto (no eliminarlos).
@@ -134,7 +134,7 @@ echo "=== Git remote ==="
 git remote -v 2>/dev/null
 
 echo "=== Planning con placeholders ==="
-grep -l "itera-claude-system\|\[Nombre del Proyecto\]" .planning/*.md 2>/dev/null || echo "  (ninguno)"
+grep -l "itera-core\|\[Nombre del Proyecto\]" .planning/*.md 2>/dev/null || echo "  (ninguno)"
 ```
 
 ### Paso 2: Confirmar con el usuario
@@ -215,6 +215,6 @@ Reportar:
 - SIEMPRE verificar build ANTES y DESPUÉS
 - NUNCA eliminar `.claude/`, `.planning/`, `CLAUDE.md`
 - NUNCA eliminar sin confirmar con el usuario
-- Si git remote apunta a itera-claude-system → alertar, NO tocar
+- Si git remote apunta a itera-core → alertar, NO tocar
 - Si `.planning/` tiene placeholders → completar, no eliminar
 - Este skill es idempotente — se puede correr múltiples veces

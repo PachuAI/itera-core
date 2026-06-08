@@ -1,4 +1,4 @@
-# itera-claude-system
+# itera-core
 
 Sistema de productividad para proyectos Next.js con Claude Code. Contiene el template curado para iniciar proyectos y las instrucciones de configuracion del entorno.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Symlinkea un skill del directorio canónico (itera-claude-system/skills/) hacia
+# Symlinkea un skill del directorio canónico (itera-core/skills/) hacia
 # ~/.claude/skills y ~/.codex/skills. Convención ITERA: 1 sola copia REAL (canónica),
 # symlinks en ambos agentes → cero drift. Correr después de crear o renombrar un skill.
 #

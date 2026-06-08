@@ -194,7 +194,7 @@ Alternativa mas liviana **sin dock extra**: agrandar los iconos del panel de Cin
 
 ## Script de automatizacion
 
-Disponible en `~/projects/itera-claude-system/scripts/crear-firefox-cuenta.sh`.
+Disponible en `~/projects/itera-core/scripts/crear-firefox-cuenta.sh`.
 
 Genera en un comando: icono coloreado (via API ITERA), perfil de Firefox, `.desktop` launcher con todos los flags correctos, y refresh del cache.
 

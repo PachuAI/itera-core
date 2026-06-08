@@ -72,7 +72,7 @@ mysql.user (MySQL container):
 **Acción recomendada (no ejecutada):**
 1. Cambiar el port-binding del recurso `itera-modern-mysql-databases` en Coolify a **no público** (o atar a `127.0.0.1:3306`). El UUID del recurso es `fow0gsgw4cgksogc40ogsg4o`.
 2. Si requieren acceso desde host puntual: dejar binding `127.0.0.1:3306` y conectar via `ssh -L` desde la PC local (mismo patrón que `db-via-tunnel.md`).
-3. Como defensa-en-profundidad adicional (no sustituye al cambio anterior): editar `/etc/ufw/after.rules` para meter DROP de 3306 en `ufw-user-forward`, o configurar `DOCKER-USER` con reglas explícitas. Documentar en `itera-claude-system/guides/`.
+3. Como defensa-en-profundidad adicional (no sustituye al cambio anterior): editar `/etc/ufw/after.rules` para meter DROP de 3306 en `ufw-user-forward`, o configurar `DOCKER-USER` con reglas explícitas. Documentar en `itera-core/guides/`.
 4. Mientras tanto, confirmar que el password de `root@%` es fuerte (no inspeccionado en esta auditoría) y rotarlo si quedó algo legacy.
 
 **Confirmación previa requerida:** ¿el endpoint expuesto se usa hoy desde fuera del VPS? Si no, restringir a localhost no rompe nada.

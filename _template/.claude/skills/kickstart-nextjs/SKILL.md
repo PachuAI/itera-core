@@ -33,7 +33,7 @@ NO hacer preguntas una a una. Si el usuario ya lo aclaró, no preguntar.
 
 ## Referencia técnica
 
-El template del sistema ITERA esta en `C:\ALL MY PROJECTS\itera-claude-system\_template\`:
+El template del sistema ITERA esta en `C:\ALL MY PROJECTS\itera-core\_template\`:
 - `CLAUDE.md` / `CLAUDE-simple.md` — reglas del proyecto (Full SaaS / Simple)
 - `.planning/` — templates de STATE, CODEBASE-MAP, etc.
 - `scripts/` — scripts de enforcement

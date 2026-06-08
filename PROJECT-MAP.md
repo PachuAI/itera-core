@@ -36,7 +36,7 @@ Carpetas que sostienen al resto. No son productos pero son load-bearing.
 
 | Proyecto | Repo | Rol |
 |----------|------|-----|
-| **Sistema de reglas tecnicas** | `itera-claude-system` | CLAUDE.md template, TOOLING-STANDARD, este PROJECT-MAP, guides operativas (seed, db tunnel, schema rollout) |
+| **Sistema de reglas tecnicas** | `itera-core` | CLAUDE.md template, TOOLING-STANDARD, este PROJECT-MAP, guides operativas (seed, db tunnel, schema rollout) |
 | **Contexto de negocio/marca** | `itera-context` | Master context, manual de marca, estrategia de contenido, BRIEFs de producto, infra (VPS/Coolify), DESIGN.md |
 | **Taller grafico** | `itera-social` | Genera assets visuales (verticales, web-assets, logos, motion) de todos los SaaS via HTML + Playwright |
 

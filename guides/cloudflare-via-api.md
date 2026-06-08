@@ -112,7 +112,7 @@ wrangler r2 bucket list
 
 ### Cache purge
 
-**Script reutilizable**: `~/projects/itera-claude-system/scripts/cf-purge.sh`
+**Script reutilizable**: `~/projects/itera-core/scripts/cf-purge.sh`
 
 ```bash
 # Purgar todo el cache de una zona
