@@ -34,7 +34,7 @@ Los dos SaaS que el roadmap marca como compromiso de cierre antes de septiembre 
 | Proyecto | Repo | Estado | Notas |
 |----------|------|--------|-------|
 | **Shopear** | `shope-ar` | Pivot a SaaS multitenant casi terminado | Sin clientes operativos pero queda muy poco. Avanza dia a dia. |
-| **IteraLex** | `itera-lex` | Beta con estudio juridico amigo (validacion) | Frenado por verificacion Google Drive (auditoria externa cara). Plan B definido: agregar fuente alternativa de storage como fallback, pendiente de implementar. |
+| **IteraLex** | `itera-lex` (+ ecosistema) | Beta con estudio juridico amigo (validacion) | Vertical de 7 superficies, casi todo en prod (ver `itera-context/proyectos/itera-lex/ECOSYSTEM-BRIEF.md`). Falta para cerrar: cobro automatizado, Generador de Escritos IA, activar Copilot, PUMA fuera de piloto. El supuesto bloqueo por verificacion Google Drive esta **a confirmar**: la auditoria tecnica reciente usa R2 como storage primario + scope acotado `drive.file` (sin verificacion cara). Roadmap y limites: `proyectos/itera-lex/ROADMAP.md`. |
 
 ### Tier 2 — Importante, no urgente este semestre
 
@@ -81,7 +81,7 @@ Repos vivos pero fuera de foco. No tocar salvo decision explicita.
 | **WSP Facil** | `wsp-facil` | Sin foco, no esta en el roadmap |
 | **YT Downloader** | `itera-yt-downloader` | Pausado, sin deploy |
 | **Chatbots Platform** | `itera-chatbots-platform` | Stand-by |
-| **IteraLex Docs** | `itera-lex-docs` | Pausado |
+| **IteraLex Docs** | `itera-lex-docs` | **En prod** (`docs.iteralex.com`), parte del ecosistema ÍTERA Lex. Sin desarrollo activo, pero NO pausado: contenido vivo (act. 2026-06-03) |
 | **Mock Codex 5.5** | `mock-codex-5-5` | Scratch / experimento, candidato a borrar |
 
 ---
