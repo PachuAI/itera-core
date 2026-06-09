@@ -1,0 +1,104 @@
+/* ===========================================================================
+   ÍTERA Lex — tokens de marca para prototipos HTML (snapshot de globals.css)
+   Light = :root (default).  Dark = :root[data-theme="dark"].
+   El <html> arranca en data-theme="dark" en las plantillas (alineado a la app),
+   y el toggle de la barra del prototipo lo conmuta.
+
+   FIDELIDAD: estos valores son copia de src/app/globals.css de itera-lex
+   (decisiones light 2026-05-22 / dark v4.6 2026-05-30). Antes de prototipar,
+   grepeá `:root` / `.dark` en globals.css por si hubo drift y actualizá acá.
+
+   REGLA DE ORO DE COLOR (la que más se olvida):
+   - `--itera` (naranja saturado) = SOLO fondos de acción (CTA gradient, toggle
+     activo). Es naranja en AMBOS modos.
+   - `--itera-ink` = texto/líneas/seleccionado. ADAPTA: gris oscuro en light,
+     naranja claro en dark. En light la UI es sobria/neutra y el naranja aparece
+     solo en las acciones. No metas naranja en textos en light.
+   =========================================================================== */
+:root {
+  /* superficies (light · papel cálido hue 85) */
+  --bg: oklch(0.94 0.004 85);
+  --shell: oklch(0.95 0.004 85);          /* header/rail — barra del proto */
+  --modal: oklch(0.96 0.004 85);          /* surface-2 = bg de modal centrado */
+  --surface-3: oklch(0.99 0.004 85);      /* inner card / popover de select */
+  --raise: oklch(0.95 0.004 85);          /* hover de filas/items */
+  /* texto */
+  --fg: oklch(0.205 0 0);
+  --muted: oklch(0.45 0 0);
+  --faint: oklch(0.6 0 0);
+  /* bordes */
+  --border: oklch(0.88 0.004 85);
+  --border-strong: oklch(0.80 0.004 85);
+  /* marca */
+  --itera: oklch(0.58 0.18 55);           /* naranja CTA — ambos modos */
+  --itera-foreground: oklch(1 0 0);
+  --itera-btn-from: oklch(0.60 0.22 50);  /* gradient CTA (chroma boost en light) */
+  --itera-btn-to: oklch(0.54 0.22 35);
+  --itera-ink: oklch(0.205 0 0);          /* ink = gris oscuro en LIGHT */
+  --itera-ink-subtle: oklch(0.93 0 0);    /* tinte neutro selección en light */
+  --itera-subtle: oklch(0.58 0.18 55 / 0.12);
+  --itera-border: oklch(0.58 0.18 55 / 0.35);
+  --focus-ring: 0 0 0 1px oklch(0.58 0.18 55 / 0.35), 0 0 8px 0 oklch(0.58 0.18 55 / 0.14);
+  --glow-cta: 0 0 24px oklch(0.65 0.18 55 / 0.30);
+  --glow-cta-strong: 0 0 30px oklch(0.65 0.18 55 / 0.45);
+  --danger: oklch(0.54 0.245 27.325);
+  /* sistema */
+  --radius: 8px;
+  --shadow-modal:
+    0 2px 4px -1px oklch(0 0 0 / 0.06),
+    0 10px 24px -4px oklch(0 0 0 / 0.10),
+    0 24px 48px -12px oklch(0 0 0 / 0.08);
+  --shadow-soft: 0 1px 2px 0 oklch(0 0 0 / 0.05), 0 2px 6px -1px oklch(0 0 0 / 0.06);
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: oklch(0.12 0 0);
+  --shell: oklch(0.16 0 0);
+  --modal: oklch(0.19 0 0);
+  --surface-3: oklch(0.235 0 0);
+  --raise: oklch(0.22 0 0);
+  --fg: oklch(0.985 0 0);
+  --muted: oklch(0.75 0 0);
+  --faint: oklch(0.6 0 0);
+  --border: oklch(1 0 0 / 0.10);
+  --border-strong: oklch(1 0 0 / 0.16);
+  --itera: oklch(0.58 0.18 55);
+  --itera-foreground: oklch(1 0 0);
+  --itera-btn-from: oklch(0.60 0.18 50);
+  --itera-btn-to: oklch(0.54 0.19 35);
+  --itera-ink: oklch(0.72 0.18 55);       /* ink = naranja claro en DARK */
+  --itera-ink-subtle: oklch(0.7 0.18 55 / 0.14);
+  --itera-subtle: oklch(0.62 0.18 55 / 0.13);
+  --itera-border: oklch(0.7 0.18 55 / 0.40);
+  --focus-ring: 0 0 0 1px oklch(0.7 0.18 55 / 0.35), 0 0 8px 0 oklch(0.7 0.18 55 / 0.14);
+  --glow-cta: 0 0 22px oklch(0.7 0.18 55 / 0.30);
+  --glow-cta-strong: 0 0 28px oklch(0.7 0.18 55 / 0.45);
+  --danger: oklch(0.704 0.191 22.216);
+  --shadow-modal:
+    0 8px 16px -4px oklch(0 0 0 / 0.5),
+    0 24px 48px -12px oklch(0 0 0 / 0.55);
+  --shadow-soft:
+    inset 0 1px 0 oklch(1 0 0 / 0.05),
+    0 2px 4px -1px oklch(0 0 0 / 0.4),
+    0 4px 10px -2px oklch(0 0 0 / 0.3);
+  color-scheme: dark;
+}
+
+/* ===== base ===== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-sans); font-size: 14px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  transition: background .2s, color .2s;
+}
+h1, h2, h3, p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+[hidden] { display: none !important; }
+.fade { animation: proto-fade .22s ease both; }
+@keyframes proto-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

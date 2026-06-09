@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prototipo ÍTERA Lex (HTML)"
+  short_description: "Maquetar UI de ÍTERA Lex en HTML fiel a la marca, sin reexplicar tokens/anti-slop/tono"
+  default_prompt: "Usá $prototipo-itera-lex para maquetar esta parte de la UI de ÍTERA Lex como mock HTML standalone, fiel a la marca (tokens dark+light, anti-slop, tono)."
