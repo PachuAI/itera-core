@@ -157,7 +157,7 @@ El bloque más rico. Estructura:
 
 ### 4.1 Preview
 
-El `<img>` apunta al PNG renderizado del beat. Path relativo desde donde se guarda el storyboard (ej `out/01-que-es-cover.png` si el storyboard vive en `stages/highlights/storyboard-que-es.html`).
+El `<img>` apunta al PNG renderizado del beat. Path relativo desde donde se guarda el storyboard (ej `out/01-que-es-cover.png` si el storyboard vive en `campañas/highlights/storyboard-que-es.html`).
 
 `preview-tag` es el filename del PNG sin extensión (para identificarlo visualmente).
 
@@ -453,5 +453,5 @@ El CSS completo está en `assets/template.html`. Si el proyecto define un sistem
 4. ¿Los **gaps de audio ≥ 0.6s** tienen una sección `switch` que les corresponde?
 5. ¿El **timeline visual** tiene proporciones correctas (suma de fr ≈ duración total)?
 6. ¿El **footer** tiene `{{PROJECT-ID}}`, versión y fecha?
-7. ¿El archivo está guardado en `projects/<slug>/stages/<stage>/`, no dentro del skill?
+7. ¿El archivo está guardado en `projects/<slug>/campañas/<stage>/`, no dentro del skill?
 8. ¿Los `<img src>` apuntan a paths **relativos** que funcionan con `file://` cuando se abre el HTML local?

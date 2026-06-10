@@ -37,7 +37,7 @@ Casos típicos:
 - **Audio narrativo** (MP3/WAV) ya grabado/generado. Ver `references/elevenlabs-flow.md` para el flujo de generación.
 - **JSON con timestamps word-level** (ElevenLabs Scribe formato `[{text, start, end}]`). Para corregir transcripciones del nombre del producto, editar el JSON manualmente.
 
-**Setup del proyecto Remotion** (si no existe): copiar molde de un proyecto existente del taller (`itera-social/projects/<slug>/stages/<stage>/remotion/`). Estructura mínima:
+**Setup del proyecto Remotion** (si no existe): copiar molde de un proyecto existente del taller (`itera-social/projects/<slug>/campañas/<stage>/remotion/`). Estructura mínima:
 
 ```
 stages/<stage>/remotion/
@@ -187,7 +187,7 @@ Iterar:
 ### 6. Render final (cuando esté lockeado)
 
 ```bash
-pnpm render   # genera ../motion/<filename>.mp4
+pnpm render   # genera ../videos/<filename>.mp4
 ```
 
 Solo cuando estás conforme. El render toma ~30-60s para video corto. Antes de renderizar, revisar:

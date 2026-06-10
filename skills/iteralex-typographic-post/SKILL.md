@@ -5,11 +5,11 @@ description: Generar la primera imagen de un carrusel de Instagram para ÍTERA L
 
 # iteralex-typographic-post
 
-Sistema reproducible para generar la **imagen 1 de un carrusel** de Instagram (`@itera.lex`) con el patrón tipográfico que se validó iterando la pieza canónica `projects/iteralex/stages/feed-launch/pieces/01-dashboard.html`.
+Sistema reproducible para generar la **imagen 1 de un carrusel** de Instagram (`@itera.lex`) con el patrón tipográfico que se validó iterando la pieza canónica `projects/iteralex/campañas/feed-launch/pieces/01-dashboard.html`.
 
 **Por qué existe este skill**: armar la pieza desde cero costó muchas iteraciones (centrado vertical, dónde va el wordmark, qué color tiene cada elemento, qué prohíbe el VOICE-GUIDE). Este skill captura ese sistema en bandas verticales explícitas para que cualquier pieza nueva salga consistente sin volver a iterar.
 
-**Pieza golden** (referencia visual de fidelidad): `projects/iteralex/stages/feed-launch/pieces/01-dashboard.html` y su PNG en `out/01-dashboard.png`.
+**Pieza golden** (referencia visual de fidelidad): `projects/iteralex/campañas/feed-launch/pieces/01-dashboard.html` y su PNG en `out/01-dashboard.png`.
 
 ---
 
@@ -86,7 +86,7 @@ Cuando el usuario invoque este skill, pedile estos campos. Si alguno no está cl
 | Input | Tipo | Default | Notas |
 |---|---|---|---|
 | `ratio` | `4:5` o `9:16` | `4:5` | 4:5=1080×1350 feed; 9:16=1080×1920 story/reel cover |
-| `output_dir` | path | — | Ej: `projects/iteralex/stages/feed-launch/pieces/` |
+| `output_dir` | path | — | Ej: `projects/iteralex/campañas/feed-launch/pieces/` |
 | `file_name` | string | — | Ej: `01-dashboard.html` (sin path, formato `NN-slug.html`) |
 | `module` | string | — | Nombre del módulo en humano: "Panel", "Causas", "Avisos". Va en `<title>`. |
 | `quote` | string | — | Frase del abogado. Pasala por `references/voice-checklist.md` antes de aceptarla. |
@@ -105,7 +105,7 @@ Cuando el usuario invoque este skill, pedile estos campos. Si alguno no está cl
 El template HTML importa `../iteralex-typo.css` (relativo a `pieces/`). El skill **debe** asegurarse de que ese archivo está copiado al stage:
 
 ```bash
-TARGET_CSS="projects/iteralex/stages/<stage>/iteralex-typo.css"
+TARGET_CSS="projects/iteralex/campañas/<stage>/iteralex-typo.css"
 SKILL_CSS="$HOME/.claude/skills/iteralex-typographic-post/templates/iteralex-typo.css"
 
 if [ ! -f "$TARGET_CSS" ]; then
@@ -113,7 +113,7 @@ if [ ! -f "$TARGET_CSS" ]; then
 fi
 ```
 
-Si el stage es nuevo, también copiar a `projects/iteralex/stages/<stage>/iteralex-typo.css` y al `pieces/` directorio.
+Si el stage es nuevo, también copiar a `projects/iteralex/campañas/<stage>/iteralex-typo.css` y al `pieces/` directorio.
 
 ### Paso 2: Validar el copy contra el voice-checklist
 
@@ -151,10 +151,10 @@ Tomá `templates/piece.html` y reemplazá los placeholders. Reemplazos:
 Detectar el stage del path de salida y correr:
 
 ```bash
-node render.mjs iteralex --stage <stage-slug> <NN>
+node render.mjs iteralex --campaña <stage-slug> <NN>
 ```
 
-(El renderer está en `~/projects/itera-social/render.mjs` y soporta `--stage` y filtros por prefijo numérico.)
+(El renderer está en `~/projects/itera-social/render.mjs` y soporta `--campaña` y filtros por prefijo numérico.)
 
 ### Paso 5: Verificación visual
 
@@ -183,7 +183,7 @@ Si alguna falla, ajustar y re-renderizar.
 
 ```
 ratio: 4:5
-output_dir: projects/iteralex/stages/feed-launch/pieces/
+output_dir: projects/iteralex/campañas/feed-launch/pieces/
 file_name: 03-causas.html
 module: Causas
 quote: "Cuando un cliente me pregunta cómo va su causa, tengo que reconstruir todo."
@@ -224,7 +224,7 @@ anchor: center
 **Render**:
 
 ```bash
-node render.mjs iteralex --stage feed-launch 03
+node render.mjs iteralex --campaña feed-launch 03
 ```
 
 **Validación visual**: leer `out/03-causas.png` y aplicar checklist del Paso 5.
@@ -262,7 +262,7 @@ Si querés más respiro arriba o abajo en 9:16, ajustar en el HTML:
 
 ## Referencias externas
 
-- `projects/iteralex/stages/feed-launch/pieces/01-dashboard.html` — pieza canónica de fidelidad visual.
+- `projects/iteralex/campañas/feed-launch/pieces/01-dashboard.html` — pieza canónica de fidelidad visual.
 - `projects/iteralex/shared.css` — tokens del brand (no editar acá).
 - `~/projects/itera-context/proyectos/itera-lex/VOICE-GUIDE.md` — filtro completo de voz.
 - `~/projects/itera-context/proyectos/itera-lex/PAIN-POINTS-MAP.md` — fuente de copy de cada módulo.

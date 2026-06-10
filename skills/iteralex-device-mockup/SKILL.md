@@ -10,8 +10,8 @@ Componentes reusables para mostrar el producto ÍTERA Lex dentro de un mockup de
 **Por qué existe este skill**: cada vez que armamos una pieza con mockup teníamos que reinventar dimensiones, drop-shadow, topbar simulado, dynamic island, ratio del screen, resolución del screenshot a capturar. Ahora todo eso vive en un solo lugar y se reusa en carruseles, stories, animaciones, lo que sea.
 
 **Piezas golden** (referencia visual de fidelidad):
-- `projects/iteralex/stages/feed-launch/pieces/01-dashboard-laptop.html` — laptop frame en pieza 4:5
-- `projects/iteralex/stages/feed-launch/pieces/01-dashboard-mobile.html` — phone frame en pieza 4:5
+- `projects/iteralex/campañas/feed-launch/piezas/01-dashboard-laptop.html` — laptop frame en pieza 4:5
+- `projects/iteralex/campañas/feed-launch/piezas/01-dashboard-mobile.html` — phone frame en pieza 4:5
 
 ---
 
@@ -113,7 +113,7 @@ Resultado: glow tirando a naranja itera (mucho menos rojo que un naranja extremo
 
 **Validado en producción** (feed-launch del 03-2026): screenshots retina (2880×1800 + 780×1690) renderizan más nítidas en el slide 1080×1350 que las base. El frame del skill es agnóstico al tamaño exacto — solo importa el ratio (16:10 laptop, 9:19.5 mobile).
 
-**Convención de nombres** en `assets/`:
+**Convención de nombres** en `recursos/`:
 
 ```
 <feature>-screenshot.png            (desktop)
@@ -139,18 +139,18 @@ Seguir las specs de `references/screenshot-specs.md`. Reglas duras:
 ### Paso 2: Guardar la screenshot
 
 ```
-projects/iteralex/stages/<stage>/assets/<feature>-screenshot.png         # desktop
-projects/iteralex/stages/<stage>/assets/<feature>-screenshot-mobile.png  # mobile
+projects/iteralex/campañas/<stage>/recursos/<feature>-screenshot.png         # desktop
+projects/iteralex/campañas/<stage>/recursos/<feature>-screenshot-mobile.png  # mobile
 ```
 
-Crear `assets/` si no existe.
+Crear `recursos/` si no existe.
 
 ### Paso 3: Cargar el CSS del skill en el stage
 
 El `device-mockup.css` se copia al stage **una sola vez**. Si el stage ya lo tiene, no copies de nuevo.
 
 ```bash
-TARGET="projects/iteralex/stages/<stage>/device-mockup.css"
+TARGET="projects/iteralex/campañas/<stage>/device-mockup.css"
 SOURCE="$HOME/.claude/skills/iteralex-device-mockup/templates/device-mockup.css"
 [ -f "$TARGET" ] || cp "$SOURCE" "$TARGET"
 ```
@@ -166,7 +166,7 @@ Cargar el CSS al `<head>`:
 
 Para laptop, copiar de `templates/laptop-frame.html` y reemplazar:
 - `{{URL_OR_BRAND}}` → `app.iteralex.com` (o la URL puntual)
-- `{{SCREENSHOT_PATH}}` → ej `../assets/dashboard-screenshot.png`
+- `{{SCREENSHOT_PATH}}` → ej `../recursos/dashboard-screenshot.png`
 - `{{ALT_TEXT}}` → ej `Panel de ÍTERA Lex`
 
 Para phone, copiar de `templates/phone-frame.html` y reemplazar `{{SCREENSHOT_PATH}}` y `{{ALT_TEXT}}`.
@@ -174,7 +174,7 @@ Para phone, copiar de `templates/phone-frame.html` y reemplazar `{{SCREENSHOT_PA
 ### Paso 5: Renderizar
 
 ```bash
-node render.mjs iteralex --stage <stage> <NN>
+node render.mjs iteralex --campaña <stage> <NN>
 ```
 
 ### Paso 6: Verificación visual
@@ -269,7 +269,7 @@ CSS local del slide:
   <div class="band-top"></div>
 
   <div class="wordmark-hero">
-    <img src="../../../assets/wordmark-light.png" alt="ÍTERA Lex" />
+    <img src="../../../recursos/wordmark-light.png" alt="ÍTERA Lex" />
   </div>
 
   <!-- Spacer arriba: absorbe la mitad del aire libre — clave para que el
@@ -346,8 +346,8 @@ Recomendación: si la animación va a tener movimiento del frame, usar `.is-flat
 
 ## Referencias externas
 
-- `projects/iteralex/stages/feed-launch/pieces/01-dashboard-laptop.html` — pieza canónica laptop.
-- `projects/iteralex/stages/feed-launch/pieces/01-dashboard-mobile.html` — pieza canónica mobile.
+- `projects/iteralex/campañas/feed-launch/piezas/01-dashboard-laptop.html` — pieza canónica laptop.
+- `projects/iteralex/campañas/feed-launch/piezas/01-dashboard-mobile.html` — pieza canónica mobile.
 - `iteralex-typographic-post` skill — para piezas tipográficas que pueden complementar el mockup.
 - `social-motion` skill — para animar frames (cuando llegue ese caso).
 - `~/projects/itera-social/render.mjs` — renderer Playwright.

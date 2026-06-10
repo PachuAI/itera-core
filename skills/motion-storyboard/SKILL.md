@@ -30,7 +30,7 @@ Casos típicos del taller `itera-social`:
 ### 0. Verificar inputs
 
 **Mínimo:**
-- **Frames finales**: PNGs rendereados de cada "punto de descanso" del video. Pueden vivir en `pieces/`, `out/`, `stages/<stage>/out/` o donde el proyecto los tenga.
+- **Frames finales**: PNGs rendereados de cada "punto de descanso" del video. Pueden vivir en `pieces/`, `out/`, `campañas/<stage>/out/` o donde el proyecto los tenga.
 - **Brand tokens** mínimos: paleta base (background, foreground, accent), tipografía display, tipografía mono. Si el proyecto vive en `itera-social/projects/<slug>/` los tokens están en `shared.css`.
 
 **Opcional pero recomendado:**
@@ -96,9 +96,9 @@ Para el HTML usar `assets/template.html` como base. Tokens visuales (colores de 
 
 **Path de output**: por defecto, guardar dentro del proyecto al que pertenece. Patrón:
 ```
-projects/<slug>/stages/<stage>/storyboard-<beat-id>.html
+projects/<slug>/campañas/<stage>/storyboard-<beat-id>.html
 ```
-Ej: `projects/iteralex/stages/highlights/storyboard-que-es.html`.
+Ej: `projects/iteralex/campañas/highlights/storyboard-que-es.html`.
 
 El skill **no** guarda outputs dentro de `~/.claude/skills/motion-storyboard/`. Los storyboards viven con el proyecto.
 
@@ -143,7 +143,7 @@ El bloque `.note` es para anotar **decisiones específicas** que el user puede q
 
 ### El storyboard se queda con el proyecto
 
-Guardar el HTML generado dentro del proyecto (`projects/<slug>/stages/<stage>/storyboard-*.html`). El skill solo provee la receta — los outputs viven con el proyecto.
+Guardar el HTML generado dentro del proyecto (`projects/<slug>/campañas/<stage>/storyboard-*.html`). El skill solo provee la receta — los outputs viven con el proyecto.
 
 ### Beat principal vs switch vs silence
 
@@ -168,7 +168,7 @@ El **brand accent** se sobrescribe por el del proyecto. Los otros 3 son sistema 
 
 - `references/anatomy.md` — estructura HTML detallada por bloque, con classes y ejemplos de cada panel.
 - `assets/template.html` — shell del HTML con CSS completo y placeholders para llenar.
-- **Ejemplo real validado** — `projects/iteralex/stages/highlights/storyboard-que-es.html` en el repo `itera-social`. Fue el primer storyboard armado con este skill (2026-05-13) — leer para ver cómo quedan las decisiones concretas (frames intermedios literales como "cards compact", silencios deliberados, audio sync con 52 palabras del JSON).
+- **Ejemplo real validado** — `projects/iteralex/campañas/highlights/storyboard-que-es.html` en el repo `itera-social`. Fue el primer storyboard armado con este skill (2026-05-13) — leer para ver cómo quedan las decisiones concretas (frames intermedios literales como "cards compact", silencios deliberados, audio sync con 52 palabras del JSON).
 
 ## Idioma
 

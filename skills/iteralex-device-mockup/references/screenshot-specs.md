@@ -39,8 +39,8 @@ Para que se vea nítido sin pixelado, capturar a **2x el tamaño visible**:
 ### Dónde guardar
 
 ```
-projects/iteralex/stages/<stage>/assets/dashboard-screenshot.png
-projects/iteralex/stages/<stage>/assets/<feature>-screenshot.png  (otras pantallas)
+projects/iteralex/campañas/<stage>/recursos/dashboard-screenshot.png
+projects/iteralex/campañas/<stage>/recursos/<feature>-screenshot.png  (otras pantallas)
 ```
 
 ---
@@ -81,8 +81,8 @@ Cuando el `.phone` se renderiza al ancho default (360px), el screen interno mide
 ### Dónde guardar
 
 ```
-projects/iteralex/stages/<stage>/assets/dashboard-screenshot-mobile.png
-projects/iteralex/stages/<stage>/assets/<feature>-screenshot-mobile.png
+projects/iteralex/campañas/<stage>/recursos/dashboard-screenshot-mobile.png
+projects/iteralex/campañas/<stage>/recursos/<feature>-screenshot-mobile.png
 ```
 
 Convención: si el desktop se llama `<feature>-screenshot.png`, el mobile se llama `<feature>-screenshot-mobile.png`. Nada de "tablet" intermedio (no hay frame).

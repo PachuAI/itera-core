@@ -27,7 +27,7 @@ Componentes y templates listos para copiar a un proyecto Remotion nuevo. Todos e
 ## Estructura sugerida del proyecto consumer
 
 ```
-projects/<saas>/stages/vertical-shorts/<short-slug>/remotion/
+projects/<saas>/campañas/vertical-shorts/<short-slug>/remotion/
 ├── package.json
 ├── tsconfig.json
 ├── remotion.config.ts

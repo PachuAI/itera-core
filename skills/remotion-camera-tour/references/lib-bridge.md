@@ -87,7 +87,7 @@ pnpm build:lib
 
 ## Importar desde Remotion
 
-En el proyecto Remotion (`stages/<stage>/remotion/src/compositions/Tour.tsx`):
+En el proyecto Remotion (`campañas/<stage>/remotion/src/compositions/Tour.tsx`):
 
 ```tsx
 // 1. Side-effect import del CSS — carga las styles en el DOM al ejecutarse.
@@ -107,7 +107,7 @@ El path relativo depende de la profundidad — ajustar `../` según la estructur
 
 - **Cambiaste un componente de la lib** (TSX o CSS): `pnpm build:lib`. El studio de Remotion NO detecta cambios en `dist/` automáticamente — refrescar el browser después.
 - **Solo cambiaste el proyecto Remotion** (composition, Camera, Captions): NO rebuildear. HMR del studio detecta los cambios.
-- **Solo cambiaste tokens**: si los tokens viven en `components/src/tokens.ts`, rebuildear. Si viven en `stages/<stage>/remotion/src/tokens.ts`, HMR.
+- **Solo cambiaste tokens**: si los tokens viven en `components/src/tokens.ts`, rebuildear. Si viven en `campañas/<stage>/remotion/src/tokens.ts`, HMR.
 
 ## Path alias opcional
 

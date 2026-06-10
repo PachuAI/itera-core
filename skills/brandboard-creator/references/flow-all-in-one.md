@@ -20,7 +20,7 @@ Preguntar (una sola ronda, no check por check):
 
 ```bash
 TARGET=~/projects/itera-social/projects/<slug>
-mkdir -p $TARGET/{pieces,out,motion-out,assets}
+mkdir -p $TARGET/{piezas,imagenes,videos,recursos}
 ```
 
 ### 3. Procesar isotipo (si aplica)
