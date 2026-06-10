@@ -9,6 +9,14 @@ Build modules, pages, and features along explicit seams from the first cut, inst
 
 This is a generalization of the repo-specific "refactorizacion linkea2" method into an architectural habit that applies to any stack with similar shapes: server components + client effects, tenant-scoped writes, cache invalidation, and vendor/provider integrations.
 
+## Variantes por repo
+
+Este es el **método canónico**. Hay variantes repo-specific que NO duplican el método — solo agregan invariantes y contexto de su repo. Usá la variante cuando trabajás en ese repo:
+
+- **`skill-refactorizacion-linkea2`** — Linkea2: preview/public parity, contratos legacy, env split, sync de `.planning/` maps.
+- **`skill-refactorizacion-shope-ar`** — Shopear: tenant-by-host, onboarding `PendingStore`+cookie+sesión, auth multi-subdomain, validación con `build`.
+- **`skill-refactorizacion-itera-lex`** — ÍTERA Lex: además suma una capa propia (disciplina **Fallow-first** + secuencias para services/agregadores/upload). Es la más diferenciada.
+
 ## Core Principle
 
 **Pick the seam before writing the file.** A seam is a stable line along which responsibility splits — schema vs action vs UI, server vs client, product vs provider, read vs write, guard vs leaf. Good seams let one invariant live in one place. Bad seams only move lines around.

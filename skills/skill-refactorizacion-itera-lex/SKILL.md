@@ -9,6 +9,8 @@ Usar este skill cuando un modulo del producto crecio mezclando UI, hooks, server
 
 Tambien usarlo al planear o implementar features nuevas en el SaaS para que nazcan con fronteras modulares claras: page/server, shell/render, controller/hook, actions, services, providers, tipos compartidos, validaciones y tests. El objetivo no es solo corregir deuda, sino evitar que la siguiente feature cree el proximo concentrador.
 
+> **Relación con `seam-construction`**: el catálogo de seams y el execution loop genéricos viven en `seam-construction`. Este skill NO los duplica — agrega lo propio de ÍTERA Lex: la **disciplina Fallow-first** (presupuesto de complejidad antes del patch, `crap_above=0` en archivos tocados, `pnpm fallow:ui-health`) y las **secuencias específicas** (services grandes, agregadores read-only, upload/storage/security) con sus guardrails de dominio (multi-tenant, `actividad.create()` en `$transaction`, etc.). Para el método base de cortes por seam, ver `seam-construction`; acá está la capa ÍTERA Lex.
+
 ## Bootstrap
 
 1. Leer `CLAUDE.md` y `AGENTS.md` si existen.

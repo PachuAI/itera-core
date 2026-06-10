@@ -7,6 +7,8 @@ description: Convertir el screenshot de una UI (vista de un producto SaaS — da
 
 Método validado para convertir el screenshot de una UI de producto en componentes React reutilizables dentro de una biblioteca Vite + CSS Modules, listos para usar en mocks visuales, maquetas y videos de tour.
 
+> **Variante específica de ÍTERA Lex**: para la biblioteca `projects/iteralex/components` existe `iteralex-componentizacion-ui` (skill de Codex en `.agents/skills/`), que extiende este método con el contrato propio de ese repo (ACTION_FLOWS.md, gallery `flows`, ScreenFrame stories, shell spacing, timings de typewriter validados, highlight/viewKey). Si trabajás sobre la biblioteca de ÍTERA Lex, usá esa variante; este skill canónico es el método genérico para cualquier otro proyecto/marca.
+
 ## Cuándo invocar
 
 Invocar siempre que:
