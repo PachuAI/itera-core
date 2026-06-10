@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>ÍTERA Lex · story · SLUG</title>
+    <link rel="stylesheet" href="../../../shared.css" />
+    <link rel="stylesheet" href="../../feed-launch/iteralex-typo.css" />
+    <link rel="stylesheet" href="../story-kit.css" />
+  </head>
+  <body data-width="1080" data-height="1920">
+    <!-- CON MOCK: statement (arriba) + laptop + text-bottom (abajo).
+         IMPORTANTE: el texto debajo del mock va en .text-bottom (peso 600, blanco
+         + acento naranja), NO en .statement__sub (queda débil contra el statement). -->
+    <div class="feed is-vertical story" data-max-step="3">
+      <div class="band-top"></div>
+
+      <div class="wordmark-hero">
+        <img src="../../../recursos/wordmark-light.png" alt="ÍTERA Lex" />
+      </div>
+
+      <div class="flex-spacer"></div>
+
+      <div class="statement" data-step="1" data-enter-label="Statement «...»">
+        <p class="statement__lead">Statement arriba,<br /><span class="accent">acento contiguo</span>.</p>
+      </div>
+
+      <div class="flex-mid-top"></div>
+
+      <!-- Device: .laptop para features de escritorio web · .phone para mobile.
+           El user pega la screenshot real: swappear .mock-ph por
+           <img class="laptop__img" src="../recursos/<slug>-screenshot.png" alt="..." /> -->
+      <div class="laptop" data-step="2" data-enter-label="Mock laptop: ...">
+        <div class="laptop__screen">
+          <div class="laptop__topbar">
+            <span class="laptop__dot"></span>
+            <span class="laptop__dot"></span>
+            <span class="laptop__dot"></span>
+            <span class="laptop__url">herramientas.iteralex.com</span>
+          </div>
+          <div class="mock-ph">
+            <span class="mock-ph__eyebrow">Vista previa</span>
+            <span class="mock-ph__name">Nombre del mock</span>
+          </div>
+        </div>
+        <div class="laptop__base"></div>
+      </div>
+
+      <div class="flex-mid-bottom"></div>
+
+      <!-- DEBAJO DEL MOCK = text-bottom (split blanco/naranja, peso 600). -->
+      <p class="text-bottom" data-step="3" data-enter-label="Below «...»">
+        Línea blanca describiendo,<br />
+        <span class="text-bottom__accent">remate naranja.</span>
+      </p>
+
+      <div class="flex-spacer"></div>
+      <div class="band-bottom"></div>
+    </div>
+    <script src="../story-kit.js"></script>
+  </body>
+</html>

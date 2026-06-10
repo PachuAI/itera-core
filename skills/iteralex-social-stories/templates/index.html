@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stories · ÍTERA Lex</title>
+    <link rel="stylesheet" href="../../../shared.css" />
+    <style>
+      /* Índice del stage stories, agrupado por CADENA. Una entrada por story en
+       * CONFIG.chains[].stories (en orden de publicación). file:// safe, vanilla. */
+      body { margin: 0; background: #0a0a0a; color: #f5f5f5; font-family: var(--font-ui, system-ui, sans-serif);
+        background-image: radial-gradient(ellipse at top left, var(--brand-accent-soft), transparent 55%),
+          radial-gradient(ellipse at bottom right, rgba(255,255,255,0.03), transparent 50%);
+        background-attachment: fixed; min-height: 100vh; padding: 64px 56px 120px; }
+      .kicker { display: inline-flex; align-items: center; gap: 10px; font-family: ui-monospace, monospace;
+        font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brand-accent); }
+      .kicker::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-accent); }
+      h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 4.5vw, 60px); letter-spacing: -0.03em; margin: 18px 0 8px; }
+      .lede { font-size: 16px; color: rgba(255,255,255,0.6); max-width: 720px; margin: 0 0 56px; line-height: 1.55; }
+      .chain { margin-bottom: 64px; }
+      .chain__title { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: -0.02em; margin: 0;
+        display: flex; align-items: baseline; gap: 14px; }
+      .chain__count { font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.1em; color: var(--brand-accent); text-transform: uppercase; }
+      .chain__note { font-size: 14px; color: rgba(255,255,255,0.5); margin: 6px 0 24px; }
+      .row { display: flex; flex-wrap: wrap; gap: 28px; }
+      .card { width: 220px; display: flex; flex-direction: column; gap: 12px; }
+      .thumb { width: 220px; height: 391px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+        background: var(--brand-bg); position: relative; display: block; }
+      .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .thumb .ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        color: rgba(255,255,255,0.3); font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+      .order { position: absolute; top: 12px; left: 12px; font-family: ui-monospace, monospace; font-size: 11px; font-weight: 600;
+        letter-spacing: 0.08em; color: #fff; background: rgba(10,10,10,0.7); backdrop-filter: blur(6px);
+        border: 1px solid rgba(255,255,255,0.16); border-radius: 8px; padding: 4px 9px; }
+      .card__label { font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: -0.01em; line-height: 1.25; }
+      .card__steps { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin: -6px 0 0; }
+      .links { display: flex; gap: 16px; margin-top: 2px; }
+      .links a { text-decoration: none; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.04em; color: rgba(255,255,255,0.6); transition: color 0.15s; }
+      .links a:hover { color: #fff; }
+      .links a.primary { color: var(--brand-accent); }
+    </style>
+  </head>
+  <body>
+    <span class="kicker">ÍTERA LEX · STORIES</span>
+    <h1>Taller de stories</h1>
+    <p class="lede">Stories 9:16 con reveal acumulativo, agrupadas por cadena. <code>Ver escalera</code> = cómo se construye; <code>Ver final</code> = el frame para publicar.</p>
+    <div id="chains"></div>
+
+    <script>
+      // Una entrada por story (en orden de publicación). file = pieces/<id>.html, thumb = out/<id>.png
+      const CONFIG = {
+        chains: [
+          {
+            id: 'mi-cadena',
+            label: 'Mi cadena (narrativa o feature)',
+            note: 'Descripción corta. La captura de cada mock la pega el user.',
+            stories: [
+              { id: '10-slug-uno', label: 'Story 1', steps: 2 },
+              { id: '11-slug-dos', label: 'Story 2', steps: 3 },
+            ],
+          },
+        ],
+      };
+      const root = document.getElementById('chains');
+      CONFIG.chains.forEach((chain) => {
+        const sec = document.createElement('section'); sec.className = 'chain';
+        const title = document.createElement('h2'); title.className = 'chain__title';
+        title.innerHTML = chain.label + ' <span class="chain__count">' + chain.stories.length + ' historias</span>';
+        sec.appendChild(title);
+        if (chain.note) { const n = document.createElement('p'); n.className = 'chain__note'; n.textContent = chain.note; sec.appendChild(n); }
+        const row = document.createElement('div'); row.className = 'row';
+        chain.stories.forEach((s, i) => {
+          const file = 'piezas/' + s.id + '.html';
+          const card = document.createElement('div'); card.className = 'card';
+          const thumb = document.createElement('a'); thumb.className = 'thumb'; thumb.href = file;
+          const order = document.createElement('span'); order.className = 'order'; order.textContent = (i + 1) + ' / ' + chain.stories.length;
+          const img = document.createElement('img'); img.src = 'imagenes/' + s.id + '.png'; img.alt = s.label;
+          img.onerror = function () { this.remove(); const ph = document.createElement('div'); ph.className = 'ph'; ph.textContent = 'Render pendiente'; thumb.appendChild(ph); };
+          thumb.appendChild(img); thumb.appendChild(order); card.appendChild(thumb);
+          const label = document.createElement('div'); label.className = 'card__label'; label.textContent = s.label; card.appendChild(label);
+          const steps = document.createElement('div'); steps.className = 'card__steps'; steps.textContent = s.steps + ' pasos'; card.appendChild(steps);
+          const links = document.createElement('div'); links.className = 'links';
+          const lf = document.createElement('a'); lf.href = file; lf.textContent = 'Ver final';
+          const ll = document.createElement('a'); ll.className = 'primary'; ll.href = file + '?view=ladder'; ll.textContent = 'Ver escalera →';
+          links.appendChild(lf); links.appendChild(ll); card.appendChild(links);
+          row.appendChild(card);
+        });
+        sec.appendChild(row); root.appendChild(sec);
+      });
+    </script>
+  </body>
+</html>

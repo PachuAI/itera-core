@@ -1,0 +1,248 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * story-kit.css — reveal acumulativo + device mocks + escalera, montado
+ * SOBRE el sistema tipográfico del feed (iteralex-typo.css).
+ *
+ * Las stories usan el MISMO lenguaje visual que el feed-launch:
+ *   import shared.css → ../../feed-launch/iteralex-typo.css → ../story-kit.css
+ *   root: <div class="feed is-vertical story" data-max-step="N">
+ *
+ * iteralex-typo.css aporta: .feed (artboard 9:16), band-top/bottom, wordmark-hero,
+ *   flex-top/flex-bottom (centrado que respira), hook/hook__quote (+comillas),
+ *   hinge/hinge__eyebrow/hinge__body/hinge__accent, brand-text, grad, flex-spacer.
+ * Este archivo SOLO agrega: el motor de reveal, los device mocks, los helpers
+ *   de slide-con-mock (text-top/text-bottom) y el chrome de la escalera.
+ *
+ * Cero pills, cero badges: el framing va como texto, al estilo del feed.
+ *
+ * REGLA: por defecto [data-step] está VISIBLE. Solo se oculta cuando el JS
+ * agrega .is-stepping al .story → sin JS la pieza final igual se ve completa.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Slide con mock: text-top / text-bottom (port del feed device slide) ─ */
+.text-top { flex: 0 0 auto; text-align: center; }
+.text-top__module {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 500; font-size: 26px; letter-spacing: -0.005em;
+  color: var(--brand-fg); margin-bottom: 8px;
+}
+.text-top__eyebrow {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600; font-size: 24px; letter-spacing: -0.005em;
+  color: var(--brand-accent); margin-bottom: 18px;
+}
+.text-top__headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 72px; line-height: 1.04; letter-spacing: -0.028em;
+  color: var(--brand-fg);
+}
+.text-top__headline .grad { font-weight: 700; }
+
+.flex-mid-top, .flex-mid-bottom { flex: 0 0 40px; }
+
+.text-bottom {
+  flex: 0 0 auto; text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600; font-size: 40px; line-height: 1.2; letter-spacing: -0.018em;
+  color: var(--brand-fg);
+}
+.text-bottom__accent { color: var(--brand-accent); }
+
+/* Línea de cierre/dominio y nota honesta — texto, NO pills.
+ * Color más claro que --brand-fg-dim (que quedaba demasiado apagado). */
+.story-domain {
+  flex: 0 0 auto; text-align: center; position: relative;
+  font-family: var(--font-display);
+  font-weight: 500; font-size: 26px; letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.56);
+  margin-top: 26px;
+  padding-bottom: 22px;
+}
+/* Divider fino con fade a los costados, debajo del dominio (sutil). */
+.story-domain::after {
+  content: '';
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 240px; height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, var(--brand-accent) 50%, transparent 100%);
+  opacity: 0.45;
+}
+.story-note {
+  flex: 0 0 auto; text-align: center;
+  font-family: var(--font-display);
+  font-weight: 500; font-size: 22px; letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 14px;
+}
+
+/* ─── Statement narrativo (cadenas tipográficas, sin eyebrow) ──────────── */
+/* CRITERIOS (aplicar a TODAS): título consistente ~72px (como la suite), sub
+ * centrado y legible (jerarquía suave), acento contiguo en una línea (se controla
+ * con <br> en el HTML, nunca palabra colgada sola). */
+.statement { flex: 0 0 auto; text-align: center; }
+.statement__lead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800; font-size: 72px; line-height: 1.06; letter-spacing: -0.028em;
+  color: var(--brand-fg);
+}
+.statement .accent { color: var(--brand-accent); }
+.statement__sub {
+  margin: 30px auto 0; max-width: 860px; text-align: center;
+  font-family: var(--font-display);
+  font-weight: 500; font-size: 40px; line-height: 1.3; letter-spacing: -0.012em;
+  color: var(--brand-fg-muted);
+}
+
+/* Brand-hero: opener con el wordmark grande centrado + tagline debajo
+ * (sin wordmark chico arriba). El logo ES "ÍTERA Lex", el texto continúa. */
+.brand-hero { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.brand-hero__mark { height: 140px; width: auto; margin-bottom: 44px; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.45)); }
+
+/* ─── Device mock · laptop (feed device slide, sombra sutil tokenizada) ───
+ * SSOT del DISEÑO del frame (bezel / sombra / topbar / dynamic island):
+ * skill `iteralex-device-mockup`. Estos `.laptop`/`.phone` son un PORT
+ * calibrado para stories (tamaños propios). Si cambia el diseño del frame,
+ * actualizar device-mockup primero y re-portar acá. */
+.laptop {
+  flex: 0 0 auto; width: 840px; align-self: center;
+  display: flex; flex-direction: column; align-items: center; position: relative;
+}
+.laptop__screen {
+  width: 100%; aspect-ratio: 16 / 10;
+  background: #0e0e0e;
+  border: 14px solid #1a1a1a; border-radius: 14px;
+  box-shadow:
+    0 0 38px 2px color-mix(in srgb, var(--brand-accent) 11%, transparent),
+    0 18px 50px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative; overflow: hidden;
+}
+.laptop__topbar {
+  position: absolute; top: 0; left: 0; right: 0; height: 32px;
+  background: #161616; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex; align-items: center; padding: 0 16px; gap: 9px;
+}
+.laptop__dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.16); }
+.laptop__dot:first-child { background: var(--brand-accent); opacity: 0.6; }
+.laptop__url {
+  margin-left: 14px;
+  font-family: var(--font-ui, system-ui); font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--brand-fg-dim); background: rgba(255, 255, 255, 0.05);
+  padding: 4px 12px; border-radius: 6px;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.laptop__url::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand-accent); box-shadow: 0 0 6px var(--brand-accent-glow);
+}
+.laptop__img {
+  position: absolute; top: 32px; left: 0; right: 0; bottom: 0;
+  width: 100%; height: calc(100% - 32px);
+  object-fit: cover; object-position: top left; display: block;
+}
+.laptop__base {
+  width: 110%; height: 16px; margin-top: -1px;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  border-radius: 0 0 18px 18px; position: relative;
+}
+.laptop__base::after {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100px; height: 6px; background: #050505; border-radius: 0 0 8px 8px;
+}
+
+/* ─── Device mock · phone (feed device slide) ──────────────────────────── */
+.phone { flex: 0 0 auto; width: 380px; align-self: center; position: relative; }
+.phone__frame {
+  width: 100%; aspect-ratio: 9 / 19.5;
+  background: #0a0a0a; border: 10px solid #1a1a1a; border-radius: 46px;
+  box-shadow:
+    0 0 34px 2px color-mix(in srgb, var(--brand-accent) 11%, transparent),
+    0 20px 56px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative; overflow: hidden;
+}
+.phone__img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: top center; display: block;
+}
+
+/* ─── Placeholder de mock (sutil, estilo "Vista previa" del feed) ──────── */
+.mock-ph {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  text-align: center; padding: 0 48px;
+  background:
+    radial-gradient(ellipse at center, var(--brand-accent-soft), transparent 62%),
+    #0e0e0e;
+}
+.laptop .mock-ph { top: 32px; }   /* arranca debajo del topbar fake */
+.mock-ph__eyebrow {
+  font-family: var(--font-display); font-size: 16px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--brand-fg-dim);
+}
+.mock-ph__name {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em;
+  color: var(--brand-fg-muted); font-size: 56px; line-height: 1.05;
+}
+.phone .mock-ph__name { font-size: 34px; }
+
+/* ─── Motor de reveal ──────────────────────────────────────────────────── */
+/* Reserve-space: los ocultos mantienen su caja → la composición no reflowea. */
+.story [data-step] { transition: opacity 0.35s ease; }
+.story.is-stepping [data-step] { visibility: hidden; opacity: 0; }
+.story.is-stepping [data-step].is-on { visibility: visible; opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Escalera (?view=ladder) — chrome de planificación, namespaced .ladder-*
+ * Clona el .story (que es .feed → se ve idéntico) por paso y lo escala.
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ladder-body { margin: 0; background: #0a0a0a; }
+.ladder-page {
+  min-height: 100vh; padding: 64px 56px 140px;
+  background: #0a0a0a; color: #f5f5f5;
+  font-family: var(--font-ui, system-ui, sans-serif);
+  background-image:
+    radial-gradient(ellipse at top left, var(--brand-accent-soft), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(255,255,255,0.03), transparent 50%);
+  background-attachment: fixed;
+}
+.ladder-kicker {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: ui-monospace, 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--brand-accent);
+}
+.ladder-kicker::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-accent); }
+.ladder-title {
+  font-family: var(--font-display);
+  font-weight: 800; font-size: clamp(34px, 4.5vw, 60px); letter-spacing: -0.03em; margin: 18px 0 8px;
+}
+.ladder-meta {
+  font-family: ui-monospace, monospace; font-size: 13px; letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.42); margin: 0 0 52px;
+}
+.ladder-frames { display: flex; flex-wrap: wrap; gap: 44px; }
+.ladder-cell { display: flex; flex-direction: column; gap: 16px; }
+.ladder-thumb {
+  --s: 0.26;
+  width: calc(1080px * var(--s)); height: calc(1920px * var(--s));
+  overflow: hidden; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--brand-bg); flex: 0 0 auto;
+}
+.ladder-thumb > .story { transform: scale(var(--s)); transform-origin: top left; }
+.ladder-thumb [data-step] { transition: none !important; }
+.ladder-cell.is-final .ladder-thumb {
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 3px var(--brand-accent-ring), 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+.ladder-cap { display: flex; flex-direction: column; gap: 5px; max-width: calc(1080px * 0.26); }
+.ladder-step {
+  font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--brand-accent);
+}
+.ladder-cell.is-final .ladder-step { font-weight: 700; }
+.ladder-enter { font-size: 14px; line-height: 1.4; color: rgba(255, 255, 255, 0.68); }

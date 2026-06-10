@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>ÍTERA Lex · story · SLUG</title>
+    <!-- Paths relativos a projects/<proyecto>/campañas/stories/pieces/ -->
+    <link rel="stylesheet" href="../../../shared.css" />
+    <link rel="stylesheet" href="../../feed-launch/iteralex-typo.css" />
+    <link rel="stylesheet" href="../story-kit.css" />
+  </head>
+  <body data-width="1080" data-height="1920">
+    <!-- TIPOGRÁFICA (sin mock): statement (lead + sub) centrado por flex-top/flex-bottom. -->
+    <div class="feed is-vertical story" data-max-step="2">
+      <div class="band-top"></div>
+
+      <div class="wordmark-hero">
+        <img src="../../../recursos/wordmark-light.png" alt="ÍTERA Lex" />
+      </div>
+
+      <div class="flex-top"></div>
+
+      <div class="statement">
+        <!-- ACENTO contiguo: <br> para que la frase naranja caiga ENTERA en una línea,
+             nunca partida ni palabra colgada sola. Título ~72px (no tocar el size salvo
+             que sea heading puro sin sub). -->
+        <p class="statement__lead" data-step="1" data-enter-label="Statement «...»">
+          Primera línea<br />
+          segunda <span class="accent">acentuada</span>.
+        </p>
+        <p class="statement__sub" data-step="2" data-enter-label="Sub «...»">
+          Línea de apoyo, concreta y corta.
+        </p>
+      </div>
+
+      <div class="flex-bottom"></div>
+      <div class="band-bottom"></div>
+    </div>
+    <script src="../story-kit.js"></script>
+  </body>
+</html>
