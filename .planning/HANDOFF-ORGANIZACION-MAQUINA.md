@@ -85,6 +85,11 @@ conocimiento (notas, business context, análisis) con Obsidian. NO mezclar (ver 
 
 ## FRENTE 2 — `~/` (home) — clutter a clasificar
 
+> ⚠️ **DIFERIDO (2026-06-09) — FUERA DEL PLAN ACTIVO.** El usuario lo hará por su cuenta como tarea
+> extra ("las carpetas a ese nivel no afectan mucho"). NO es bloqueante para el vault. El inventario
+> de abajo queda como referencia. Lo único del home que toca el vault son 3 notas sueltas (ver
+> «Actualización 2026-06-09» al final).
+
 El usuario NO reconoce buena parte de esto. Para CADA item: investigar qué es → clasificar
 KEEP / MOVER-a-su-lugar / BORRAR / BACKUP-primero. NO borrar nada pesado sin confirmar.
 
@@ -125,14 +130,9 @@ Son normales del sistema. NO tocar salvo `.cache` si se quiere liberar espacio (
 - Docs específicos de un proyecto SE QUEDAN en su repo (`.planning/`, `docs/`, `CLAUDE.md`). El vault
   es para conocimiento TRANSVERSAL (negocio, estrategia, aprendizajes cross-proyecto, notas personales).
 
-### Decisiones PENDIENTES (preguntar al usuario en la nueva sesión)
-- **Ubicación del vault:** opción A `~/vault` nuevo y limpio; opción B repurposear `itera-context`
-  (ya es markdown de negocio con git+backup). El usuario quiso "definirlo juntos".
-- **Instalación:** todavía NO instalado. Recomendado en Mint: Flatpak
-  `flatpak install flathub md.obsidian.Obsidian`. Alternativa: .deb oficial de obsidian.md.
-- Candidatos a poblar el vault: business context (itera-context), brain-dump egress/IP
-  (`itera-lex-tools/notas-estrategia-egress-ip.md`), análisis jubilo, notas de `my-voice`, notas
-  sueltas del home (itera-lex-contexto-movil.md, transcripts).
+### Decisiones — ✅ RESUELTAS 2026-06-09
+Obsidian instalado y arquitectura de vault elegida (**vault contenedor `~/vault` con symlinks**).
+Detalle completo, hallazgos y plan de ejecución en **«Actualización 2026-06-09» al final del doc**.
 
 ---
 
@@ -198,3 +198,63 @@ Qué se hizo:
 
 Pendiente:
 - Limpiar ruido suelto del root (`INFO.txt`, `modelo prompt.txt`, `*.OBSOLETE.md`, changelogs sueltos).
+
+---
+
+## Actualización 2026-06-09 — Frente 3 DECIDIDO + Frente 2 diferido
+
+### Frente 2 (home) → DIFERIDO (fuera del plan activo)
+El usuario lo hará por su cuenta como tarea extra. NO bloquea el vault. El inventario de la sección
+Frente 2 queda como referencia. Las únicas cosas del home que toca el vault son 3 notas sueltas (ver plan).
+
+### Frente 3 (Obsidian) → DECIDIDO + parcialmente ejecutado
+
+**Obsidian INSTALADO esta sesión** (no requiere hacerlo de nuevo):
+- appimage 1.12.7 movido `~/Descargas/` → **`~/Applications/Obsidian-1.12.7.AppImage`** (ejecutable).
+- lanzador en menú: `~/.local/share/applications/obsidian.desktop`; icono en `~/.local/share/icons/obsidian.png`.
+- Verificado que arranca (cargó el runtime Electron). Instalación por appimage, NO Flatpak.
+
+**Hallazgo que destrabó la decisión:** `itera-context` pesa 4,5 G pero su `.git` son 13 M — el 99,9%
+es la carpeta `ITERA/` (gitignored): `REELS/` = 4,4 G de `.mp4` + 25 PSDs + 310 PNGs + una mini-web.
+El conocimiento real son 162 `.md` = 2,8 M. itera-context NO es "puro negocio": es markdown de
+negocio + un cajón de assets pesados.
+
+**Arquitectura elegida: VAULT CONTENEDOR `~/vault` con symlinks** (Obsidian en Linux sigue symlinks).
+Descartadas: A (vault = itera-context: el `.obsidian/` ensucia el repo y obliga a meter lo personal
+en un repo de negocio versionado) y B (vault nuevo + migrar negocio + reapuntar paths: más trabajo
+para el mismo resultado). C-symlink gana: lo personal vive en el vault (nunca en GitHub del negocio),
+itera-context queda intacto (su git y sus paths cableados en `~/.claude/CLAUDE.md` siguen), y el
+`.obsidian/` vive en `~/vault`.
+
+Estructura objetivo:
+```
+~/vault/                  (raíz Obsidian · .obsidian vive acá)
+├── personal/  referencias/  inbox/   (carpetas REALES del vault)
+├── negocio   → ~/projects/itera-context        (symlink · pendiente, ver paso 2)
+└── my-voice  → ~/projects/personal/my-voice    (symlink · YA creado)
+```
+
+**EJECUTADO 2026-06-09 — vault montado y funcional:**
+1. ✅ **Hallazgo:** `itera-context/ITERA/` (4,5 G) era **duplicado EXACTO** de `~/assets/brand/`
+   (555 archivos, diff de árbol vacío). itera-social descartado como destino (ya pesa 5,8 G, es repo
+   git con remote, y su gitignore no cubría esos assets). El hogar canónico de assets de marca ya es
+   `~/assets/brand/`. → `ITERA/` movido a **`~/_revisar-borrar/itera-context-ITERA/`** (reversible).
+   itera-context pasó de **4,5 G → 27 M**, git intacto y limpio.
+   ⚠️ **PENDIENTE manual del usuario:** montar el disco externo **"WORK MEDIA"** (donde apunta
+   `~/assets/customers`) para confirmar si hay una 3ª copia respaldada; recién ahí **borrar definitivo**
+   `~/_revisar-borrar/itera-context-ITERA/`. Hoy las 2 copias (ITERA movida + `~/assets/brand/`) son
+   locales sin git, por eso no se borró.
+2. ✅ `~/vault/` creado: carpetas reales `personal/ referencias/ inbox/` + symlinks
+   `negocio → ~/projects/itera-context` y `my-voice → ~/projects/personal/my-voice` (ambos resuelven).
+3. ✅ Notas del home migradas a `~/vault/inbox/`: `itera-lex-contexto-movil.md` y
+   `transcript-ui-depth.md` (eran 2 transcripts idénticos salvo 1 byte; se conservó el `.md`).
+   Borrados: `texto-prueba.txt` (basura) y `transcript-ui-depth` (duplicado).
+4. ✅ Git del vault: repo **`PachuAI/vault` (PRIVATE)** creado y pusheado (commit `1de27c0`). Los
+   symlinks `negocio`/`my-voice` y la cache de `.obsidian` están gitignorados.
+
+**Único pendiente (acción del usuario, no necesita Claude):** abrir `~/vault` en Obsidian desde el
+menú y usarlo. `.obsidian/` se creará en `~/vault` (no toca itera-context). Ajustar "Excluded files"
+solo si molesta algo.
+
+Doctrina (no violar): vault = conocimiento transversal; docs de CÓDIGO de cada proyecto se quedan en
+su repo; nunca hacer `~/projects` el vault.
