@@ -1,0 +1,2 @@
+# Backups locales (dumps de DB, exports) — nunca van a git
+backups/
