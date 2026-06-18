@@ -23,7 +23,7 @@ Sistema de tokens desktop-first validado contra ÍTERA Lex Tools (Next.js 16 + T
 3. **Breakpoints discretos para grids y layout estructural**. Columnas y wrap se controlan con `lg`/`xl`/`2xl`/`3xl`/`4xl`, no con clamp.
 4. **Container queries opt-in** para piezas que cambian según su contenedor (no según viewport).
 5. **NO escalar todo con `vw`**. `vh`/`dvh` sólo donde tiene sentido.
-6. **`min` de cada `clamp` = valor actual** o muy cercano. Esto garantiza cero regresión visible en el target dulce (1440/1920).
+6. **El `min` del `clamp` es el PISO para pantallas chicas, NO el valor en el anchor desktop.** Error común (y caro): poner `min = valor-actual` creyendo que eso fija el tamaño en 1366/1440. Falso — `min` solo se activa por debajo del ancho donde `preferred` baja hasta él (suele ser ~600-1100px). En el anchor desktop manda `preferred = c + k·vw`. Para garantizar "cero regresión en 1366/1440" hay que calibrar la banda para que **`preferred(W_anchor) = valor-actual`** y VERIFICARLO computando el valor (ver §2.1) — no confiar en el `min`.
 
 ## 2. Los 6 protagonistas con `clamp()`
 
@@ -47,6 +47,24 @@ Estos son los UNICOS lugares donde se usa `clamp(min, vw, max)`. Cualquier expan
 Notas:
 - `--text-display` y `--text-body` cuentan como UN protagonista cada uno → 7 totales, pero typography son hermanos. El espíritu de "6 protagonistas" es: 4 del shell (header, sidebar, max-w, padding) + 2 tipográficos (h1, body).
 - `--text-h2` también es fluido pero su rango es chico — opcional ponerlo fluido o estático según preferencia del proyecto. Default fluido leve.
+
+## 2.1 Calibración de la banda del `clamp()` — anclaje por 2 puntos
+
+Los coeficientes de §2 fueron afinados para ÍTERA Lex (banda 1366→3840). **NO son universales**: cada proyecto los RE-DERIVA para su rango real y VERIFICA el computado en cada anchor. La trampa más común es heredar coeficientes con banda *mobile* (transición ~400→1100px) en un sistema *desktop-first*: el token satura a `max` antes del anchor → queda **constante en todo el rango desktop** (no escala) y puede entregar `max` ya en el anchor bajo (regresión: más grande que el baseline que se quería conservar).
+
+**Receta (anclaje por 2 puntos).** Querés el valor `V1` en el ancho `W1` (anchor bajo, p.ej. 1366) y `V2` en `W2` (anchor alto, p.ej. 2560):
+
+```
+k = (V2 − V1) / (W2 − W1) × 100      // pendiente, en unidades vw
+c = V1 − k × W1 / 100                 // intercepto
+→ preferred = c + k·vw ;  min = V1 ;  max = V2
+```
+
+**Verificación OBLIGATORIA** — computar `preferred` en `W1` y `W2` y confirmar que dan `V1` y `V2` antes de aceptar la fórmula: `preferred_px(W) = c_px + k × W/100`.
+
+**Ejemplo de fallo real** (Alquímica CRM): `clamp(0.8125rem, 0.74rem + 0.28vw, 0.9375rem)` (intención 13→15) → `preferred(1366) = 11.84 + 0.0028×1366 = 15.7px → clampa a 15` ⇒ daba **15px ya en 1366** y **15px en 2560** (cero escalado + regresión). Recalibrado con la receta a banda 1366→2560: `clamp(0.8125rem, 0.74rem + 0.084vw, 0.875rem)` → 13@1366, 14@2560.
+
+**Restraint en apps de datos densas** (CRM, tablas, paneles operativos): el `body` casi no necesita escalar. (1) El `--main-max-w` ya mata el "estirado + chico"; (2) por PPI, un `px` CSS en un monitor grande (2560/27" ≈ 109 ppi) es físicamente ≥ que en un laptop (1366/13" ≈ 117 ppi) → "se ve chico" suele ser artefacto del zoom-fit del visor del lab, no DPI real; (3) la densidad de filas es una *feature*. Regla: en apps de datos, `body` con techo gentil (≤1px, p.ej. 13→14) o estático, y reservar el escalado real para `display`/títulos/números-hero (jerarquía/presencia, no legibilidad).
 
 ## 3. Tokens estáticos (sin clamp)
 
@@ -122,6 +140,19 @@ Uso en componentes:
 - `text-mono-xs` reemplaza `text-[10px]` / `text-[11px]` / `text-[12.5px]` arbitrary en eyebrows / labels mono.
 - `max-w-main-max` reemplaza `max-w-[82rem]` o similares.
 - `px-main-pad-x py-main-pad-y` reemplaza paddings ad-hoc del `<main>`.
+
+## 6.1 Modo de consumo: utilities nombradas vs arbitrary values
+
+El mapeo `@theme inline` de §6 **solo genera utilities si el CSS es root de Tailwind** (el archivo que tiene `@import "tailwindcss"`, típicamente `globals.css`/`app.css`). Antes de usar `text-body`, `max-w-main-max`, `3xl:` etc., confirmar DÓNDE viven los tokens:
+
+- **Tokens en el root** (caso normal) → `@theme inline` genera las utilities nombradas. Consumir como en §6 (`h-control-md`, `text-body`, `max-w-main-max`).
+- **Tokens en un CSS satélite** (caso "design system AISLADO": tokens scopeados a una clase `.foo-ui`, en un archivo importado desde un componente/página para no tocar la app viva) → ese archivo **NO es root** → su `@theme` queda **INERTE**, no nace ninguna utility. Consumir por **arbitrary value referenciando la var**:
+  - `text-[length:var(--text-body)]` (el hint `length:` es obligatorio para font-size), `h-[var(--control-h-md)]`, `max-w-[var(--main-max-w)] mx-auto`, `gap-[var(--space-grid-gap)]`.
+  - **Los breakpoints custom no se pueden scopear** (son globales en Tailwind): mientras el sistema esté aislado, usar variants arbitrarios `min-[1920px]:grid-cols-4`. Promover a `3xl/4xl` nombrados (en el root) recién en la migración global.
+
+**Cross-library**: "dónde se declaran los tokens" es independiente de "cómo se consumen". Las CSS vars siempre se leen por `var(--x)`, pero la generación de clases/utilities depende del motor (Tailwind, CSS Modules, vanilla-extract, etc.). Verificar que el archivo de tokens entre al build del motor antes de confiar en clases nombradas.
+
+**No tokenizar el chrome del lab/galería.** Si el sistema se construye en una galería/lab aislado, la navegación propia del lab (su sidebar/header/visor) es **andamiaje, no entregable**. Los tokens de shell (`--app-header-h`, `--sidebar-width`) describen el App Shell de la app REAL (una story dentro del visor), no la furniture del lab. No aplicarles los tokens del sistema.
 
 ## 7. Reglas de aplicación por eje
 

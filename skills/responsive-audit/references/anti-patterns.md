@@ -157,3 +157,15 @@ Subir el principal es el último recurso, no el primero.
 **Razón**: video 07 — flex sirve cuando los hijos negocian espacio; grid sirve cuando el padre impone estructura. Forzar uno para hacer el trabajo del otro acumula `flex-wrap` con espacios vacíos donde un `grid-cols` resolvía sin esfuerzo. El skill no propone migrar flex→grid masivamente, pero **debe flaggear** componentes donde la elección está claramente mal.
 
 **Regla**: si en el inspection-grep aparece `flex flex-wrap` con `gap-X` y los hijos son cards/widgets de ancho similar, sospechar grid. Documentar como deuda visual en la categoría F del reporte. NO migrar como parte del audit; sólo señalar.
+
+## 21. No confiar en los coeficientes de ejemplo del `clamp()` sin verificar el valor en el anchor
+
+**Razón**: los coeficientes de `token-system.md §2` fueron afinados para ÍTERA Lex. Copiarlos a otra banda (o ajustar `min`/`max` sin recalcular la pendiente) suele dejar la transición en zona *mobile* → el token satura a `max` antes del anchor desktop: queda constante en 1366→2560 (no escala) y puede salir más grande que el baseline en el anchor (regresión). El `min` NO fija el anchor — es el piso de pantallas chicas. Caso real (Alquímica): un `body` "13→15" daba 15px ya en 1366 y 15px en 2560.
+
+**Regla**: re-derivar por proyecto con el anclaje por 2 puntos (`token-system.md §2.1`) y **computar `preferred` en cada anchor** para confirmar que da el valor buscado, antes de aceptar la fórmula.
+
+## 22. No asumir que `@theme` genera utilities desde un CSS satélite (ni tokenizar el chrome del lab)
+
+**Razón**: `@theme inline` solo emite utilities en el stylesheet root de Tailwind (el que importa `tailwindcss`). En un design system aislado (tokens scopeados en un archivo importado desde un componente, para no tocar la app viva) ese `@theme` queda inerte → `text-body`/`max-w-main`/`3xl:` no existen. Y los breakpoints custom no se pueden scopear a una clase.
+
+**Regla**: si los tokens viven en un CSS satélite, consumir por arbitrary value (`text-[length:var(--x)]`, `h-[var(--x)]`, `min-[1920px]:`) — ver `token-system.md §6.1`. Además, no aplicar los tokens del sistema a la navegación propia del lab/galería: es andamiaje, no entregable; el shell real es una story dentro del visor.

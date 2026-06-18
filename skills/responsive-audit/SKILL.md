@@ -149,6 +149,8 @@ Más:
 - **Desktop-first, no mobile-first**. Si el usuario pide mobile-first, declarar que este skill no es el adecuado y no improvisar.
 - **Evidencia o descarte**. Sin `archivo:línea` concreto el finding no entra al reporte.
 - **No escalar TODO con `clamp()`/`vw`**. Sólo los 6 protagonistas listados en `references/token-system.md`. Si tentás expandir, releer `references/anti-patterns.md` antes.
+- **Verificá el `clamp()` en el anchor, no confíes en el `min` ni en los coeficientes de ejemplo**. El `min` es el piso de pantallas chicas; el valor en 1366/1440 lo da `preferred`. Re-derivá la banda por proyecto y computá el valor en cada anchor (`token-system.md §2.1`). Coeficientes con banda mobile saturan y NO escalan en desktop (caso real: un `body` "13→15" dando 15px en 1366 y 15px en 2560).
+- **El modo de consumo depende de si el archivo de tokens es root de Tailwind**. Tokens en un CSS satélite (aislado, importado desde un componente) tienen `@theme` inerte → consumir por arbitrary value (`text-[length:var(--x)]`, `min-[1920px]:`), no por utilities nombradas (`token-system.md §6.1`). Y no tokenizar el chrome del lab/galería (es andamiaje, no entregable).
 - **No tocar paleta ni tokens semánticos existentes** (`--primary`, `--background`, surfaces, elevation, focus-ring, brand tokens). El skill es dimensional, no de color.
 - **No crear el archivo del reporte sin chequear**. Si ya existe `.planning/RESPONSIVE-AUDIT.md`, preguntar al usuario antes de sobrescribir o usar suffix de versión.
 - **No matar procesos** del dev server. Si no está corriendo, pedirle al usuario que lo levante.
