@@ -1,5 +1,7 @@
 # Motion y transiciones (admin panels ITERA)
 
+> **Método canónico ahora tokenizado en el skill `motion-audit`** (`itera-core/skills/motion-audit/`, symlink a claude+codex). El skill absorbió esta guía a la forma del design system (escala de duraciones, easings, presets, reduced-motion self-zeroing, checklist + plan por fases). Esta guía queda como **doctrina cross-repo** (referenciada desde el CLAUDE.md global) y fuente que el skill elevó. Para auditar/diseñar el motion de un repo: usar el skill. Para la referencia conceptual rápida: esta guía.
+
 Método canónico de animaciones y transiciones para los admin panels del ecosistema (Next.js + React y Laravel + Inertia + React). Consolida lo que veníamos anotando disperso en las guías de diseño de cada SaaS.
 
 **Fuentes que reemplaza/absorbe:**
