@@ -1,0 +1,4 @@
+interface:
+  display_name: "Extractos Fallos STJ — Río Negro"
+  short_description: "Extractos STJ ricos con clasificación"
+  default_prompt: "Use $rn-fallo-stj to generate a RAULI-style STJ extract with anchors and classification metadata."

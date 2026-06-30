@@ -1,9 +1,13 @@
 ---
-name: extractos-stj-rauli-itera
-description: Generate richer RAULI-style executive extractos and editorial classifications for Superior Tribunal de Justicia decisions, especially PJ Rio Negro STJ full decisions. Use when Codex must summarize STJ/TSJ-style appellate, constitutional, amparo, queja, casation, extraordinary appeal, execution, civil damages, labor-administrative, health, or institutional rulings into a substantive extract with anchors and classification metadata for future indexing. Do not use for routine formulaic lower-court operational rulings or official headnote/sumario rewriting.
+name: rn-fallo-stj
+description: Generate rich executive extractos (RAULI-style quality) and editorial classifications for PJ Río Negro Superior Tribunal de Justicia (STJ) full decisions (fallos). Use when Codex must summarize STJ/TSJ-style appellate, constitutional, amparo, queja, casation, extraordinary appeal, execution, civil damages, labor-administrative, health, or institutional rulings into a substantive extract with anchors and classification metadata for future indexing. Do not use for routine formulaic lower-court operational rulings or official headnote/sumario rewriting.
 ---
 
-# Extractos STJ RAULI Itera
+# Extractos Fallos STJ — Río Negro
+
+> Skill de fallos STJ de PJ Río Negro. El nombre histórico fue `extractos-stj-rauli-itera`
+> ("rauli" refería al *estilo* de calidad, no a Neuquén). La calibración 2026-06-30 vive en
+> `itera-lex-tools/api/docs/integrations/analisis-fallos-ia/calibracion-fallos-stj-rn-2026-06-30.md`.
 
 ## Purpose
 

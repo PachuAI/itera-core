@@ -58,6 +58,9 @@ Add new values conservatively and keep them stable.
 - `confirma`
 - `revoca`
 - `modifica`
+- `anula_reenvia` (alta calibración 2026-06-30: anula y reenvía con distinta integración)
+- `rechaza_planteo` (alta 2026-06-30: rechaza una presentación/conflicto sin entrar al fondo)
+- `admite_recusacion` (alta 2026-06-30)
 
 ### resultado
 
@@ -82,6 +85,9 @@ This field is critical for STJ work:
 - `abstracto`: no merits decision because the issue became moot.
 - `revision_limitada`: execution or procedural review with narrow scope.
 - `procesal_cierre`: closes route for procedural defects or lack of critique.
+- `nulidad_reenvio`: STJ admite el recurso y anula con reenvío; NO decide el fondo (≠ `fondo`). Alta 2026-06-30, outcome frecuente en casación/inaplicabilidad de ley.
+- `improcedencia_preventiva`: no hay caso concreto y actual todavía (planteo prematuro/preventivo). Distinto de `abstracto` (que es por mootness sobrevenida). Alta 2026-06-30.
+- `revision_correctora`: el STJ ejerce función correctora (p.ej. nulidad por pérdida de jurisdicción, art. 207 CP). Alta 2026-06-30.
 
 ### eje_argumental
 
@@ -97,6 +103,8 @@ The main reason that explains the result:
 - `cuestion_devenida_abstracta`
 - `revision_ejecucion_limitada`
 - `informes_tecnicos_desfavorables`
+- `arbitrariedad_falta_fundamentacion` (alta 2026-06-30: la sentencia recurrida es arbitraria por motivación aparente/insuficiente)
+- `falta_caso_concreto_actual` (alta 2026-06-30: no hay controversia actual y concreta que habilite la jurisdicción)
 
 ### sensibilidad
 
