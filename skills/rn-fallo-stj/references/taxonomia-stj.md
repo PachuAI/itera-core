@@ -112,6 +112,7 @@ Short normalized result:
 - `integracion_tribunal_confirmada`
 - `honorarios_readecuados`
 - `honorarios_anulados_reenvio`
+- `conflicto_no_resuelto_falta_caso` (conflicto de poderes/planteo rechazado por falta de caso concreto y actual; alta 2026-07-02, testigo 1144)
 
 ### alcance_decision
 

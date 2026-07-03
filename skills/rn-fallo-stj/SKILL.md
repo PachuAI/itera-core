@@ -41,7 +41,7 @@ Do not use for:
    - abstractness/mootness;
    - procedural closure.
 6. Extract decisive grounds that answer the actual procedural object.
-7. Draft 120-170 words, usually 2 paragraphs:
+7. Draft 90-180 words (target ~130), usually 2 paragraphs:
    - Paragraph 1: STJ result + practical effect.
    - Paragraph 2: planteo + decisive grounds + costs/fees if concrete.
 8. Produce classification metadata with the extract.
@@ -89,6 +89,22 @@ Choose `alcance_decision` before writing the first sentence:
 When in doubt between a merits description and the procedural gateway, lead with the
 gateway and set `needs_review: true`.
 
+## Appeals: Name Who Appealed, Derive the Result From the Effect
+
+The most damaging error is **inverting the practical result**. In an appeal or queja the
+dispositive verb (`hace lugar` / `rechaza`) applies to the *recourse*, not to the underlying
+claim. "Hacer lugar al recurso de la Fiscalía de Estado" against a sentence that had granted
+an amparo means the amparo was **revoked**, not granted.
+
+- Name the appellant explicitly in the first sentence: who filed the recourse the STJ is now
+  deciding (`la Fiscalía de Estado`, `la demandada`, `la defensa`, `el amparista`, `la ART`).
+- Derive `resultado` and the practical effect from what happens to the **original claim**, not
+  from the dispositive verb. If the STJ grants the losing party's appeal, the original claim falls.
+- Concretely for amparo: `hace_lugar_apelacion` + appellant is the defendant/State ⇒
+  `resultado="amparo_rechazado"`; appellant is the amparista ⇒ `resultado="amparo_admitido"`.
+- Write the first clause so a lawyer cannot misread the direction: state plainly whether the
+  protection / condemnation / claim **stands or falls**, right after the verb.
+
 ## Instrumental STJ Decisions
 
 Some `fallos/stj` rows are procedurally useful but not substantive merits decisions.
@@ -124,6 +140,10 @@ nearby value when the taxonomy already has an exact instrumental value:
   `eje_argumental="honorarios_base_regulatoria"` when the STJ redefines the regulatory
   base or amount, and `resultado="honorarios_anulados_reenvio"` when it annuls and
   remands the fee issue.
+  Start with the operative honorarios verb when possible: `El Superior Tribunal de
+  Justicia reguló...`, `modificó...`, or `hizo lugar al pedido de regulación...`.
+  Do not force a new merits narrative; say explicitly that the decision is instrumental
+  and does not reopen the underlying case.
 - Plazo recursivo extemporáneo:
   use `eje_argumental="plazo_recursivo_extemporaneo"` when closure rests on late
   filing or an expired appeal term.
@@ -166,12 +186,38 @@ For instrumental decisions, use the real dispositive verb at the start:
 - `El Superior Tribunal de Justicia declaró la caducidad...`
 - `El Superior Tribunal de Justicia declaró mal concedido...`
 - `El Superior Tribunal de Justicia admitió la excusación...`
+- `El Superior Tribunal de Justicia reguló/modificó honorarios...`
+
+The local gate accepts operative first verbs in the first words of the extract. Prefer
+these starts to avoid batch friction: `rechazó`, `hizo lugar`, `declaró`, `confirmó`,
+`revocó`, `anuló`, `admitió`, `intimó`, `modificó`, `reguló`.
+
+## The Extract Never Talks About Itself
+
+The `extracto` is publishable prose about the ruling, read by lawyers. It must never mention
+itself, its own classification, the review flow, or any internal tooling. All of that belongs
+in `review_reasons` and `clasificacion`, never inside `extracto`.
+
+Forbidden inside `extracto` (non-exhaustive):
+
+- Self-reference: "el extracto…", "este resumen…", "la clasificación se mantiene en…",
+  "queda/se marca para revisión", "revisión editorial/humana".
+- Internal tokens or flags: `tier=escape`, `needs_review`, `review_reasons`, backticks,
+  field names, or any pipeline vocabulary.
+- Justifying your own classification choice inside the prose.
+
+If you need to flag uncertainty, sensitivity, or escape tier, use `review_reasons`. The gate
+hard-fails (`meta_texto_editorial`) any extract that references itself or leaks internal tokens.
 
 ## Core Safety Rules
 
 - Do not say the STJ decided the merits if it only rejected a queja, REF, or admissibility gateway.
 - In quejas, lead with the closing/opening of the extraordinary path, not with the underlying claim as if it were newly decided.
 - In amparo, separate urgent constitutional/health protection from ordinary patrimonial or administrative disputes.
+- Education/disability amparos are not automatically `materia_principal="salud"`.
+  If the real object is school placement, inclusion, continuity, or educational access,
+  prefer `familia_nnya` with `sensibilidad=["nnya","discapacidad","anonimizacion"]`
+  and explain why the amparo route was admitted or rejected.
 - In abstractness, state that the court did not decide the constitutional merits.
 - In sensitive criminal, NNyA, health, disability, or execution matters, preserve cautious language.
 - Mirror the official source's identity treatment: use initials where the decision uses initials,
@@ -244,6 +290,12 @@ The gate validates these fields as controlled vocabulary:
 
 Do not invent ad hoc values. If no exact value fits, choose the closest stable value,
 set `needs_review: true`, and mention the taxonomy gap in `review_reasons`.
+
+`tipo_proceso`, `materia_principal`, and party descriptions must come from the **decision
+text**, not guessed from the carátula. Do not label `tipo_proceso="queja"` unless the text
+shows a queja: a recurso concedido or `declara_bien_concedido` is not a queja. Do not invent
+parties, amounts, or a `materia` the text does not state. If the process type is genuinely
+unclear, pick the closest taxonomy value from `tipo_proceso` and set `needs_review: true`.
 
 ## Review Triggers
 
