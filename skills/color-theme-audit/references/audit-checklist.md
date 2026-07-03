@@ -46,9 +46,9 @@ Para cada rol: presente / ausente / parcial. Si solo se ve visualmente sin códi
 |---|---|---|
 | 2.1 | `--background` | Base de la app |
 | 2.2 | `--foreground` | Texto principal. Contraste vs bg ≥ 4.5:1 ambos modos |
-| 2.3 | `--card` + `--card-foreground` | Surface alta (popover/dialog/dropdown layer) |
+| 2.3 | `--card` + `--card-foreground` | Surface alta (popover/dropdown layer) |
 | 2.4 | `--card-base` | Contenedor de grilla (capa intermedia). Es OPCIONAL pero típico del patrón v4.4 |
-| 2.5 | `--dialog` | Modal surface. Puede o no diferir de `--card` |
+| 2.5 | `--dialog` | Modal surface. ROL propio: no aliasar a `--card`/la capa más clara a ciegas — un panel grande lee mejor como **card elevado** (surface media + elevation-3 + backdrop) que como slab luminoso |
 | 2.6 | `--popover` + `--popover-foreground` | Popovers, tooltips |
 | 2.7 | `--secondary` + `--secondary-foreground` | Botones secondary, badges neutros |
 | 2.8 | `--muted` + `--muted-foreground` | Texto secundario / surface de menor jerarquía |

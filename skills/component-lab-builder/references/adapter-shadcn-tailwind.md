@@ -1,6 +1,10 @@
 # Adapter: shadcn + Tailwind v4 + bridge `[data-slot]` (LISTO)
 
-Stack: React + Tailwind v4 + shadcn (Radix) + tokens en CSS satélite scopeado a `.<proj>-ui` que tematiza shadcn por `[data-slot]`. Referencia: **Alquímica UI-Lab** (`resources/js/components/ui-lab/` + `resources/css/alquimica-tokens.css`, prefijo `--alquimica-*`). Otro SaaS de este stack: mismo patrón, prefijo `--<proj>-*`.
+Stack: React + Tailwind v4 + shadcn (Radix) + tokens en CSS satélite que tematiza shadcn por `[data-slot]`. Referencia: **Alquímica UI-Lab** (`resources/js/components/ui-lab/` + `resources/css/alquimica-tokens.css`, prefijo `--alquimica-*`). Otro SaaS de este stack: mismo patrón, prefijo `--<proj>-*`.
+
+> **⚠️ Estado POST-migración de Alquímica (jun 2026) — evitá DRIFT al leer los ejemplos de abajo:**
+> 1. **Tokens globalizados**: el satélite YA NO está scopeado a `.<proj>-ui`; se des-scopeó a `:root` (light) / `.dark` (dark), así que el bridge es **global** (`[data-slot=…]` sin el prefijo `.alquimica-ui …` que muestran los ejemplos). El `.alquimica-ui` sobrevive como **clase inerte** en `DsRoot` (marca + portal container), no como scope de tokens. En un SaaS PRE-globalización, los ejemplos con `.<proj>-ui [data-slot]` siguen literales.
+> 2. **Composiciones graduadas**: las piezas que abajo se asumen en `ui-lab/composition/` se mudaron a `@/components/ds/composition/*` (+ leaves de layout en `@/components/ds/shell/*`). Las stories importan de `@/components/ds`. Detalle y la "dualidad shell" → `lab-anatomy.md` §"Dos fases de vida del lab".
 
 ## Cómo se consumen los tokens (¡clave!)
 

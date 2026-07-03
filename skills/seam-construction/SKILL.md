@@ -15,7 +15,7 @@ Este es el **método canónico**. Hay variantes repo-specific que NO duplican el
 
 - **`skill-refactorizacion-linkea2`** — Linkea2: preview/public parity, contratos legacy, env split, sync de `.planning/` maps.
 - **`skill-refactorizacion-shope-ar`** — Shopear: tenant-by-host, onboarding `PendingStore`+cookie+sesión, auth multi-subdomain, validación con `build`.
-- **`skill-refactorizacion-itera-lex`** — ÍTERA Lex: además suma una capa propia (disciplina **Fallow-first** + secuencias para services/agregadores/upload). Es la más diferenciada.
+- **`arch-itera-lex`** — ÍTERA Lex: además suma una capa propia (disciplina **Fallow-first** + secuencias para services/agregadores/upload + wiring del grafo de dependencias). Es la más diferenciada.
 
 ## Core Principle
 
@@ -91,6 +91,8 @@ Do not combine extraction + naming overhaul + behavior change + data model chang
 - Cache invalidation on Next 16: use explicit tag helpers and `revalidateTag(tag, 'max')`.
 - Billing / subscription guards: default-deny. Missing subscription row ≠ allowed.
 - Env split: `env.ts` (server) and `public-env.ts` (client) do not merge.
+- Dependency direction flows one way: entrypoint → controller/shell → actions → services → providers/db. Inner layers never import outer ones; domain services import a vendor's *contract*, never its adapter; shared type modules never import server runtime (auth, db, env).
+- No cycles. If A and B import each other (directly or transitively), one responsibility is misplaced — not a dependency to live with. A `types ↔ service` or `helper ↔ caller` cycle is the usual tell after a careless extraction.
 
 ## Seam Quality Test
 
@@ -102,6 +104,31 @@ Pick the seam only if ALL are true:
 - It can be tested more directly after extraction.
 
 If only one or two are true, the cut is cosmetic. Skip it.
+
+## Connascence: Which Coupling To Break First
+
+The Seam Quality Test tells you *whether* a cut is worth it. Connascence tells you *which* coupling to break first when several compete. Connascence is the strength of coupling between two pieces of code — how much one must know about the other to stay correct.
+
+Two pieces are connascent if changing one forces a change in the other. Ordered weak → strong:
+
+- **Static** (visible by reading the code, safer to change): Name → Type → Meaning/convention → Position (argument order) → Algorithm (both sides must share the same logic, e.g. hashing).
+- **Dynamic** (only manifests at runtime, hardest to find and change): Execution order → Timing → Value (two values must stay in sync) → Identity (both must refer to the same instance).
+
+Two rules turn this into a prioritizer:
+
+1. **Prefer weaker connascence.** A seam that downgrades coupling is real work, not cosmetic: positional args → a named options object (Position → Name); a magic-string protocol → a shared typed enum (Meaning → Type); a runtime ordering contract → an explicit pipeline (Execution order → Name).
+2. **Keep strong connascence local.** Strong coupling inside one module is tolerable; the same coupling spread across modules is the bug. A good seam either downgrades the coupling or pulls both sides into one module so the strong connascence stops crossing a boundary.
+
+When several cuts are possible, break the **strongest, least-local** connascence first — that is where a change today is most likely to silently break something far away. Dynamic connascence that crosses module boundaries beats a long file every time.
+
+## Dependency Direction & Cycles
+
+Seams split responsibilities, but they only hold if the dependency *graph* stays sane. Complexity metrics (cyclomatic, cognitive, churn) see *inside* files; they are blind to coupling *between* modules. A feature can pass every per-file gate and still be a tangle: wrong-direction imports, cycles, god-modules with huge fan-in.
+
+- **One direction.** Dependencies flow entrypoint → controller/shell → actions → services → providers/db, and never back. Inner layers do not import outer ones. A domain service imports a provider's *contract*, not its adapter. Shared type/contract modules import no server runtime.
+- **Acyclic (ADP).** No import cycles, direct or transitive. A cycle means two responsibilities are entangled and should be one module or re-split — it is never "a dependency to live with".
+- **Fan-in is a signal.** A module imported by many places is a coupling hotspot even at low internal complexity. A new "utils" module with high fan-in usually hides several responsibilities; reject it (see the seam quality test).
+- **When to check.** After any cut that moves logic to new files — that is exactly when `types ↔ service` and `helper ↔ caller` cycles sneak in. Add a cheap cycle check to the verify step (e.g. `madge --circular`); reach for layered-rule enforcement (e.g. `dependency-cruiser`, ArchUnit-style fitness functions) only when import direction starts drifting for real. The repo-specific variant wires the actual tool.
 
 ## Red Flags
 

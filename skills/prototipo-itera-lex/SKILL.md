@@ -10,7 +10,7 @@ description: >-
   React: "prototipá el wizard de X", "armame un mock de la pantalla de Y", "quiero ver 3 opciones de
   UI para Z", "rediseñemos el modal de W", "maquetá esto en HTML antes de implementar", "cómo quedaría
   la vista de …", "/prototipo-itera-lex". También cuando una feature nueva necesita diseñarse visualmente
-  primero. NO uses este skill para implementar en la app real (eso es skill-refactorizacion-itera-lex /
+  primero. NO uses este skill para implementar en la app real (eso es arch-itera-lex /
   frontend en Next), ni para piezas de marketing/redes/video (esos son otros skills iteralex-*).
 ---
 

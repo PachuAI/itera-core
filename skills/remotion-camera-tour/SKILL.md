@@ -37,11 +37,11 @@ Casos típicos:
 - **Audio narrativo** (MP3/WAV) ya grabado/generado. Ver `references/elevenlabs-flow.md` para el flujo de generación.
 - **JSON con timestamps word-level** (ElevenLabs Scribe formato `[{text, start, end}]`). Para corregir transcripciones del nombre del producto, editar el JSON manualmente.
 
-**Setup del proyecto Remotion** (si no existe): copiar molde de un proyecto existente del taller (`itera-social/projects/<slug>/campañas/<stage>/remotion/`). Estructura mínima:
+**Setup del proyecto Remotion** (si no existe): copiar molde de un proyecto existente del taller (`itera-social/projects/<slug>/campañas/<campaña>/remotion/`). El proyecto es **miembro del pnpm workspace** del taller (ya NO tiene su propio `pnpm-workspace.yaml`: el `allowBuilds: esbuild` vive en el de la raíz). Estructura mínima:
 
 ```
-stages/<stage>/remotion/
-├── package.json + pnpm-workspace.yaml (allowBuilds esbuild)
+campañas/<campaña>/remotion/
+├── package.json (declara "@iteralex/components": "workspace:*")
 ├── remotion.config.ts (NO override webpack para CSS — la lib viene buildeada)
 ├── tsconfig.json (target ES2020+ para Array.includes)
 ├── public/
@@ -59,14 +59,13 @@ stages/<stage>/remotion/
 
 ### 1. Buildear la biblioteca
 
-La biblioteca debe estar buildeada en `dist/` (Vite library mode) para que Remotion la importe sin conflict de CSS loaders. Ver `references/lib-bridge.md` para el setup completo.
+La biblioteca debe estar buildeada en `dist/` (Vite library mode) para que Remotion la importe sin conflict de CSS loaders. El proyecto Remotion la consume como paquete workspace `@iteralex/components` (`workspace:*`), no por path relativo. Ver `references/lib-bridge.md` para el setup completo.
 
 ```bash
-cd projects/<slug>/components
-pnpm build:lib   # genera dist/index.js + dist/index.css
+pnpm --filter @iteralex/components build:lib   # genera dist/index.js + dist/index.css
 ```
 
-Rebuildear cada vez que se cambia un componente de la biblioteca.
+Rebuildear cada vez que se cambia un componente de la biblioteca. `pnpm install` siempre desde la raíz del taller.
 
 ### 2. Mapear el guion al JSON de timestamps
 
@@ -86,13 +85,13 @@ import { Camera } from "./Camera";
 import { BeatCaptions } from "./BeatCaptions";
 import { F, colors } from "../tokens";
 
-// IMPORTANTE: importar del dist buildeado, no del source.
-import "../../../../../components/dist/index.css";
+// IMPORTANTE: el dist buildeado se consume como paquete workspace, no del source.
+import "@iteralex/components/styles";
 import {
   DashboardShell, View1, View2, Modal,
   CursorOverlay, ClickRipple,
   DEMO,                  // ← constants compartidas (client name, file, causa, ...)
-} from "../../../../../components/dist/index.js";
+} from "@iteralex/components";
 
 // 1. Targets de cámara en coords del "stage".
 const VIEW_FULL = { x: STAGE.width / 2, y: STAGE.height / 2, scale: 1.0 };
@@ -172,11 +171,12 @@ Las reglas detalladas viven en `references/coreografia.md`. Resumen:
 ### 5. Iterar en el Studio
 
 ```bash
-cd stages/<stage>/remotion
+cd projects/<slug>/campañas/<campaña>/remotion
 pnpm dev   # abre Remotion Studio en localhost:3001 (o el puerto disponible)
+# pnpm install va SIEMPRE desde la raíz del taller, no desde acá
 ```
 
-HMR detecta cambios en `Camera.tsx`, `BeatCaptions.tsx`, `<Composition>.tsx`, y `tokens.ts`. **NO** detecta cambios en la biblioteca — para eso rebuildear (`pnpm build:lib` en `components/`).
+HMR detecta cambios en `Camera.tsx`, `BeatCaptions.tsx`, `<Composition>.tsx`, y `tokens.ts`. **NO** detecta cambios en la biblioteca — para eso rebuildear (`pnpm --filter @iteralex/components build:lib`).
 
 Iterar:
 - Coords de los targets de cámara hasta que enfoquen donde querés

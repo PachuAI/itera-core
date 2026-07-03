@@ -520,7 +520,7 @@ import {
   // ...
   IconGoogleDrive,    // ← ya viene buildeado
   IconArchivos,
-} from "../../../../../components/dist/index.js";
+} from "@iteralex/components";
 
 // Usarlo igual que cualquier otro ícono
 <PainCard

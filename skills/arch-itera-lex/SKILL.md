@@ -1,15 +1,19 @@
 ---
-name: skill-refactorizacion-itera-lex
-description: Diseñar, implementar o refactorizar modulos de ÍTERA Lex SaaS con arquitectura modular incremental, puntos de corte chicos, API publica estable, Fallow como medidor, separacion UI/server/actions/services/providers y guardrails multi-tenant antes de que la complejidad se concentre.
+name: arch-itera-lex
+description: Diseñar la arquitectura modular de un modulo NUEVO de ÍTERA Lex SaaS, o refactorizar uno que crecio mezclando UI/hooks/actions/services/integraciones. Cortes chicos por seam, API publica estable, Fallow como medidor de complejidad, direccion de dependencias sin ciclos, separacion UI/server/actions/services/providers y guardrails multi-tenant antes de que la complejidad o el acoplamiento se concentren.
 ---
 
-# Skill Refactorizacion Itera Lex
+# Arquitectura Modular — ÍTERA Lex
+
+> Antes se llamaba `skill-refactorizacion-itera-lex`. Nacio para refactor, pero hoy cubre por igual
+> los dos modos de `seam-construction`: **planificar** la arquitectura de un modulo nuevo (Construction)
+> y **partir** un concentrador existente (Recovery). El nombre viejo subvaloraba la mitad de planificacion.
 
 Usar este skill cuando un modulo del producto crecio mezclando UI, hooks, server actions, services e integraciones externas, y hace falta bajarle complejidad sin reescribirlo entero.
 
 Tambien usarlo al planear o implementar features nuevas en el SaaS para que nazcan con fronteras modulares claras: page/server, shell/render, controller/hook, actions, services, providers, tipos compartidos, validaciones y tests. El objetivo no es solo corregir deuda, sino evitar que la siguiente feature cree el proximo concentrador.
 
-> **Relación con `seam-construction`**: el catálogo de seams y el execution loop genéricos viven en `seam-construction`. Este skill NO los duplica — agrega lo propio de ÍTERA Lex: la **disciplina Fallow-first** (presupuesto de complejidad antes del patch, `crap_above=0` en archivos tocados, `pnpm fallow:ui-health`) y las **secuencias específicas** (services grandes, agregadores read-only, upload/storage/security) con sus guardrails de dominio (multi-tenant, `actividad.create()` en `$transaction`, etc.). Para el método base de cortes por seam, ver `seam-construction`; acá está la capa ÍTERA Lex.
+> **Relación con `seam-construction`**: el catálogo de seams, el execution loop, la **lente de connascence** (priorizar qué acoplamiento romper primero) y el principio de **dirección de dependencias / sin ciclos** son genéricos y viven en `seam-construction`. Este skill NO los duplica — agrega lo propio de ÍTERA Lex: la **disciplina Fallow-first** (presupuesto de complejidad antes del patch, `crap_above=0` en archivos tocados, `pnpm fallow:ui-health`), las **secuencias específicas** (services grandes, agregadores read-only, upload/storage/security) con sus guardrails de dominio (multi-tenant, `actividad.create()` en `$transaction`, etc.), el **puente seam↔capa** (ver "Puntos de corte priorizados") y el **wiring del grafo de dependencias** (ver "Dirección de dependencias y ciclos"). Para el método base de cortes por seam, ver `seam-construction`; acá está la capa ÍTERA Lex.
 
 ## Bootstrap
 
@@ -117,20 +121,24 @@ Cuando el pedido sea avanzar "lo mas posible", "una buena tanda" o similar:
 
 ## Puntos De Corte Priorizados
 
-1. UI repetida entre pantallas hermanas -> componente compartido.
-2. Pantalla gigante -> shell orquestador + piezas de render chicas.
-   - Page server: params, sesion, data y serializacion.
-   - Shell/render: layout y composicion visual.
-   - Controller/hook: estado client y handlers.
-   - Params/navigation: parse/build de URL fuera del JSX.
-   - Estados: empty/loading/error/results/pagination separados si conviven.
-   - Cards/actions: view models y acciones visibles derivadas antes del render.
-3. Server actions duplicadas -> helper compartido sin cambiar la surface publica.
-4. Tipos serializados repetidos -> modulo de tipos del feature.
-5. Integracion externa dominando la UI -> separar `workspace` de `provider` antes de seguir puliendo esa integracion.
-6. Service grande -> fachada publica estable + internals por responsabilidad.
-7. Writes sensibles -> separar validacion, construccion de payload y efectos externos sin romper la transaccion.
-8. Agregador read-only grande -> fachada publica estable + chunks por contexto.
+> **Puente con el catálogo de seams** (`seam-construction/references/seam-patterns.md`): cada corte de
+> abajo es el nombre ÍTERA Lex de un seam canónico. El tag entre paréntesis es el seam genérico —
+> mismo concepto, distinto vocabulario. Un agente que solo lee este skill hereda igual el catálogo.
+
+1. UI repetida entre pantallas hermanas -> componente compartido. *(dedup; no es un seam puntual)*
+2. Pantalla gigante -> shell orquestador + piezas de render chicas. *(**Shell + effects + leaves seam**)*
+   - Page server: params, sesion, data y serializacion. *(Boundary/entrypoint)*
+   - Shell/render: layout y composicion visual. *(Shell)*
+   - Controller/hook: estado client y handlers. *(Effects)*
+   - Params/navigation: parse/build de URL fuera del JSX. *(Domain action seam — builders)*
+   - Estados: empty/loading/error/results/pagination separados si conviven. *(Leaf renderer seam)*
+   - Cards/actions: view models y acciones visibles derivadas antes del render. *(View-model seam)*
+3. Server actions duplicadas -> helper compartido sin cambiar la surface publica. *(**Scoped action seam**)*
+4. Tipos serializados repetidos -> modulo de tipos del feature. *(≈ **Schema seam** / contrato de tipos)*
+5. Integracion externa dominando la UI -> separar `workspace` de `provider` antes de seguir puliendo esa integracion. *(**Workspace / provider seam**)*
+6. Service grande -> fachada publica estable + internals por responsabilidad. *(fachada + internals; ver "Secuencia para services grandes")*
+7. Writes sensibles -> separar validacion, construccion de payload y efectos externos sin romper la transaccion. *(**Guard / cache seam** + transacción)*
+8. Agregador read-only grande -> fachada publica estable + chunks por contexto. *(fachada + chunks; cada chunk ≈ **View-model seam**)*
    - Mantener `getXContext()`, `search()`, `buildDashboard()` o equivalente como fachada.
    - Extraer chunks por entidad, vista o responsabilidad: `causa`, `cliente`, `dashboard`, `related`, `summary`, etc.
    - Cada chunk devuelve un contrato simple y testeable, por ejemplo `{ parts, sourceIds, suggestedActions }` o `{ rows, totals, warnings }`.
@@ -215,6 +223,54 @@ Usar mediciones livianas para decidir si seguir:
 10. Si el hotspot aparece en un archivo nuevo creado por el corte, tratarlo como parte del mismo vertical y no como deuda futura cosmetica.
 11. Confirmar que los tests agregados siguen apuntando al comportamiento publico, no a detalles privados del helper recien extraido.
 12. Si Fallow global queda verde pero lista refactoring targets sin `crap_above`, documentarlos como oportunidades, no como bloqueo del corte.
+
+## Direccion De Dependencias Y Ciclos (Ceguera De Fallow)
+
+Fallow mide complejidad **DENTRO** de cada archivo (ciclomática, cognitiva, CRAP, churn, dupes,
+dead-code). NO mide el acoplamiento **ENTRE** módulos: dirección de imports, ciclos ni fan-in. Por eso
+un feature puede tener todos los archivos en verde y un grafo de dependencias hecho un bollo. El corte
+por seam no terminó hasta que la estructura del grafo también queda sana. Concepto genérico en
+`seam-construction` (Core Rules + sección "Dependency direction & cycles"); acá el wiring del repo.
+
+1. **Dirección permitida** (de afuera hacia adentro, nunca al revés):
+   `page/route -> shell/controller -> actions -> services -> providers/db`.
+   - UI/shell NO importa services ni `@/lib/db` directo: pasa por una action.
+   - El service de dominio NO importa el adapter del provider externo: importa el contrato
+     (`workspace`), no la implementación (`providers/<vendor>`).
+   - Los tipos/contratos compartidos (`src/lib/types/*`) NO importan runtime server (auth, db, env).
+   - Un módulo de tipos no debe importar de su propio service (evita el ciclo `service <-> types`).
+2. **Ciclos = prohibido (sobre el baseline).** Acyclic Dependencies Principle: si A importa B y B
+   importa A (directo o transitivo), una de las dos responsabilidades está mal ubicada. Comando ya
+   wireado en el repo: **`pnpm check:cycles`** (= `madge --circular src` + `.madgerc`). El `.madgerc` fija:
+   - `tsConfig` → resuelve los alias `@/` (sin esto, falsos negativos).
+   - `excludeRegExp: lib/generated` → el cliente Prisma generado tiene ~97 ciclos internos que NO son
+     nuestros (igual que `check-quality.mjs` ignora `src/lib/generated/`).
+   - `detectiveOptions.skipTypeImports: true` → cuenta solo ciclos de **valor** (runtime). Los `import
+     type` los borra TS al compilar, así que un ciclo type-only es inofensivo y no debe contar.
+   - **NO esperar cero.** Baseline runtime 2026-06-10: **1 cluster real** — `workspace-tools-provider →
+     tools-registry → tools/*-tool` (registry pattern). El criterio es **no agregar ciclos NUEVOS**
+     (ratchet, igual que el gate `new-only` de Fallow), no llevar a cero de un saque.
+   - Sin `skipTypeImports` el mismo repo reportaba 5 clusters; los otros 4 eran type-only (admin
+     user-components, expediente header↔switch, presupuestos section↔items ×2). Por eso se mide runtime.
+   - El corte cierra solo si no sumó un cluster fuera del baseline. Si tu cut tocó el de workspace-tools,
+     aprovechá y rompelo (mover el contrato/hook compartido a un tercer módulo que ambos importen).
+3. **Cuándo correrlo:** después de cualquier corte que mueva lógica a archivos nuevos (extraer
+   internals de un service, partir un shell, sacar tipos). Es justo cuando se cuelan ciclos `types <->
+   service` o `helper <-> caller`. Si el corte introdujo un ciclo, el corte no cerró.
+4. **Fan-in como señal:** un módulo importado por 20+ lugares es un concentrador de acoplamiento aunque
+   su complejidad interna sea baja. Si al partir aparece un helper "utils" con fan-in alto, revisar si
+   esconde varias responsabilidades (volver a "Checklist de riesgo Fallow": rechazar utils genéricos).
+5. **Estado del wiring en el repo:**
+   - **Paso 1 — HECHO (2026-06-10):** `madge` como devDep + `.madgerc` (tsConfig + exclude generated +
+     skipTypeImports) + script `check:cycles`. Report-only, no bloquea. El skill lo corre después de
+     cada cut estructural; el script lo formaliza.
+   - **Paso 2 — gate ratchet (opcional, pendiente):** un `scripts/check-cycles.mjs` que compara contra
+     un baseline committeado (hoy: el cluster workspace-tools) y falla solo ante ciclos NUEVOS, sumado a
+     `release:check`. Mismo patrón `new-only` que `fallow audit`. NO meter `check:cycles` crudo en
+     `release:check`: exit 1 hoy por el cluster conocido. Con 1 solo cluster, romperlo y meter gate
+     duro `==0` también es opción válida.
+   - **No** saltar a `dependency-cruiser` (reglas de capas completas) salvo que la dirección de imports
+     empiece a derivar de verdad; para un solo dev en multi-agente, el check de ciclos alcanza.
 
 ## Validacion
 

@@ -25,6 +25,7 @@ Basado en el video 04 (Whosajid) + patrón surfaces v4.4 ÍTERA Lex. Cubre **pro
    - **1**: cards interactivos en grilla (estado default).
    - **2**: hover de cards, popovers, dropdowns.
    - **3**: modales, dialogs, tooltips destacados.
+6. **El modal NO es necesariamente la capa más clara**. `--dialog` es un ROL propio (no aliasar a `--card`/la superficie más alta a ciegas — esa capa suele ser también la del *highlight raised*: item activo de menú, hover secundario). Un panel de modal **grande** en la capa más clara se lee como "slab luminoso" en dark; modelarlo como **card elevado** (surface media tipo card de contenido + `elevation-3` + backdrop dim) pop por **sombra**, no por lightness, y los campos (surface raised) **levantan** sobre él como sobre cualquier card. Regla: elevation-3 es la SOMBRA del modal; la SUPERFICIE puede ser media. Implementación de referencia: rol `--alquimica-dialog = surface-1` en alquimica-crm.
 
 ## 2. Capas canónicas (shell-receding pattern)
 

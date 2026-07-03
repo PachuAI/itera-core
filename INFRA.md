@@ -410,9 +410,9 @@ Datos vivos al 2026-05-22 vía `coolify database list --format json`. Todas con 
 |-------|-------|
 | **URL** | http://zkokokgkk8gccoowo0g08ggg.89.167.29.201.sslip.io |
 | **Coolify UUID app** | `zkokokgkk8gccoowo0g08ggg` |
-| **Git branch** | master |
-| **Stack** | Laravel 12 (misma base que CRM prod) |
-| **Notas** | Entorno de staging/testing. Mismas env vars que produccion pero con APP_ENV=staging |
+| **Git branch** | `feat/migracion-ds-produccion` (verificado live 2026-06-30) |
+| **Stack** | Laravel 12 · Dockerfile (misma base que CRM prod) |
+| **Notas** | Entorno de staging/testing. Comparte PostgreSQL `uw4008o04gsogcc040csko8s` y Redis `fow8cs84sccc4c0g4k8s84gs` con produccion; no es sandbox de datos. Mismas env vars que produccion pero con APP_ENV=staging |
 
 **Env vars:** Mismas keys que alquimica-crm produccion (sin NIXPACKS_PHP_*, ASSET_URL, SESSION_LIFETIME, SESSION_ENCRYPT).
 

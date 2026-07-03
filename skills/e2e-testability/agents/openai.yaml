@@ -1,0 +1,4 @@
+interface:
+  display_name: "E2E Testability"
+  short_description: "Label UI for stable Playwright locators + build persona-based E2E user journeys."
+  default_prompt: "Prepare this repo for faithful E2E tests: apply the accessible-name contract so Playwright can target the UI by role/label, then build user journeys per user class that assert durable state."

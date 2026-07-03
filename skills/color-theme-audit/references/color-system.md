@@ -53,7 +53,7 @@ El sistema mínimo de roles que un proyecto profesional necesita. No todos van a
   --card: ...;               /* Cards genéricas, popovers, dropdowns */
   --card-foreground: ...;
   --card-base: ...;          /* Contenedor de grilla de cards (capa intermedia) */
-  --dialog: ...;             /* Surface de modales */
+  --dialog: ...;             /* Surface de modales. ROL propio (no aliasar a --card a ciegas): un panel grande lee mejor como CARD ELEVADO (surface media + elevation-3 + backdrop) que en la capa más clara */
   --popover: ...;            /* Popovers, tooltips, menus */
   --popover-foreground: ...;
 
@@ -120,7 +120,7 @@ Esto NO es inversión automática. Es física visual: en dark, la luz viene de a
   --background:   oklch(0.105 0 0);   /* near black */
   --sidebar:      oklch(0.075 0 0);   /* -3 vs bg — recede */
   --card-base:    oklch(0.18 0 0);    /* +7.5 vs bg — contenedor de grilla */
-  --card:         oklch(0.235 0 0);   /* +13 vs bg — popover, dropdown, dialog */
+  --card:         oklch(0.235 0 0);   /* +13 vs bg — popover, dropdown (dialog = rol propio, ver --dialog) */
   --foreground:   oklch(0.985 0 0);   /* near white */
   --muted-foreground: oklch(0.75 0 0); /* ~8:1 sobre bg */
 }

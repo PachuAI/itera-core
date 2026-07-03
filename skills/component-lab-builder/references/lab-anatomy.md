@@ -13,7 +13,7 @@ components/ui-lab/
 ├── gallery-shell.tsx     # el visor: sidebar de categorías + ThemeSwitcher + canvas
 ├── iframe-host.tsx       # monta cada story con createPortal al body del iframe
 ├── responsive-canvas.tsx # el iframe + resize de resoluciones + zoom
-├── shell/                # primitivas de layout (PageBody, PageWidth, AppShellFrame)
+├── shell/                # FRAMES del lab (AppShellFrame, ImmersiveShellFrame, MobileShellFrame, sidebar-nav)
 ├── composition/          # piezas que combinan primitivas (DataTable, FormDialog, Select…)
 │   ├── iframe-portal.tsx # IframePortalProvider + useIframePortalContainer (CORE, ver abajo)
 │   └── …
@@ -21,6 +21,16 @@ components/ui-lab/
 ```
 
 itera-ui (forma equivalente): `src/gallery/{registry,canvas,stories,shell}` + `src/lib/{primitives,domain,tokens}`.
+
+## Dos fases de vida del lab (evita DRIFT)
+
+El árbol de arriba es la fase **lab-owns**: las composiciones viven DENTRO del lab (`ui-lab/composition/`). Pero cuando el SaaS **migra el lab a producción** (las primitivas se "**gradúan**" a la biblioteca real para que las usen las pantallas reales), el lab pasa a **CONSUMIR** esa biblioteca. Estado de **Alquímica POST-migración** (jun 2026) — verificá SIEMPRE cuál es la fase antes de escribir imports:
+
+- **Las composiciones y los leaves de layout SE MUDARON** a la biblioteca real: `@/components/ds/composition/*` (DataTable, FormDialog, Select, CapacityBar, KpiStrip, SectionCard, StatTile…) y `@/components/ds/shell/*` (page-body, page-width, screen-header). Las stories importan de ahí (`@/components/ds/...`), **NO** de `ui-lab/composition`.
+- **`ui-lab/composition/` queda con SOLO `iframe-portal.tsx`** (el provider de portal es lab-only: en prod los overlays portalean a `document.body` / al `DsRoot`, no al iframe).
+- **El lab CONSERVA los FRAMES**: `ui-lab/shell/{app-shell-frame,immersive-shell-frame,mobile-shell-frame}` + `ui-lab/shell/sidebar-nav`. Razón = **dualidad shell**: el shell PRODUCTIVO (`ds/shell/{AppShell,ImmersiveShell,SidebarNav}`) usa `usePage()/router/Link` (Inertia) y NO corre en la galería (no hay routing en el iframe); los frames del lab son su gemelo presentacional y navegan con `useLabNavigation`. Comparten el DISEÑO visual + las composiciones `ds/` (compartidas), pero son implementaciones separadas (riesgo de drift del chrome, aceptado).
+
+**Al agregar una story post-graduación**: composiciones de `@/components/ds/composition/*`, leaves de layout de `@/components/ds/shell/*`, FRAME del lab (`../shell/app-shell-frame`) y portal de `../composition/iframe-portal`. Molde de imports = una story reciente (`stories/estadisticas.tsx`, `stories/escritorio.tsx`). Registrar = igual que siempre (spread en `registry.tsx`); si la pantalla tiene su ítem en `ui-lab/shell/sidebar-nav` sin `storyId`, cablearlo.
 
 ## El modelo de Story
 

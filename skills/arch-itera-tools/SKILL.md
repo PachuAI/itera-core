@@ -1,9 +1,12 @@
 ---
-name: skill-arquitectura-itera-tools
+name: arch-itera-tools
 description: Diseñar, planificar, auditar o construir nuevas herramientas y buscadores en ÍTERA Lex Tools, especialmente arquitectura frontend Next.js server-driven, contratos FastAPI, tabs, query params, filtros, chips activos, navegación y prevención de deuda Fallow antes de implementar UX.
 ---
 
-# Skill Arquitectura ÍTERA Lex Tools
+# Arquitectura — ÍTERA Lex Tools
+
+> Antes se llamaba `skill-arquitectura-itera-tools`. Renombrado a `arch-itera-tools` por consistencia
+> con `arch-itera-lex` (la familia `arch-*` agrupa los skills de arquitectura/modularidad del ecosistema).
 
 Usar este skill antes de construir, rediseñar, auditar o mejorar una herramienta del portal público ÍTERA Lex Tools, en especial buscadores jurisprudenciales, índices persistentes, ingestas de datos oficiales o features que crucen frontend y API.
 

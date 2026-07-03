@@ -1,0 +1,4 @@
+interface:
+  display_name: "ÍTERA Lex Rollout Check"
+  short_description: "Chequea rollouts dev/prod de ÍTERA Lex"
+  default_prompt: "Use $iteralex-rollout-check to determine whether recent ÍTERA Lex commits require development or production rollouts."
