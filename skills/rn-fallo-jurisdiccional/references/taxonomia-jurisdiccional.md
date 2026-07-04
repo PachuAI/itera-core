@@ -60,6 +60,8 @@ Generic dispositive act (closed, generous). Pick the closest; if none fits, clos
 - Penal de fondo: `condena`, `absuelve`, `sobresee`.
 - Ejecución penal: `concede_excarcelacion`, `rechaza_excarcelacion`, `concede_libertad_condicional`, `rechaza_libertad_condicional`, `unifica_pena`, `resuelve_computo`, `revoca_condicionalidad`, `rechaza_habeas_corpus`, `hace_lugar_habeas_corpus`, `anula_sancion_disciplinaria`, `computa_pena`, `sustituye_pena`.
 - Cámara (alzada): `confirma`, `revoca`, `modifica`, `declara_desierto`, `declara_mal_concedido`.
+- Incidental de recurso / recusación (también en Cámara): `rechaza_queja`, `hace_lugar_queja`, `admite_recusacion`, `rechaza_recusacion`, `admite_excusacion`.
+- Sucesiones: `declara_herederos` (declaratoria: `RESUELVO: Declarar que por fallecimiento de X le sucederán…`).
 - Instrumental: `rectifica`, `regula_honorarios`, `aprueba_liquidacion`, `resuelve_impugnacion_liquidacion`, `ratifica_medidas`, `concede_beneficio_litigar`, `declara_abstracta`, `declara_nulidad`, `aprueba_acuerdo`, `declara_caducidad`, `declara_incompetencia`, `ordena_medida`.
 
 ### alcance_decision

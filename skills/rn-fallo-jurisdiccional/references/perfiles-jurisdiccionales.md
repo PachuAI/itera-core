@@ -57,6 +57,15 @@ payment term, costs, fees. Omit bank accounts, emails, operational payment instr
 Separate granted, denied and deferred measures. State the immediate procedural effect. Do not
 present a cautelar as deciding the merits (`alcance_decision=cautelar`).
 
+### Sucesiones (declaratoria de herederos)
+
+55–90 words. The dispositive is a **formal** `RESUELVO: Declarar que por fallecimiento de <causante>
+le sucederán <herederos>…` — treat it as a normal header, **never** `sin_resuelve_formal`.
+`tipo_decision=declara_herederos`, `alcance_decision=fondo`, `grupo_editorial=registro`. Names of
+causante/herederos are mirrored (successions come named). Open with the declaratoria; state who is
+declared heir and the reserved rights of the cónyuge supérstite if the dispositive fixes them. Omit
+edicts, registry mechanics and testamentary-report boilerplate.
+
 ---
 
 ## familia_sensible
@@ -79,6 +88,12 @@ the text is about sexual violence or child abuse.
 State whether the demand was granted and the amount/percentage and payment mechanics if
 dispositive (retención directa, plazo). NNyA present → `sensibilidad: ["nnya", "anonimizacion"]`
 (Tier A, publishable). Do not narrate the family conflict.
+
+**Alimentos + medidas protectorias in the same ruling:** if the new/express dispositive is the
+fixing of the cuota and the protective measures come only ratified, lead with alimentos
+(`tipo_decision=fija_cuota_alimentaria`) and keep the ratified measures in the extract as the
+second order. Anchor the `DISPONGO la fijación de alimentos…` clause; do not anchor a secondary
+`ratifíquese`/`líbrese`.
 
 ### Divorcio / autorización para viajar / régimen de comunicación
 
@@ -141,6 +156,10 @@ merits, state the concrete administrative act reviewed and the outcome.
 ### Cámara appeals (confirma / modifica / revoca)
 
 Name who appealed; derive the result from the effect on the original claim (see `SKILL.md`).
+Structure the extract in five beats: (1) **quién apeló**, (2) **qué se revoca/modifica**, (3)
+**qué se confirma**, (4) **qué queda para ejecución**, (5) **costas/honorarios** if they are in the
+dispositive. This is the shape for patrimonial/familia-patrimonial appeals (liquidación de sociedad
+conyugal, daños de alzada).
 
 - Confirmatoria: explain why the grievance does not defeat the lower decision; "mantiene/confirma".
 - Modificatoria: open with the concrete delta; separate what changes from what stands; fees/

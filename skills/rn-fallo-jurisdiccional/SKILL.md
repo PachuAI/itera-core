@@ -104,6 +104,10 @@ enforces the outer band.
 - **`sustantivo`** — definitivas laborales (Cámara del Trabajo), civil daños,
   contencioso-administrativo de fondo, amparo salud, cámara appeals (confirma/revoca/modifica).
   Target **120–170** (gate 105–185). This is the STJ-like substantive object, single instance.
+  **Even when `tier=escape`, hit 120–170 — do not scrape the 105 floor.** For a long liquidación or
+  sucesión, summarize the dispositive + central agravios, not the full history. For cámara appeals
+  use the 5-part structure in `references/perfiles-jurisdiccionales.md` (quién apeló → qué se
+  revoca/modifica → qué se confirma → qué queda para ejecución → costas/honorarios si son dispositivo).
 
 See `references/perfiles-jurisdiccionales.md` for the per-matter rules and safe formulations.
 
@@ -113,19 +117,35 @@ Lower-court dispositives are usually at the end and use varied headers. Find the
 formal dispositive block:
 
 - Colegiado / cámara: `RESUELVE` / `SE RESUELVE` / `FALLA` / `FALLO` (may read `RESUELVE por MAYORIA/unanimidad: ...`).
-- Unipersonal: `RESUELVO` / `FALLO`.
+- Unipersonal: `RESUELVO` / `FALLO` / `SENTENCIO` (monitorias y civil de Villa Regina).
+- Cierre postpuesto (la orden va **antes** del cierre): `Ante ello / Por ello / En consecuencia /
+  En mérito de ello, corresponde <verbo>… ASÍ LO RESUELVO` (o `TODO LO QUE ASÍ, RESUELVO`), o
+  `DISPONGO <orden>. En su lugar, RESUELVO <orden>`. Anclá la orden sustantiva
+  (`declararme incompetente`, `mantener el cese`), nunca el token de cierre.
 - Providencia / auto (no header): the dispositive is an enclitic imperative — `fíjase`, `decrétase`,
-  `líbrese`, `homológase`, `intímese`, `regúlese`, `ratifíquese`. Anchor on that verb, not on the
-  closing formulas (`notifíquese`, `regístrese`, `protocolícese`, `archívese`).
+  `líbrese`, `homológase`, `intímese`, `regúlese`, `ratifíquese/ratifíquense`, `remítase`. Anchor on
+  that verb, not on the closing formulas (`notifíquese`, `regístrese`, `protocolícese`, `archívese`).
 - Without a header: `Por ello, ... I) / 1) / Primero: <verbo dispositivo>`.
+
+**A formal header is ANY of** `RESUELVE` / `SE RESUELVE` / `RESUELVO` / `FALLA` / `FALLO` / `SENTENCIO`
+/ `ASÍ LO RESUELVO` / `TODO LO QUE ASÍ, RESUELVO`. If the dispositive hangs off one, it **is** formal
+**regardless of the verb that follows** — `RESUELVO: Declarar…`, `RESUELVO: Mantener…`,
+`RESUELVO: Denegar…`, `RESUELVO: Desestimar…`, `SENTENCIO: Hacer lugar…`, and the succession
+`RESUELVO: Declarar que por fallecimiento… le sucederán…` are all formal. Do **not** flag
+`sin_resuelve_formal` for any of these. Flag `sin_resuelve_formal` **only** when you cannot point to
+any header **and** the order lives in prose (`corresponde…`, `no existiendo motivos para continuar`)
+or a bare enclitic.
 
 Do not stop at the first body match (`el juez resuelve la cuestión...` is a false positive).
 Quote `anclas.dispositivo` verbatim from that final block, with enough text for the gate to
 match it. When the dispositive fixes **several orders** (a main resolution plus `líbrese oficio`,
 embargo, `hágase saber` or notifications), anchor the **principal** order — the one that matches
 the lead verb and the result (`llevar adelante la ejecución`, `prohibición de acercamiento`,
-`decretar el divorcio`) — not a secondary oficio, embargo or communication. If no dispositive
-block is found, set `needs_review: true` with a `dispositivo:*` reason.
+`decretar el divorcio`, `mantener las medidas`, `fijar la cuota`) — not a secondary oficio, embargo
+or communication. If the recognizable block only starts at an accessory imperative (`INTÍMESE`,
+`LÍBRESE`), **extend `anclas.dispositivo` so it covers both** the principal order and that accessory,
+and keep the full decision in the extract. If no dispositive block is found, set `needs_review: true`
+with a `dispositivo:*` reason.
 
 Reject **truncated captures**: text that starts at `FALLO`/`RESUELVO`/`RESUELVE` with no body,
 or `< ~400` chars, is a broken capture — do not invent the planteo/fundamentos; flag it.
@@ -267,6 +287,21 @@ Set `needs_review: true` when:
 Use stable reason prefixes: `sensibilidad:*`, `remision:*`, `taxonomia:*`, `dispositivo:*`,
 `voto:*`, `tier_escape`. Do not force review merely because a ruling is operational, short, or
 formulaic — the taxonomy and Tier A cover it.
+
+## Declare What The Gate Will Force (output = persistence)
+
+The stored `needs_review` is `your payload OR the gate`. Keep your output identical to what is
+persisted — **declare up front the flags the gate will force**, so there is no silent divergence
+between your JSON and the DB:
+
+- `sensibilidad` carries a **Tier B** marker (`violencia_sexual`, `abuso_menores`, `salud`,
+  `salud_mental`, `discapacidad`) → `needs_review: true` + one reason **per marker**:
+  `"sensibilidad:salud_mental"`. **Never** the list form `"sensibilidad:['salud_mental']"`.
+- the source row is `tier=escape` → `needs_review: true` + `"tier_escape"`.
+- no formal header **and** the order is prose or a bare enclitic → `needs_review: true` +
+  `"sin_resuelve_formal"`. If you **can** point to a formal header (`RESUELVO:` / `FALLO:` /
+  `SENTENCIO:` / `ASÍ LO RESUELVO`, whatever verb follows), do **not** flag it — that would force a
+  needless review. Sucession `RESUELVO: Declarar … le sucederán …` is formal: do not flag.
 
 ## JSONL Batch Discipline
 
