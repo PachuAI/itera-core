@@ -76,15 +76,39 @@ Hard rules — treat each like a gate check on yourself:
 ## Required Workflow
 
 1. Read metadata: organismo, fecha, carátula, tipo_sentencia, source id.
-2. Locate the dispositive section first (see Dispositive Section Rule).
-3. **Pick the `perfil`** (Perfil Selection) — it sets the length band and the tone.
-4. Classify with `references/taxonomia-jurisdiccional.md` before drafting.
-5. Identify the procedural object (demanda, ejecución, acuerdo, denuncia, apelación, incidente)
+2. Verify `texto_oficial` readiness (see Source Readiness Rule). The public index does not show
+   full decision text, but the backend must fetch and store it before any AI extract can be drafted.
+3. Locate the dispositive section first (see Dispositive Section Rule).
+4. **Pick the `perfil`** (Perfil Selection) — it sets the length band and the tone.
+5. Classify with `references/taxonomia-jurisdiccional.md` before drafting.
+6. Identify the procedural object (demanda, ejecución, acuerdo, denuncia, apelación, incidente)
    and the decisive ground that connects it to the result.
-6. Draft in this order: **organismo + operative verb + result**, issue/request, decisive
+7. Draft in this order: **organismo + operative verb + result**, issue/request, decisive
    ground, practical effect (amount/term/costs/fees/measures only if dispositive).
-7. Verify every sentence against an anchor. Soften or drop unanchored sentences.
-8. Produce classification metadata + anchors + `needs_review` + `review_reasons`.
+8. Verify every sentence against an anchor. Soften or drop unanchored sentences.
+9. Produce classification metadata + anchors + `needs_review` + `review_reasons`.
+
+## Source Readiness Rule
+
+The Itera index stores two different things:
+
+- **Visible index metadata**: title/caratula, court, date, sentence number/type, links, and the
+  eventual Itera extract.
+- **Hidden source text for generation**: `texto_oficial`, fetched from the official PJRN detail
+  page (`Texto Sentencia`) and stored locally before generation. The full official text is not
+  shown in the public index, but it is the only valid source for the AI extract.
+
+Status discipline:
+
+- If `texto_oficial` is empty or missing, the document is **not ready** for this skill. Fetch and
+  store official text first; in the public feed this remains `ai_extract.status="placeholder"`
+  because the work may still be possible after capture.
+- If `texto_oficial` exists but is too short, vague, or only a protocol formula such as
+  `RESOLUCIÓN. Y NOTIFICACIÓN...`, do **not** draft an extract. It is not a pending AI task; it is
+  an unavailable source. The public feed should expose `ai_extract.status="unavailable"` and show
+  a user-facing message like "No hay texto oficial suficiente para generar resumen ÍTERA."
+- If `texto_oficial` passes the gate, generate normally from that stored text. Never generate from
+  the public metadata/snippet alone.
 
 ## Perfil Selection (tiering)
 
