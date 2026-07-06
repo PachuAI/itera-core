@@ -8,7 +8,7 @@ description: Classify and title official judicial SUMARIOS (headnotes/doctrinal 
 > Skill de **sumarios / headnotes doctrinarios** de PJ Río Negro (`tipo=sumarios`,
 > `ambito ∈ {stj, jurisdiccional}`). Hermano de `rn-fallo-stj` / `rn-fallo-jurisdiccional`, pero
 > el objeto es **distinto de fondo**. La calibración vive en
-> `itera-lex-tools/api/docs/integrations/analisis-fallos-ia/calibracion-sumarios-rn-2026-07.md`.
+> `itera-lex-tools/api/docs/integrations/analisis-fallos-ia/calibracion-sumarios-rn-2026-07-03.md`.
 
 ## Purpose
 
@@ -17,11 +17,13 @@ secretaría (a holding — "se configura X cuando…", "corresponde rechazar Y c
 `texto_oficial` as short, well-written doctrinal prose (≈35–120 words) and it already carries `voces`
 (raw thesaurus tags).
 
-So the AI does **not** rewrite the criterio and does **not** summarize it. It adds the layer that is
-missing: (1) a short editorial **`titular`** (a scannable topic headline for the feed card) and
-(2) **controlled classification** (materia, tipo de criterio, instituto, tags, sensibilidad) that
-turns a flat list of headnotes into a navigable, filterable doctrinal index. The official criterio
-stays **verbatim** as the authoritative body next to your titular.
+So the AI does **not** replace the official criterio — it always stays, verbatim, as the authoritative
+reference. On top of it the AI adds three layers: (1) a short editorial **`titular`** (a scannable
+topic headline); (2) a **`resumen_itera`** — a plain-language "lectura fácil" of the *same* rule
+(1–2 sentences), shown next to the dense official text so the reader grasps it at a glance; and
+(3) **controlled classification** (materia, tipo de criterio, instituto, tags, sensibilidad) that turns
+a flat list of headnotes into a navigable, filterable doctrinal index. The `resumen_itera`
+re-expresses, never reinterprets: same rule, plainer words, nothing invented.
 
 This is the opposite of the fallos skills. There is **no dispositive block**, **no "primer verbo
 dispositivo"**, **no "quién apeló"**, **no tiering**. The anchor is the criterio itself.
@@ -37,23 +39,27 @@ Do not use for:
 - A `texto_oficial` that is the literal word `"Fallo"`, empty, or `< ~60` chars — that is a broken
   capture (89% of the STJ corpus was polluted with `"Fallo"`); it is quarantined upstream, never
   fabricate a criterio.
+- `resumen_oficial` from STJ when it is `"Fallo"` or a metadata placeholder. For STJ sumarios,
+  the only valid source is the criterio captured into `texto_oficial` from `sumario/buscar`.
 - Legal advice, outcome prediction, doctrinal commentary beyond the headnote.
 
-## Small-Model Guardrails (gpt-5.4-mini) — Non-Negotiable
+## Model Guardrails (codex-5.5-medium) — Non-Negotiable
 
-You run on a **small model**. Be literal, not clever. Almost every error comes from filling a gap
+Use **codex-5.5-medium** for batches. Be literal, not clever. Almost every error comes from filling a gap
 with something plausible but unverified. Do the opposite: **if it is not explicit in `texto_oficial`,
-it does not go in the titular or the classification.** No guessing, no rounding, no inferred articles,
-amounts, parties, or outcomes.
+it does not go in the titular, the resumen_itera, or the classification.** No guessing, no rounding, no
+inferred articles, amounts, parties, or outcomes.
 
 Before writing, make two passes over `texto_oficial`:
 
 1. **Criterion pass** — state, in your head, the exact rule the sumario holds and its scope: the
    instituto (amparo, robo agravado, prisión preventiva, prueba pericial…) and the condition/effect
-   ("cuando… entonces…"). The titular names that instituto/eje; it does **not** add facts of the case.
+   ("cuando… entonces…"). The titular names that instituto/eje and the resumen_itera restates that
+   rule in plain words; neither **adds facts of the case**.
 2. **No-invented-specifics pass** — the sumario is abstract doctrine. Copy **no** number, article,
-   percentage, date or proper name into the titular unless it appears **verbatim** in `texto_oficial`.
-   Any digit you write must be findable in the source (the gate hard-fails `titular_dato_inventado`).
+   percentage, date or proper name into the titular or resumen_itera unless it appears **verbatim** in
+   `texto_oficial`. Any digit you write must be findable in the source (the gate hard-fails
+   `titular_dato_inventado` / `resumen_dato_inventado`).
 
 Hard rules — treat each like a gate check on yourself:
 
@@ -64,7 +70,8 @@ Hard rules — treat each like a gate check on yourself:
   rule. Do not paraphrase the criterio into the titular — name what it is about.
 - **Controlled fields only.** `materia_principal` and `tipo_criterio` take **only** values from
   `references/taxonomia-sumarios.md`. Never invent a value, never leave one empty. If none fits
-  exactly, pick the closest **and** set `needs_review` (`taxonomia:`) — do not silently approximate.
+  exactly, pick the closest **and** emit a `taxonomia:*` audit reason if review metadata is emitted —
+  do not silently approximate.
 - **Lean on `voces`, do not trust them blindly.** The batch row carries `voces` (raw thesaurus, e.g.
   `["AMPARO","CARACTER EXCEPCIONAL","REQUISITOS"]`). Use them to pick materia/instituto and to fill
   `sub_voces` (lowercased). But the rule is in `texto_oficial`: if a voz contradicts the criterio,
@@ -72,18 +79,36 @@ Hard rules — treat each like a gate check on yourself:
 - **No filler.** The titular carries the concrete instituto + eje, never "criterio jurisprudencial
   sobre el tema" or "doctrina del tribunal".
 - **When in doubt, flag — do not paper over.** If the correct controlled value, the instituto, or a
-  real dissent is unclear, set `needs_review` with a specific reason prefix.
+  real dissent is unclear, emit a specific audit reason prefix if review metadata is emitted.
 
 ## Required Workflow
 
 1. Read metadata: organismo, fecha, carátula, `voces`, source id, `id_fallo_vinculado`.
-2. Do the **Criterion pass** and **No-invented-specifics pass** over `texto_oficial`.
-3. Classify with `references/taxonomia-sumarios.md` (materia + tipo_criterio) **before** writing the titular.
-4. Copy `anclas.criterio` verbatim from `texto_oficial` (the core rule clause).
-5. Write the **`titular`**: a nominal topic phrase, **4–16 words**, naming the instituto + eje. No verb
+2. Verify source readiness: `texto_oficial` must be the real verbatim criterio. If it is empty,
+   `"Fallo"`, too short, or only metadata, route to capture/backfill and do not generate.
+3. Do the **Criterion pass** and **No-invented-specifics pass** over `texto_oficial`.
+4. Classify with `references/taxonomia-sumarios.md` (materia + tipo_criterio) **before** writing the titular.
+5. Copy `anclas.criterio` verbatim from `texto_oficial` (the core rule clause).
+6. Write the **`titular`**: a nominal topic phrase, **4–16 words**, naming the instituto + eje. No verb
    asserting an outcome, no case facts, no invented specifics.
-6. Fill `instituto`, `sub_voces` (from voces, lowercased), `tags_busqueda` (free), `sensibilidad`.
-7. Produce `needs_review` + `review_reasons` (v1: usually `false` — see Sensitivity).
+7. Write the **`resumen_itera`** — the ÍTERA plain reading (see "The ÍTERA Reading"): 1–2 sentences,
+   ~15–40 words, stating the SAME rule as the criterio in plain, direct language (no citations, no
+   formal scaffolding), faithful, with no invented specifics.
+8. Fill `instituto`, `sub_voces` (from voces, lowercased), `tags_busqueda` (free), `sensibilidad`.
+9. Produce `needs_review` + `review_reasons` only as compatibility metadata (v1: usually `false`).
+
+## Completion Contract (editorial_completeness_v2)
+
+A sumario is complete for the Itera own index only if it has:
+
+- `titular` as `extracto.text`;
+- `resumen_itera` populated;
+- `clasificacion` with non-empty `tags_busqueda`;
+- `anclas.criterio` copied verbatim from real `texto_oficial`;
+- ingest traceability (`modelo` and `version_prompt`).
+
+The official criterio remains the authoritative body shown to the user. Never replace it with
+`resumen_itera`; never use `resumen_oficial="Fallo"` as source text.
 
 ## The Titular
 
@@ -109,6 +134,46 @@ Examples (criterio → titular → materia / tipo_criterio):
   discrepancia subjetiva con la valoración probatoria."* → **"Rechazo del recurso por discrepancia
   subjetiva con la valoración probatoria"** → `procesal_penal` / `admisibilidad`.
 
+## The ÍTERA Reading (`resumen_itera`)
+
+The **plain reading** shown on the card **next to** the official criterio (which stays as the
+authoritative reference). Where the official criterio is dense and formal, `resumen_itera` is the
+**"lectura fácil"**: the same rule, grasped at a glance. The reader always has the official text
+beside it, so this is a reading aid — but it must still be **faithful**.
+
+- **1–2 sentences, ~15–40 words.** Lighter and shorter than the criterio.
+- **Plain but technical (llana-técnica).** Direct, active phrasing; keep the precise legal terms
+  (`amparo`, `casación`, `prisión preventiva`, `impugnabilidad objetiva`). Do **not** dumb it down —
+  the audience is lawyers. Strip the heavy scaffolding: no `cf.`/fallo citations, no `(Voto de los
+  Dres. …)`, no "En lo que respecta a…", "se entiende que…", "es oportuno recordar que…".
+- **States the rule directly.** "El juez puede…", "El amparo solo procede cuando…", "Se configura X
+  cuando…", "Corresponde rechazar el recurso cuando…". Say what the rule is and its condition/effect.
+- **Faithful — same rule, no reinterpretation.** It re-expresses the criterio; it does not add,
+  narrow, or broaden it. **No invented specifics** (article numbers, amounts, dates, names, outcomes
+  absent from `texto_oficial`). Every claim traces to the criterio.
+- **Mirror the source anonymization**; never mentions itself, its classification, or the review flow.
+- **Distinct from the titular.** Titular = a nominal *label* ("Carácter excepcional de la acción de
+  amparo"). `resumen_itera` = a *sentence stating the rule* ("El amparo solo procede ante…").
+
+Examples (criterio → resumen_itera):
+
+- *"La consulta al CIF es una facultad privativa de la judicatura, que resulta atinada cuando la
+  opinión del médico tratante no alcanza para dar base científica suficiente a la sentencia a dictarse
+  (cf. STJRNS4 Se. 43/24 'DÍAZ')."* → **"El juez puede convocar al Cuerpo Médico Forense cuando la
+  opinión del médico tratante no alcanza para fundar científicamente la sentencia."**
+- *"El amparo constituye un proceso excepcional que exige para su apertura circunstancias muy
+  particulares, caracterizadas por la presencia de arbitrariedad o ilegalidad manifiesta y la
+  demostración de un daño concreto y grave…"* → **"El amparo solo procede ante una arbitrariedad o
+  ilegalidad manifiesta y un daño concreto y grave que exija una vía urgente."**
+- *"En lo que respecta a los fundamentos expuestos, se entiende que el escrito de interposición del
+  recurso extraordinario de inaplicabilidad de ley, satisface suficientemente los requisitos de
+  admisibilidad formal…"* → **"El recurso de inaplicabilidad de ley se concede cuando su escrito
+  plantea una crítica seria y cumple los requisitos formales de admisibilidad."**
+- *"La arbitrariedad o el absurdo son la excepción que como remedio último permiten, solo en casos
+  extremos, adoptar la grave determinación de descalificar una sentencia como acto jurisdiccional…"*
+  → **"Solo en casos extremos de arbitrariedad o absurdo puede descalificarse una sentencia; es un
+  remedio de última instancia."**
+
 ## The Criterio Anchor
 
 There is no dispositive. `anclas.criterio` is a **verbatim** fragment of `texto_oficial` — the core
@@ -132,18 +197,20 @@ The penal/juris corpus is heavy on `abuso_menores` / `violencia_sexual` **as doc
 testimonio de la víctima menor es suficiente cuando…") — these are legal criteria, low PII risk.
 
 - **v1 policy:** flag `sensibilidad` for chips/filters, but it does **not** force review. All publish
-  (mirror-the-source), prioritizing feed coverage. The gate's `SUMARIO_SENSIBILIDAD_REVIEW` is empty.
+  (mirror-the-source), prioritizing feed coverage. The gate's `SUMARIO_SENSIBILIDAD_REVIEW` is empty,
+  and `requires_review` is not an operational blocker.
 - Still: never restate a sensitive holding in a way that asserts a specific person's facts as proven;
   keep the titular abstract ("suficiencia del testimonio de la víctima menor", not a named case).
 - Set `needs_review: true` yourself only for a real problem: a genuine dissent in the criterio, a
   criterio you cannot classify without approximating (`taxonomia:*`), or a criterio that leaks a
   private full name the source elsewhere masks (`anonimizacion:*`).
 
-## The Titular Never Talks About Itself
+## Never Talk About Yourself
 
-The `titular` is a topic headline about the criterio. It must never mention itself, its
-classification, the review flow, internal tokens (`needs_review`, `tier=escape`), backticks, or field
-names. The gate hard-fails (`meta_texto_editorial`) any titular that references itself or leaks tokens.
+Neither the `titular` nor the `resumen_itera` may mention itself, its classification, the review flow,
+internal tokens (`needs_review`, `tier=escape`), backticks, or field names. They are editorial text
+about the criterio, not about the pipeline. The gate hard-fails (`meta_texto_editorial`) any titular
+or resumen_itera that references itself or leaks tokens.
 
 ## Classification First
 
@@ -161,6 +228,7 @@ Return one compact JSON object (JSONL discipline for batches), keyed by the same
 {
   "extracto_id": 39908,
   "titular": "Carácter excepcional de la acción de amparo",
+  "resumen_itera": "El amparo solo procede ante una arbitrariedad o ilegalidad manifiesta y un daño concreto y grave que exija una vía urgente y expeditiva.",
   "clasificacion": {
     "materia_principal": "constitucional",
     "tipo_criterio": "admisibilidad",
@@ -177,25 +245,28 @@ Return one compact JSON object (JSONL discipline for batches), keyed by the same
 
 ## Declare What The Gate Will Force (output = persistence)
 
-The stored `needs_review` is `your payload OR the gate`. In v1 the gate forces nothing from
-sensitivity, so **your payload is the whole story**: if you set `needs_review: true`, add a specific
-reason (`taxonomia:*`, `voto:*`, `anonimizacion:*`); if `false`, leave `review_reasons` empty. Never
-emit the list form `"sensibilidad:['salud']"`.
+The historical JSON accepts `needs_review`, but v1 publishes when the gate passes. The gate forces
+nothing from sensitivity, so use `review_reasons` only as audit metadata: if you set
+`needs_review: true`, add a specific reason (`taxonomia:*`, `voto:*`, `anonimizacion:*`); if
+`false`, leave `review_reasons` empty. Never emit the list form `"sensibilidad:['salud']"`.
 
 ## JSONL Batch Discipline
 
 - Keep `extracto_id` exactly as it appears in `batch.jsonl`.
 - One compact JSON object per line; no markdown, no pretty-print.
-- `titular` within 4–16 words; no invented digits/articles/names.
+- `titular` within 4–16 words; `resumen_itera` within ~15–40 words; no invented digits/articles/names.
 - `anclas.criterio` is verbatim from `texto_oficial`.
 - Only controlled values for `materia_principal`, `tipo_criterio`, `sensibilidad`.
+- Always include non-empty `clasificacion.tags_busqueda`.
 
 ## Final Check
 
 1. The titular is a topic phrase (4–16 words), not a rewrite of the holding, with no dispositive verb.
-2. No number/article/name/date in the titular that is not verbatim in `texto_oficial`.
-3. `anclas.criterio` is copied verbatim from the criterio (not the vote tail, not a paraphrase).
-4. `materia_principal` and `tipo_criterio` are taxonomy values; nothing invented or left empty.
-5. `sub_voces` reflect the real `voces`; the classification agrees with the criterio, not the carátula.
-6. Anonymization mirrors the source; no private full name that the source masks elsewhere.
-7. Anything genuinely unclear is flagged in `review_reasons`, not guessed.
+2. The `resumen_itera` (1–2 sentences, ~15–40 words) states the SAME rule as the criterio in plain,
+   direct language — no citations, no formal scaffolding, no invented specifics, faithful to the criterio.
+3. No number/article/name/date in the titular or resumen_itera that is not verbatim in `texto_oficial`.
+4. `anclas.criterio` is copied verbatim from the criterio (not the vote tail, not a paraphrase).
+5. `materia_principal` and `tipo_criterio` are taxonomy values; nothing invented or left empty.
+6. `sub_voces` reflect the real `voces`; the classification agrees with the criterio, not the carátula.
+7. Anonymization mirrors the source; no private full name that the source masks elsewhere.
+8. Anything genuinely unclear is flagged in `review_reasons`, not guessed.

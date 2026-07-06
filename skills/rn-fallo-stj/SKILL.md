@@ -32,20 +32,51 @@ Do not use for:
 ## Required Workflow
 
 1. Read metadata: court, date, caption, decision number, matter, source id.
-2. Locate the dispositive section first: `RESUELVE`, `DECIDE`, `Por ello`, or equivalent.
-3. Classify the decision before drafting. Use `references/taxonomia-stj.md`.
-4. Identify the procedural object: queja, appeal, REF, action, execution incident, etc.
-5. Separate current decision scope from background merits:
+2. Verify `texto_oficial` readiness (see Source Readiness Rule). Never draft from metadata.
+3. Locate the dispositive section first: `RESUELVE`, `DECIDE`, `Por ello`, or equivalent.
+4. Classify the decision before drafting. Use `references/taxonomia-stj.md`.
+5. Identify the procedural object: queja, appeal, REF, action, execution incident, etc.
+6. Separate current decision scope from background merits:
    - admissibility/opening of review;
    - merits/fondo;
    - abstractness/mootness;
    - procedural closure.
-6. Extract decisive grounds that answer the actual procedural object.
-7. Draft 90-180 words (target ~130), usually 2 paragraphs:
+7. Extract decisive grounds that answer the actual procedural object.
+8. Draft 90-180 words (target ~130), usually 2 paragraphs:
    - Paragraph 1: STJ result + practical effect.
    - Paragraph 2: planteo + decisive grounds + costs/fees if concrete.
-8. Produce classification metadata with the extract.
-9. Verify every sentence against anchors.
+9. Produce classification metadata with the extract.
+10. Verify every sentence against anchors.
+
+## Source Readiness Rule
+
+`fallos/stj` generation requires full `texto_oficial` captured from the official PJ RN protocol
+detail (`Texto Sentencia`). The public index metadata, snippets, captions, official links, or prior
+card text are not source material.
+
+- If `texto_oficial` is empty or missing, route the document to capture first; do not generate.
+- If `texto_oficial` is too short, vague, truncated, or only a protocol formula, do not draft an
+  extract. It should surface as unavailable official content, not as a pending AI task.
+- If `texto_oficial` passes readiness, generate normally from that stored text.
+
+## Completion Contract (editorial_completeness_v2)
+
+An STJ extract is complete for the Itera own index only if it has:
+
+- `extracto` publishable text;
+- `clasificacion` with controlled fields and non-empty `tags_busqueda`;
+- `anclas.dispositivo` copied from the real final dispositive block;
+- ingest traceability (`modelo` and `version_prompt`).
+
+Do not consider a generated-looking legacy row complete if tags, anchors, model, or prompt are
+missing. Remediate only the missing pieces from `texto_oficial` when possible.
+
+## Review Is Not A Blocking State
+
+The current prototype does not run an active review queue. `needs_review` / `review_reasons` can
+remain in JSON for compatibility and later audit, but the operational publication decision is the
+anti-garbage gate: source anchor, controlled vocabulary, length, no meta text, no unsupported facts.
+Do not leave rows hanging in `needs_review` / `requiere_revision` after they pass the gate.
 
 ## Dispositive Section Rule
 
@@ -61,7 +92,8 @@ Use this order:
 4. Quote `anclas.dispositivo` verbatim from that final block, with enough text for
    the gate to match it.
 
-If no dispositive block is found, set `needs_review: true` and explain it.
+If no dispositive block is found, include a `dispositivo:*` audit reason and explain it; do not
+invent an anchor.
 
 ## Scope Matrix
 
@@ -87,7 +119,7 @@ Choose `alcance_decision` before writing the first sentence:
 - `revision_correctora`: STJ corrects a serious procedural/jurisdictional defect.
 
 When in doubt between a merits description and the procedural gateway, lead with the
-gateway and set `needs_review: true`.
+gateway and include a `taxonomia:*` or scope audit reason if review metadata is emitted.
 
 ## Appeals: Name Who Appealed, Derive the Result From the Effect
 
@@ -148,8 +180,8 @@ nearby value when the taxonomy already has an exact instrumental value:
   use `eje_argumental="plazo_recursivo_extemporaneo"` when closure rests on late
   filing or an expired appeal term.
 
-These decisions are `needs_review=false` by default when anchors are complete and the
-taxonomy fits. Set review only for a real trigger: sensitivity, remission to a
+These decisions are publishable by default when anchors are complete and the
+taxonomy fits. Emit review metadata only for a real trigger: sensitivity, remission to a
 dictamen/annex/external precedent, real dissent, serious criminal exposure, or an
 atypical/inconsistent dispositive block. Do not use `needs_review=true` merely because
 the case is instrumental, procedural, short, or institutional.
@@ -161,8 +193,7 @@ for it. They are long, multi-party, or unusually complex decisions.
 
 If a `tier=escape` row is generated anyway:
 
-- set `needs_review: true`;
-- include `tier_escape` in `review_reasons`;
+- include `tier_escape` in `review_reasons` if you emit audit review data;
 - use a conservative extract that names only the operative result and the clearest
   grounds;
 - do not treat it as calibrated for bulk generation until a human audits it.
@@ -235,8 +266,7 @@ current text only remits to that outside piece:
 - do not reconstruct missing grounds from context;
 - write a narrow extract that states the operative result and the remission;
 - use `anclas.fundamentos` like `["remite a Dictamen N° ... del Procurador General"]`;
-- set `needs_review: true`;
-- add a review reason naming the external piece to audit before publication.
+- add a `remision:*` audit reason naming the external piece if review metadata is emitted.
 
 ## Output
 
@@ -289,17 +319,17 @@ The gate validates these fields as controlled vocabulary:
 - `sensibilidad`
 
 Do not invent ad hoc values. If no exact value fits, choose the closest stable value,
-set `needs_review: true`, and mention the taxonomy gap in `review_reasons`.
+and mention the taxonomy gap in `review_reasons` if review metadata is emitted.
 
 `tipo_proceso`, `materia_principal`, and party descriptions must come from the **decision
 text**, not guessed from the carátula. Do not label `tipo_proceso="queja"` unless the text
 shows a queja: a recurso concedido or `declara_bien_concedido` is not a queja. Do not invent
 parties, amounts, or a `materia` the text does not state. If the process type is genuinely
-unclear, pick the closest taxonomy value from `tipo_proceso` and set `needs_review: true`.
+unclear, pick the closest taxonomy value from `tipo_proceso` and include a taxonomy audit reason.
 
 ## Review Triggers
 
-Set `needs_review: true` if:
+For audit compatibility only, emit `needs_review: true` if:
 
 - no dispositive section is found;
 - the decision scope is ambiguous between admissibility and merits;
@@ -311,12 +341,12 @@ Set `needs_review: true` if:
 - the extract would require inferring a doctrine broader than the case.
 
 `(POR MAYORIA)` in the dispositive is not by itself a dissent. In RN STJ texts it often
-means majority plus abstention. Use `voto:*` and force review only when a judge votes
+means majority plus abstention. Use `voto:*` audit metadata only when a judge votes
 for the opposite operative result or there is another real outcome split.
 
 Use stable reason prefixes so later audits can separate quality risk from publication policy:
 
-- `sensibilidad:*` for mandatory review because of NNyA, health, disability, sexual violence,
+- `sensibilidad:*` for audit metadata because of NNyA, health, disability, sexual violence,
   penal sensitivity, or persons deprived of liberty.
 - `remision:*` for PG opinions, annexes, or external precedents.
 - `taxonomia:*` only when the closest controlled value is still imprecise.
@@ -325,7 +355,8 @@ Use stable reason prefixes so later audits can separate quality risk from public
 - `tier_escape` for long/complex rows.
 
 Do not use `needs_review=true` merely because the case is procedural, instrumental, or short
-if the taxonomy covers it and the anchors are complete.
+if the taxonomy covers it and the anchors are complete. These reasons are audit metadata; they do
+not create an operational blocker when the gate passes.
 
 ## JSONL Batch Discipline
 
@@ -340,7 +371,9 @@ When producing `out.jsonl` for the RN pipeline:
 - use only controlled values for `materia_principal`, `alcance_decision`,
   `tipo_decision_stj`, `resultado`, `eje_argumental`, `grupo_editorial`, and
   `sensibilidad`;
-- if the source row is marked `tier=escape`, set `needs_review: true`.
+- always include non-empty `clasificacion.tags_busqueda` and `anclas.dispositivo`;
+- if the source row is marked `tier=escape`, include `tier_escape` in audit reasons if you emit
+  review data, but do not rely on review to block a row that passes the gate.
 
 ## Final Check
 

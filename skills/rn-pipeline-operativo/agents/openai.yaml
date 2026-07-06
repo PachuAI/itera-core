@@ -1,0 +1,4 @@
+interface:
+  display_name: "RN Pipeline Operativo"
+  short_description: "Pipeline diario y retroactivo RN"
+  default_prompt: "Use $rn-pipeline-operativo to revisar novedades RN, completar extractos y promover con snapshot rápido local→PROD cuando corresponda."

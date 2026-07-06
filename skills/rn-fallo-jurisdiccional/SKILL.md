@@ -51,7 +51,8 @@ Before writing each line, make three passes over `texto_oficial`:
    exact form for them **everywhere** in `extracto` and `anclas`. Never output a name the source
    masks elsewhere; never partially mask; never mix two forms for the same person.
 3. **Number pass** — copy every amount, percentage, JUS, distance, term and date **verbatim** from
-   the dispositive. If two figures conflict, use the dispositive one and set `needs_review` (`monto:`).
+   the dispositive. If two figures conflict, use the dispositive one and emit a `monto:*` audit reason
+   if review metadata is emitted.
 
 Hard rules — treat each like a gate check on yourself:
 
@@ -61,8 +62,8 @@ Hard rules — treat each like a gate check on yourself:
   enough to be unambiguous — never a secondary `líbrese oficio`/embargo/notification.
 - **Controlled fields only.** `materia_principal`, `perfil`, `tipo_decision`, `alcance_decision`,
   `grupo_editorial`, `sensibilidad` take **only** values from `references/taxonomia-jurisdiccional.md`.
-  Never invent a value, never leave one empty. If none fits exactly, pick the closest **and** set
-  `needs_review` (`taxonomia:`) — do not silently approximate.
+  Never invent a value, never leave one empty. If none fits exactly, pick the closest **and** emit a
+  `taxonomia:*` audit reason if review metadata is emitted — do not silently approximate.
 - **Full result, not half.** If the ruling grants one thing and denies/defers another, state both.
 - **Direction is verifiable.** In appeals, name who appealed and derive the result from the effect
   on the **original claim**; state plainly whether the claim/protection/condena stands or falls.
@@ -70,8 +71,8 @@ Hard rules — treat each like a gate check on yourself:
   ground. Every sentence carries a specific fact or the decisive reason.
 - **Clean placeholder tokens.** Emit `[VÍCTIMA_1]`, never `'[VÍCTIMA_1]'` or `[VÍCTIMA_1]'`.
 - **When in doubt, flag — do not paper over.** If the result direction, the winner, an amount, the
-  scope, a possible dissent, or the correct controlled value is unclear, set `needs_review` with the
-  specific reason prefix. A flagged draft is cheap; a confident wrong extract is not.
+  scope, a possible dissent, or the correct controlled value is unclear, emit the specific audit
+  reason prefix if review metadata is emitted. A flagged draft is cheap; a confident wrong extract is not.
 
 ## Required Workflow
 
@@ -101,14 +102,36 @@ The Itera index stores two different things:
 Status discipline:
 
 - If `texto_oficial` is empty or missing, the document is **not ready** for this skill. Fetch and
-  store official text first; in the public feed this remains `ai_extract.status="placeholder"`
-  because the work may still be possible after capture.
+  store official text first; do not draft from metadata, snippets, carátula, or visible card text.
+  In the operational pipeline this routes to capture (`missing_texto_oficial`), not generation.
+  If the public own-index card renders before capture succeeds, it should explain that no sufficient
+  official PJ RN content is available; it is not an AI-writing task yet.
 - If `texto_oficial` exists but is too short, vague, or only a protocol formula such as
   `RESOLUCIÓN. Y NOTIFICACIÓN...`, do **not** draft an extract. It is not a pending AI task; it is
   an unavailable source. The public feed should expose `ai_extract.status="unavailable"` and show
   a user-facing message like "No hay texto oficial suficiente para generar resumen ÍTERA."
 - If `texto_oficial` passes the gate, generate normally from that stored text. Never generate from
   the public metadata/snippet alone.
+
+## Completion Contract (editorial_completeness_v2)
+
+An extract does not count as complete merely because it has prose. For the Itera own index it must
+carry:
+
+- `extracto` publishable text;
+- `clasificacion` with the closed-vocab fields plus non-empty `tags_busqueda`;
+- `anclas.dispositivo` copied from real `texto_oficial`;
+- traceability supplied by ingest (`modelo` and `version_prompt`).
+
+If fixing a legacy row, fill only the missing pieces from `texto_oficial`; do not rewrite a good
+extract unless it fails the gate or lacks factual grounding.
+
+## Review Is Not A Blocking State
+
+The prototype has no active human-review queue. `needs_review` / `review_reasons` can remain in JSON
+for compatibility and audit notes, but publication is decided by the gate: source anchor, length,
+controlled vocabulary, no meta text, no unsupported facts. Do not leave documents hanging in
+`needs_review` / `requiere_revision`; if the gate passes, the row is publishable.
 
 ## Perfil Selection (tiering)
 
@@ -168,8 +191,8 @@ the lead verb and the result (`llevar adelante la ejecución`, `prohibición de 
 `decretar el divorcio`, `mantener las medidas`, `fijar la cuota`) — not a secondary oficio, embargo
 or communication. If the recognizable block only starts at an accessory imperative (`INTÍMESE`,
 `LÍBRESE`), **extend `anclas.dispositivo` so it covers both** the principal order and that accessory,
-and keep the full decision in the extract. If no dispositive block is found, set `needs_review: true`
-with a `dispositivo:*` reason.
+and keep the full decision in the extract. If no dispositive block is found, emit a `dispositivo:*`
+audit reason and do not invent an anchor.
 
 Reject **truncated captures**: text that starts at `FALLO`/`RESUELVO`/`RESUELVE` with no body,
 or `< ~400` chars, is a broken capture — do not invent the planteo/fundamentos; flag it.
@@ -212,8 +235,9 @@ review) would send the bulk to review. Split it:
   `nnya`, `violencia_familiar`, `persona_privada_libertad`, `anonimizacion`. Routine protective
   measures, alimentos, divorcio, autorización and routine criminal-execution publish with the
   hard anti-patterns below — not human review.
-- **Tier B — forces `needs_review=true`:** `violencia_sexual`, `abuso_menores`, `salud`,
-  `salud_mental`, `discapacidad`. The gate forces review on these.
+- **Tier B — audit marker:** `violencia_sexual`, `abuso_menores`, `salud`, `salud_mental`,
+  `discapacidad`. Mark them in `sensibilidad` and, if emitting review metadata, add a specific
+  `review_reasons` item. They do not create an operational review queue after the gate passes.
 
 Hard anti-patterns for the family/violence slice (always, even Tier A):
 
@@ -290,12 +314,12 @@ Read `references/taxonomia-jurisdiccional.md`. The gate validates as **closed vo
 
 The classification field is `tipo_decision` (generic), **not** `tipo_decision_stj`. Do not
 invent controlled values. If no exact value fits a controlled field, pick the closest stable
-value, set `needs_review: true`, and add a `taxonomia:*` reason. Derive `materia`/`tipo_proceso`
+value and emit a `taxonomia:*` audit reason if review metadata is emitted. Derive `materia`/`tipo_proceso`
 from the **decision text**, not guessed from the carátula.
 
 ## Review Triggers
 
-Set `needs_review: true` when:
+For audit compatibility only, emit `needs_review: true` when:
 
 - no dispositive block is found, or the text is truncated/incomplete/annex-dependent;
 - the case carries a **Tier B** sensitivity (`violencia_sexual`, `abuso_menores`, `salud`,
@@ -310,19 +334,20 @@ Set `needs_review: true` when:
 
 Use stable reason prefixes: `sensibilidad:*`, `remision:*`, `taxonomia:*`, `dispositivo:*`,
 `voto:*`, `tier_escape`. Do not force review merely because a ruling is operational, short, or
-formulaic — the taxonomy and Tier A cover it.
+formulaic — the taxonomy and Tier A cover it. Remember: these reasons are audit metadata, not a
+queue state that blocks publication after the gate passes.
 
 ## Declare What The Gate Will Force (output = persistence)
 
-The stored `needs_review` is `your payload OR the gate`. Keep your output identical to what is
-persisted — **declare up front the flags the gate will force**, so there is no silent divergence
-between your JSON and the DB:
+The historical contract accepted `needs_review`, but the active pipeline collapses review as an
+operational state. Keep `review_reasons` useful if you emit them, but do not treat them as blockers:
+the DB ingest should persist generated rows that pass the anti-garbage gate.
 
-- `sensibilidad` carries a **Tier B** marker (`violencia_sexual`, `abuso_menores`, `salud`,
-  `salud_mental`, `discapacidad`) → `needs_review: true` + one reason **per marker**:
+- If `sensibilidad` carries a **Tier B** marker (`violencia_sexual`, `abuso_menores`, `salud`,
+  `salud_mental`, `discapacidad`) → include one reason **per marker** if review metadata is emitted:
   `"sensibilidad:salud_mental"`. **Never** the list form `"sensibilidad:['salud_mental']"`.
-- the source row is `tier=escape` → `needs_review: true` + `"tier_escape"`.
-- no formal header **and** the order is prose or a bare enclitic → `needs_review: true` +
+- If the source row is `tier=escape` → include `"tier_escape"` in audit reasons if review metadata is emitted.
+- If there is no formal header **and** the order is prose or a bare enclitic → include
   `"sin_resuelve_formal"`. If you **can** point to a formal header (`RESUELVO:` / `FALLO:` /
   `SENTENCIO:` / `ASÍ LO RESUELVO`, whatever verb follows), do **not** flag it — that would force a
   needless review. Sucession `RESUELVO: Declarar … le sucederán …` is formal: do not flag.
@@ -335,7 +360,9 @@ between your JSON and the DB:
 - Length within the band of the declared `perfil`.
 - Only controlled values for `materia_principal`, `perfil`, `tipo_decision`, `alcance_decision`,
   `grupo_editorial`, `sensibilidad`.
-- If the source row is `tier=escape`, set `needs_review: true`.
+- Always include non-empty `clasificacion.tags_busqueda` and `anclas.dispositivo`.
+- If the source row is `tier=escape`, include `tier_escape` in audit reasons if you emit review data,
+  but do not rely on review to block a row that passes the gate.
 
 ## Final Check
 
