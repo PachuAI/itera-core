@@ -1,0 +1,7 @@
+interface:
+  display_name: "Arch ÍTERA Lex"
+  short_description: "Arquitectura modular del SaaS ÍTERA Lex"
+  default_prompt: "Use $arch-itera-lex to design or refactor an ÍTERA Lex module with Fallow-first seams, tenant safety, and AI/runtime/credit guardrails."
+
+policy:
+  allow_implicit_invocation: true

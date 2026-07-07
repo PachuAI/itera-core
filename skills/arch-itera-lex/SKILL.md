@@ -1,6 +1,6 @@
 ---
 name: arch-itera-lex
-description: Diseñar la arquitectura modular de un modulo NUEVO de ÍTERA Lex SaaS, o refactorizar uno que crecio mezclando UI/hooks/actions/services/integraciones. Cortes chicos por seam, API publica estable, Fallow como medidor de complejidad, direccion de dependencias sin ciclos, separacion UI/server/actions/services/providers y guardrails multi-tenant antes de que la complejidad o el acoplamiento se concentren.
+description: Diseñar la arquitectura modular de un modulo NUEVO de ÍTERA Lex SaaS, o refactorizar uno que crecio mezclando UI/hooks/actions/services/integraciones/IA. Cortes chicos por seam, API publica estable, Fallow como medidor de complejidad, direccion de dependencias sin ciclos, separacion UI/server/actions/services/providers, guardrails multi-tenant, y safety de IA/creditos/runtime antes de que la complejidad o el acoplamiento se concentren.
 ---
 
 # Arquitectura Modular — ÍTERA Lex
@@ -13,7 +13,7 @@ Usar este skill cuando un modulo del producto crecio mezclando UI, hooks, server
 
 Tambien usarlo al planear o implementar features nuevas en el SaaS para que nazcan con fronteras modulares claras: page/server, shell/render, controller/hook, actions, services, providers, tipos compartidos, validaciones y tests. El objetivo no es solo corregir deuda, sino evitar que la siguiente feature cree el proximo concentrador.
 
-> **Relación con `seam-construction`**: el catálogo de seams, el execution loop, la **lente de connascence** (priorizar qué acoplamiento romper primero) y el principio de **dirección de dependencias / sin ciclos** son genéricos y viven en `seam-construction`. Este skill NO los duplica — agrega lo propio de ÍTERA Lex: la **disciplina Fallow-first** (presupuesto de complejidad antes del patch, `crap_above=0` en archivos tocados, `pnpm fallow:ui-health`), las **secuencias específicas** (services grandes, agregadores read-only, upload/storage/security) con sus guardrails de dominio (multi-tenant, `actividad.create()` en `$transaction`, etc.), el **puente seam↔capa** (ver "Puntos de corte priorizados") y el **wiring del grafo de dependencias** (ver "Dirección de dependencias y ciclos"). Para el método base de cortes por seam, ver `seam-construction`; acá está la capa ÍTERA Lex.
+> **Relación con `seam-construction`**: el catálogo de seams, el execution loop, la **lente de connascence** (priorizar qué acoplamiento romper primero) y el principio de **dirección de dependencias / sin ciclos** son genéricos y viven en `seam-construction`. Este skill NO los duplica — agrega lo propio de ÍTERA Lex: la **disciplina Fallow-first** (presupuesto de complejidad antes del patch, `crap_above=0` en archivos tocados, `pnpm fallow:ui-health`), las **secuencias específicas** (services grandes, agregadores read-only, upload/storage/security, IA/Copilot/creditos) con sus guardrails de dominio (multi-tenant, `actividad.create()` en `$transaction`, runtime/pricing trace, etc.), el **puente seam↔capa** (ver "Puntos de corte priorizados") y el **wiring del grafo de dependencias** (ver "Dirección de dependencias y ciclos"). Para el método base de cortes por seam, ver `seam-construction`; acá está la capa ÍTERA Lex.
 
 ## Bootstrap
 
@@ -28,6 +28,7 @@ Tambien usarlo al planear o implementar features nuevas en el SaaS para que nazc
    - services
    - tipos compartidos
    - integraciones externas
+   - IA/Copilot, prompts, runtime providers, creditos y ledgers si aplica
    - medicion Fallow actual si el modulo ya existe
    - tests/gates que protegen la superficie
 4. No abrir todo el repo. Usar `rg` para localizar la feature y leer solo los archivos implicados.
@@ -52,8 +53,9 @@ Antes de implementar una feature nueva, diseñar el primer corte con las mismas 
 4. Actions/API: auth -> authorize -> validate -> service -> audit/revalidate.
 5. Service: ownership, FK validation, transacciones y reglas de dominio.
 6. Provider externo: adaptador dedicado, sin filtrar detalles del provider hacia UI o services de dominio.
-7. Tipos/contratos: si cruzan 2+ archivos, nacen compartidos.
-8. Tests: agregar protectores segun riesgo desde el primer corte, no como cierre cosmetico.
+7. IA/Copilot: prompt builder, runtime selector, creditos, ledger y persistencia nacen como contratos separados; no como ramas dentro de la route.
+8. Tipos/contratos: si cruzan 2+ archivos, nacen compartidos.
+9. Tests: agregar protectores segun riesgo desde el primer corte, no como cierre cosmetico.
 
 Si el primer archivo de la feature ya supera 300-400 lineas o Fallow lo marca high-complexity, partir antes de agregar mas comportamiento.
 
@@ -68,6 +70,7 @@ Antes de escribir codigo de una feature o refactor no trivial, hacer un presupue
 5. Definir el contrato de test antes del refactor si se toca seguridad, env/deploy, auth, ownership, sync, storage, emails, integraciones oficiales o CLI de release.
 6. Medir Fallow focal antes si el modulo existe; si el modulo es nuevo, medir apenas compila el primer corte y antes de sumar el segundo comportamiento.
 7. Si el codigo nuevo necesita mas de un tipo de estado (`URL`, draft, server data, session, cache, optimistic), crear modulos separados para parse/build, controller y view-model desde el inicio.
+8. Si el codigo nuevo llama IA paga o registra uso, dibujar antes el ciclo: gate tenant/plan -> budget/rate limit -> credit reserve -> runtime execution -> schema validation -> persist -> credit finalize -> usage ledger -> release/compensacion ante fallo.
 
 Presupuesto orientativo:
 
@@ -84,6 +87,7 @@ Checklist de riesgo Fallow antes de codear:
 - ¿Estoy por parsear strings/env/URLs y reportar errores en la misma funcion? Separar parseo, validacion y reporter.
 - ¿Estoy por mezclar labels, estados visuales y acciones en un componente? Crear view-model o config de estado.
 - ¿Estoy por agregar fallback/default en env/deploy? Exigir valor explicito o error; nunca esconder fallos productivos.
+- ¿Estoy por agregar fallback/default de runtime IA o pricing? Exigir modelo catalogado y fallar cerrado; mock no puede quedar como default productivo.
 - ¿Estoy por crear un helper "utils" generico? Rechazarlo salvo que tenga responsabilidad y caller claros.
 
 ## Reglas Preventivas Aprendidas
@@ -105,8 +109,13 @@ Aplicar estas reglas antes de escribir el patch. El objetivo es evitar crear el 
 - Para providers/root client wrappers, aislar lectura de storage/media/env en helpers puros y dejar el componente como cableado minimo.
 - Para tablas o paneles admin, sacar formateo/labels/acciones derivadas del render antes de agregar columnas o estados.
 - Si una refactorizacion "limpia" el archivo original pero crea un archivo nuevo dificil de testear, seguir cortando en el mismo commit o volver atras; no registrar como deuda futura algo que nacio en este corte.
+- Para IA, nunca colapsar modelo asignado, runtime driver, modelo ejecutado, pricing model y pricing version en un unico string `model`.
+- Para prompts, mantener `system` estatico/controlado. Datos de tenant, usuario, expediente, documentos o producto van en `user/context` marcado como no confiable.
+- Para operaciones caras de IA, reclamar un slot/idempotency state antes de llamar al provider. Si no hay claim, no hay ejecucion.
 
 Pregunta obligatoria antes del patch: que estado o contrato puede quedar duplicado si este cambio crece? Si la respuesta es URL, draft, session, server o cache, crear primero la frontera minima que lo haga explicito.
+
+Pregunta adicional si el cambio toca IA/Copilot: donde vive el dinero? La respuesta debe identificar pricing catalogado, reserva, finalizacion, release, ledger tecnico/comercial y trazabilidad runtime.
 
 ## Modo Tanda De Cortes
 
@@ -145,7 +154,8 @@ Cuando el pedido sea avanzar "lo mas posible", "una buena tanda" o similar:
    - No mezclar provider/modelo/prompt/budget con queries de dominio.
    - Preservar permisos por bloque: si falta permiso, no consultar ni exponer datos.
 9. Upload/storage/security grande -> fachada publica estable + contratos + parser + validadores puros.
-10. Feature con provider aun inestable -> posponer refactor profundo y cortar solo fronteras que reduzcan riesgo inmediato.
+10. IA/Copilot/escritos con providers, creditos y ledgers -> separar prompt, runtime, billing, ledger y persistencia antes de sumar capacidades. *(**AI runtime / billing seam**)*
+11. Feature con provider aun inestable -> posponer refactor profundo y cortar solo fronteras que reduzcan riesgo inmediato.
 
 ## Secuencia Para Services Grandes
 
@@ -191,6 +201,30 @@ Cuando un modulo mezcla request parsing, MIME/extensiones, firma binaria, storag
 7. Medir la fachada y los nuevos internals. Si el hotspot solo se movio al helper nuevo, el corte todavia no esta cerrado.
 8. Si se usa una tabla declarativa de reglas, preferir tests de comportamiento por categoria y documentar cualquier ajuste del ratchet de mutation.
 
+## Secuencia Para IA/Copilot/Creditos
+
+Cuando un modulo mezcla chat, escritos IA, sugerencias, prompts, runtime providers, creditos, ledgers,
+presupuestos, documentos generados o contexto de dominio:
+
+1. Mantener la route/action/service publica como fachada chica; no mover el contrato externo en el primer corte.
+2. Separar `prompt-builder`: `system` estatico/controlado y `user/context` dinamico marcado como no confiable.
+3. Separar `runtime`: selector, driver, modelo ejecutado, policy de mock/dev/prod y limites de input/output.
+4. Separar `pricing/credits`: modelo comercial catalogado, reserva antes del provider, finalize con uso real y release en fallos.
+5. Separar `usage-ledger`: request id, operation id, sourceIds/provenance, tokens, costo, modelo asignado, runtime driver, modelo ejecutado, pricing model y pricing version.
+6. Mantener idempotencia en el service de dominio: claim de operacion antes del provider y estado claro si falla provider, parseo o persistencia.
+7. Persistir output solo despues de schema validation y limites de tamaño/costo; si persistencia falla tras gastar provider, liberar creditos o registrar compensacion.
+8. Tests minimos por corte: success con finalize+ledger, failure con release, pricing desconocido falla cerrado, mock productivo rechazado y prompt boundary sin datos dinamicos en `system`.
+9. Medir Fallow si la route/action crece por ramas de error: convertir manejo de errores a reglas o helpers chicos antes de entregar.
+
+Errores historicos a prevenir:
+
+- Fallback de pricing a costo minimo silencioso.
+- Usar el modelo CLI/mock ejecutado como modelo comercial.
+- Reservar creditos sin reaper ni release ante fallos tardios.
+- Guardar gasto tecnico sin datos suficientes para reconciliar costos.
+- Concatenar contexto del tenant al `system` prompt.
+- Reintentar una operacion cara sin claim/idempotencia y generar dos documentos/gastos.
+
 ## Heuristicas
 
 - Si el modulo sigue funcionando con los mismos props, handlers y acciones publicas, el corte va bien.
@@ -206,6 +240,7 @@ Cuando un modulo mezcla request parsing, MIME/extensiones, firma binaria, storag
 - Si el cambio solo mueve codigo pero no baja `high-complexity`, `crap_above`, fan-in riesgoso o mezcla de responsabilidades, no cuenta como corte util.
 - Si una extraccion limpia el archivo original pero Fallow marca el helper nuevo, seguir el corte o agregar tests antes de declararlo terminado.
 - Si se mueve logica sensible a archivos nuevos, actualizar tambien los gates que miden esa logica; un check verde contra el archivo viejo no prueba el refactor.
+- Si se toca IA paga, `pnpm quality:check` y tests verdes no alcanzan: correr o aplicar manualmente la lente de `operational-audit` sobre costos, prompt injection, provenance y release/finalize.
 
 ## Medicion Despues De Cada Corte
 
@@ -279,14 +314,16 @@ por seam no terminó hasta que la estructura del grafo también queda sana. Conc
 3. Cambio que toca 3+ archivos de feature o superficie sensible: correr quality/check equivalente del repo.
 4. Corte read-only/agregador: tests focales del route/service consumidor, typecheck, lint y Fallow focal del feature.
 5. Auth/upload/tenant/security: sumar `pnpm test:mutation` cuando aplique.
-6. Flujo UI con escritura: sumar smoke E2E especifico y cleanup si crea datos.
-7. Si el repo tiene docs vivas de arquitectura o estado, actualizarlas antes del commit de cierre.
-8. Revisar diff puntual antes de cerrar o commitear.
-9. Reportar warnings persistentes conocidos sin bloquear si el check termina OK.
-10. UI nueva o tocada no debe quedar en `high-complexity`; cualquier excepcion se documenta en `.planning/STATE.md` con proximo corte.
-11. Si auth/upload/tenant/security mueve logica a archivos nuevos, revisar y actualizar el scope de mutation para que mida la ubicacion real del riesgo.
-12. Si mutation falla por ampliar honestamente el scope, reforzar tests o ajustar el ratchet de forma explicita; no reportar como verde una corrida que solo mide la superficie vieja.
-13. En helpers declarativos con tablas de reglas, `ignoreStatic` puede ser aceptable solo si hay tests directos por comportamiento y el score queda sobre el umbral acordado.
+6. IA/Copilot/creditos: tests focales de credit lifecycle, runtime selector, ledger, prompt builder y route/service consumidor; sumar `operational-audit` si hay gasto real o provider externo.
+7. Cambio de schema/SQL manual: `pnpm db:generate`, rollout local si corresponde y `pnpm db:schema:verify`.
+8. Flujo UI con escritura: sumar smoke E2E especifico y cleanup si crea datos.
+9. Si el repo tiene docs vivas de arquitectura o estado, actualizarlas antes del commit de cierre.
+10. Revisar diff puntual antes de cerrar o commitear.
+11. Reportar warnings persistentes conocidos sin bloquear si el check termina OK.
+12. UI nueva o tocada no debe quedar en `high-complexity`; cualquier excepcion se documenta en `.planning/STATE.md` con proximo corte.
+13. Si auth/upload/tenant/security mueve logica a archivos nuevos, revisar y actualizar el scope de mutation para que mida la ubicacion real del riesgo.
+14. Si mutation falla por ampliar honestamente el scope, reforzar tests o ajustar el ratchet de forma explicita; no reportar como verde una corrida que solo mide la superficie vieja.
+15. En helpers declarativos con tablas de reglas, `ignoreStatic` puede ser aceptable solo si hay tests directos por comportamiento y el score queda sobre el umbral acordado.
 
 ## Guardrails
 
@@ -298,6 +335,9 @@ por seam no terminó hasta que la estructura del grafo también queda sana. Conc
 - No debilitar guards multi-tenant, ownership ni validaciones FK al mover codigo.
 - No esconder efectos externos dentro de helpers genericos si eso vuelve opaco el orden transaccional.
 - No dejar que UI, provider externo o prompt IA decidan scoping/ownership de dominio.
+- No dejar que runtime provider, mock o CLI definan el pricing comercial.
+- No llamar IA paga sin reserva previa, idempotency claim y plan de release/finalize.
+- No meter datos de usuario/tenant/documentos en `system`.
 - No perseguir deuda de integraciones inestables si el producto todavia no definio el rumbo.
 
 ## Salida Esperada

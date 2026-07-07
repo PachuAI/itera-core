@@ -27,6 +27,7 @@
 - Deploy and operations:
 - Readability and maintainability:
 - Timezone and localization:
+- AI runtime, credits, and provenance:
 
 ## CRÍTICOS
 
@@ -89,3 +90,4 @@
 - [ ] `pnpm run quality:check`
 - [ ] Repetir `scripts/check-all.sh`
 - [ ] Releer áreas tocadas con foco en seguridad y multi-tenancy
+- [ ] Si hubo IA/créditos/runtime: reauditar pricing, reserve/finalize/release, ledger y prompt boundary

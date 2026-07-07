@@ -13,6 +13,7 @@
 9. Deploy and operations
 10. Readability, maintainability, and low-confidence code
 11. Timezone and localization
+12. AI runtime, credits, and provenance
 
 Read the artifact logs first, then inspect only the files implicated by the failing command or grep hit.
 
@@ -50,6 +51,10 @@ Columna **Tipo** define cómo interpretar el scan:
 | `env-usage.txt`                        | checklist | 5     | Cruzar con `src/lib/env.ts` para validar que están declarados.                        |
 | `client-env-leak.txt`                  | verdict   | 5     | **Release-blocker.** `NEXT_PUBLIC_*` y `NODE_ENV` filtrados por el script.            |
 | `client-secret-names.txt`              | checklist | 5     | Identificadores tipo `API_KEY`/`SECRET_KEY` en `'use client'` — validar caso por caso.|
+| `ai-runtime-pricing.txt`               | checklist | 12    | Revisar runtime/model/pricing trace; no colapsar modelo planificado, ejecutado y comercial. |
+| `ai-credit-flows.txt`                  | checklist | 12    | Confirmar reserve antes del provider, finalize con uso real, release en fallos y reaper de stale. |
+| `ai-prompt-boundaries.txt`             | checklist | 12    | Separar system estático de user/context dinámico; marcar contexto de tenant como no confiable. |
+| `ai-budget-limits.txt`                 | checklist | 12    | Verificar límites de input/output/costo y fallo cerrado ante pricing desconocido.      |
 
 Regla: si un scan está vacío o con marcador `# sin hits`, la fase correspondiente parte con **cero findings de esa categoría** — no "buscar en otro lado por las dudas".
 
@@ -321,6 +326,37 @@ For Shopear, favor:
 - shared date/format helpers
 - field-aware validation messages in Spanish
 
+## Phase 12. AI Runtime, Credits, and Provenance
+
+Apply this phase whenever the diff touches `src/lib/ai`, chat/copilot routes, provider drivers, prompts,
+usage ledgers, credit accounts, model catalogs, or generated-domain artifacts.
+
+Look for:
+
+- unknown model pricing fallback, magic minimum costs, or charging by executed local/mock model instead of catalog-backed commercial model
+- one `model` field overloaded as assigned model, runtime driver, executed model, and pricing model
+- production config that silently defaults to mock runtime or allows explicit mock without a dev/test gate
+- provider calls without credit reservation before execution
+- reserved credits not finalized on success or not released on provider/persistence failure
+- stale reservations without a reaper or compensating release path
+- usage/ledger writes that drop request id, runtime driver, executed model, pricing model, pricing version, token counts, cost, source ids, or operation id
+- provider spend followed by domain persistence without an idempotency slot or operation state transition
+- user/tenant/domain context concatenated into `system` prompt
+- generated output persisted without output-size/cost ceilings and schema validation
+- catches around finalize/logging that swallow errors without structured logs
+
+Flag as `CRÍTICO` when:
+
+- a tenant can spend credits without budget enforcement or with wrong commercial pricing
+- production can route real requests to mock/runtime bypass by default
+- provider spend can occur repeatedly for the same operation because there is no idempotency claim
+
+Flag as `ALTO` when:
+
+- usage ledger is incomplete enough that cost reconciliation or incident debugging would fail
+- prompt boundaries let tenant data behave like system instructions
+- credit release/finalization is missing in one realistic failure branch
+
 ## Severity Rubric
 
 Use this rubric consistently:
@@ -359,12 +395,13 @@ Recommended weighting:
 
 - Security: 20%
 - Multi-tenancy: 20%
-- Data layer and Prisma: 15%
-- Next.js and React correctness: 15%
+- Data layer and Prisma: 14%
+- AI runtime, credits, and provenance: 12%
+- Next.js and React correctness: 12%
 - Testing: 10%
-- Performance: 8%
-- Structure and anti-drift: 6%
-- Readability and maintainability: 4%
+- Performance: 6%
+- Structure and anti-drift: 5%
+- Readability and maintainability: 3%
 - Deploy and operations: 2%
 
 Score caps:
@@ -375,6 +412,7 @@ Score caps:
 - failing `test:run` => global cap `6/10`
 - failing `quality:check` => global cap `6/10`
 - any hit en `scans/client-env-leak.txt` confirmado como secreto real => `NO-GO` (no importa lo que pase con el resto)
+- AI paid flow with unknown pricing fallback, production mock default, or spend without reservation => `NO-GO`
 
 ## Output Length Cap
 

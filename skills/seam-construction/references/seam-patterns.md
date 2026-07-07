@@ -64,6 +64,25 @@ Concrete seams with trigger, anatomy, and when not to use. Apply in both constru
 
 **Do not use when:** the vendor is truly single and permanent (e.g., a payment SDK with a decade of lock-in). Even then, a thin adapter layer buys testability cheaply.
 
+## 4b. AI Runtime / Billing Seam
+
+**Trigger:**
+- One flow mixes prompt construction, runtime selection, provider execution, credit reservation, usage ledger, and domain persistence.
+- Local/mock/CLI runtimes coexist with API runtimes.
+- The commercial model used for pricing can differ from the provider/runtime model that actually executes.
+- Provider spend can happen before the domain write succeeds.
+
+**Anatomy:**
+- `prompt-builder.ts` owns static system prompt + untrusted user/context prompt construction.
+- `runtime/selector.ts` or equivalent chooses driver/model and rejects unsafe mock use in production.
+- `credits/` owns reserve/finalize/release and stale-reservation cleanup.
+- `usage/` or `ledger/` records planned model, runtime driver, executed model, pricing model, pricing version, tokens, cost, request id, and provenance.
+- The domain service owns the operation state machine and idempotency slot; it does not inline provider details.
+
+**Why it works:** Billing, observability, and provider behavior stop depending on one ambiguous `model` string. Prompt-injection boundaries are reviewable. Failed persistence after provider execution does not strand reserved credits or hide spend.
+
+**Do not use when:** the code only formats a static prompt for a test fixture and never calls a runtime or charges a tenant.
+
 ## 5. Scoped Action Seam
 
 **Trigger:**

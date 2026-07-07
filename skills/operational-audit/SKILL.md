@@ -38,13 +38,18 @@ Para cada archivo: ¿los awaits tienen try-catch?
 ## 2. [Con IA] Costos — gasto sin techo
 
 ```bash
-grep -n "budgetManager\|checkBudget\|rateLimit\|rateLimi" src/app/api --include="*.ts" -r
-grep -n "copilotUsage\|trackUsage\|ledger\|usageLedger" src/app/api --include="*.ts" -r
+rg -n "budgetManager|checkBudget|rateLimit|rateLimi|budgetPolicy|AI_MODEL_PRICING_NOT_FOUND" src/app/api src/lib
+rg -n "copilotUsage|trackUsage|ledger|usageLedger|recordUsageEvent|logAiUsage|runtimeDriver|executedModel|pricingModel|pricingVersion" src/app/api src/lib prisma
+rg -n "reserve|finalize|release|stale" src/lib/ai src/lib/services src/app/api
 ```
 
 - [ ] Cada llamada a IA pasa por rate limit efectivo
 - [ ] Existe techo de tokens/requests por usuario/tenant por día
 - [ ] El ceiling se verifica ANTES de llamar al modelo
+- [ ] El pricing model viene de catálogo; modelo desconocido falla cerrado, no cobra mínimo silencioso
+- [ ] El ledger distingue modelo asignado/planificado, runtime driver, modelo ejecutado, pricing model y pricing version
+- [ ] Toda llamada paga reserva créditos ANTES del provider, finaliza con uso real en success y libera en errores de provider/persistencia
+- [ ] Hay política para reservas stale o path compensatorio verificable
 - [ ] El ledger de uso está en el happy path — no solo en finally
 - [ ] Si el ledger falla, se loguea con userId — no se pierde silenciosamente
 - [ ] El ledger registra tokens reales (input + output por separado)
@@ -76,6 +81,9 @@ grep -rn "getAIContext\|buildContext\|assembleContext" src/lib/services src/app/
 - [ ] Datos del usuario van como contexto — NUNCA como system prompt/instrucciones
 - [ ] **Ningún dato del usuario se concatena al campo `system` del modelo**
 - [ ] Defensa contra prompt injection desde contenido del usuario
+- [ ] El prompt separa `system` estático/controlado de `user/context` dinámico
+- [ ] Contexto de tenant/producto/documentos se marca explícitamente como no confiable
+- [ ] Hay límites de input/output/costo antes de llamar al modelo y schema validation antes de persistir output
 
 ```bash
 grep -rn "sourceId\|source_id\|entityId\|entityIds" src/lib --include="*.ts"
@@ -113,6 +121,8 @@ Para cada archivo con uploads:
 | Fallos APIs externas           |        |       |
 | Rate limit / ceilings IA       |        |       |
 | Ledger de uso IA               |        |       |
+| Runtime / pricing trace IA     |        |       |
+| Reserva / finalize / release IA|        |       |
 | Audit trail acciones sensibles |        |       |
 | Prompt injection / data min.   |        |       |
 | Provenance / trazabilidad      |        |       |

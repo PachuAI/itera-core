@@ -1,6 +1,6 @@
 ---
 name: check
-description: 'Chequeo de calidad adaptativo de un repo ITERA (Next.js 16 + Prisma 7 + BetterAuth multi-tenant): detecta qué cambió y corre solo los checks relevantes — transacciones, findMany+take, aislamiento tenant, Zod, auth guards, lint y enforcement scripts. Usar tras implementar una feature (3+ archivos), un refactor de lógica, o antes de /save. /check en Claude, $check en Codex.'
+description: 'Chequeo de calidad adaptativo de un repo ITERA (Next.js 16 + Prisma 7 + BetterAuth multi-tenant): detecta qué cambió y corre solo los checks relevantes — transacciones, findMany+take, aislamiento tenant, Zod, auth guards, IA/créditos/runtime, lint y enforcement scripts. Usar tras implementar una feature (3+ archivos), un refactor de lógica, cambios en IA/Copilot/créditos, o antes de /save. /check en Claude, $check en Codex.'
 model: sonnet
 ---
 
@@ -16,6 +16,7 @@ Chequeo inteligente que analiza qué cambió en la sesión y ejecuta SOLO los ch
 - Después de un refactor que toca lógica de negocio
 - Antes de `/save` si hubo cambios de código significativos
 - Cuando se creó o modificó un service, action, o schema
+- Cuando se tocó IA/Copilot, runtime provider, créditos, usage ledger o prompt building
 - Cuando se replicó un patrón de otro módulo
 
 ### NO ejecutar (ahorro de tokens)
@@ -45,7 +46,9 @@ Clasificar cada archivo en categorías:
 | --------- | --------------------------------------------- |
 | `service` | `src/lib/services/*.ts`                       |
 | `action`  | `src/app/**/actions.ts`, `*-actions.ts`       |
+| `api`     | `src/app/api/**/route.ts`                     |
 | `schema`  | `src/lib/schemas/*.ts`                        |
+| `ai`      | `src/lib/ai/**`, `src/lib/chat/**`, `src/app/api/chat/**`, `src/app/api/ai/**`, `*ledger*`, `*credit*`, `*runtime*` |
 | `ui`      | `src/app/**/*.tsx`, `src/components/**/*.tsx` |
 | `prisma`  | `prisma/schema.prisma`                        |
 | `util`    | `src/lib/utils/*.ts`, `src/lib/hooks/*.ts`    |
@@ -182,6 +185,43 @@ Buscar interfaces/types definidas localmente que ya existen en `src/lib/types/`:
 2. Si es idéntica o casi idéntica a algo en `src/lib/types/` → reportar como Warning
 3. Si la misma interface aparece en 2+ archivos → reportar como Warning con sugerencia de extraer
 
+### Check L: IA, créditos y runtime (si `ai`, `api` de chat/IA, `service` de IA o `prisma` con ledger/créditos)
+
+Leer los archivos modificados y verificar:
+
+1. **Pricing estricto**
+   - No hay fallback silencioso para modelos sin pricing.
+   - El modelo comercial usado para cobrar viene del catálogo.
+   - Un modelo local/mock/CLI ejecutado no reemplaza al pricing model.
+
+2. **Trazabilidad runtime/ledger**
+   - Persistir o loguear por separado: modelo asignado/planificado, `runtimeDriver`, `executedModel`, `pricingModel`, `pricingVersion`, tokens, costo, requestId, operación y provenance/sourceIds cuando aplique.
+   - No sobrecargar un único campo `model` con todos esos significados.
+
+3. **Ciclo de créditos**
+   - Reserva antes de llamar al provider.
+   - Finalización con uso real en success.
+   - Release en errores de provider, parseo o persistencia.
+   - Si hay reservas persistentes, existe reaper o path compensatorio para stale reservations.
+
+4. **Prompt boundary**
+   - `system` contiene instrucciones estáticas/controladas.
+   - Datos de tenant/usuario/causa/documentos van en user/context y marcados como no confiables.
+   - No concatenar input del usuario al `system`.
+
+5. **Idempotencia y límites**
+   - Operaciones caras reclaman slot/estado antes de ejecutar IA.
+   - Hay límites de input/output/costo y validación de schema antes de persistir.
+   - Mock runtime no queda como default productivo.
+
+6. **Tests**
+   - Hay test focal para al menos un success y un failure path de créditos.
+   - Hay test que prueba runtime/pricing trace si se tocó ledger.
+
+**Reportar como Crítico**: pricing desconocido cobrado, prod mock default, gasto sin reserva, o operación IA repetible sin claim/idempotencia.
+
+**Reportar como Warning/Alto**: ledger incompleto, prompt boundary débil, release/finalize sin cobertura, o catch que oculta errores operativos.
+
 ---
 
 ## Paso 3: Reporte
@@ -192,7 +232,7 @@ Formato del reporte:
 ## /check — Resultado
 
 **Archivos analizados**: [N] ([categorías detectadas])
-**Checks ejecutados**: [lista de checks A-K que aplicaron]
+**Checks ejecutados**: [lista de checks A-L que aplicaron]
 **Checks omitidos**: [lista de checks que no aplicaron y por qué]
 
 ### Hallazgos

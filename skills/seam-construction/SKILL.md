@@ -1,6 +1,6 @@
 ---
 name: seam-construction
-description: Use when planning a new view, module, feature area, or page that risks becoming a monolith, or when refactoring an existing mixed file that has accumulated multiple responsibilities. Applies when a component/module will mix schema + actions + UI + legacy + tracking, when server and client boundaries are unclear, when tenant/guard/cache invariants must be preserved, or when a vendor integration threatens to dominate the internal shape. Stack-aware for Next.js + React + Prisma + auth-based SaaS apps.
+description: Use when planning a new view, module, feature area, or page that risks becoming a monolith, or when refactoring an existing mixed file that has accumulated multiple responsibilities. Applies when a component/module will mix schema + actions + UI + legacy + tracking, when server and client boundaries are unclear, when tenant/guard/cache invariants must be preserved, when AI/runtime/billing flows mix prompts + providers + credits + ledgers, or when a vendor integration threatens to dominate the internal shape. Stack-aware for Next.js + React + Prisma + auth-based SaaS apps.
 ---
 
 # Seam Construction
@@ -15,7 +15,10 @@ Este es el **método canónico**. Hay variantes repo-specific que NO duplican el
 
 - **`skill-refactorizacion-linkea2`** — Linkea2: preview/public parity, contratos legacy, env split, sync de `.planning/` maps.
 - **`skill-refactorizacion-shope-ar`** — Shopear: tenant-by-host, onboarding `PendingStore`+cookie+sesión, auth multi-subdomain, validación con `build`.
-- **`arch-itera-lex`** — ÍTERA Lex: además suma una capa propia (disciplina **Fallow-first** + secuencias para services/agregadores/upload + wiring del grafo de dependencias). Es la más diferenciada.
+- **`arch-itera-lex`** — ÍTERA Lex SaaS: vive como skill repo-local en
+  `itera-lex/.claude/skills/arch-itera-lex`. Además suma una capa propia (disciplina
+  **Fallow-first** + secuencias para services/agregadores/upload/IA + wiring del grafo de dependencias).
+  Si el entorno no lo carga automáticamente, leerlo desde esa ruta antes de trabajar en el repo.
 
 ## Core Principle
 
@@ -57,6 +60,7 @@ Also use when refactoring an existing file that already exhibits these traits.
 | **Legacy adapter seam** | An old DB or public contract must be normalized in one place |
 | **Domain action seam** | Href builders, resolvers, serializers, quota logic mixed with UI |
 | **Workspace/provider seam** | A vendor integration threatens to dominate the internal shape |
+| **AI runtime/billing seam** | Prompts, runtime selection, pricing, credit reservations, and usage ledgers appear in one flow |
 | **Scoped action seam** | Same mutation exists per entity context, differing only by scope + revalidation |
 | **View-model seam** | Many defaults, derived flags, and shape normalization before rendering |
 | **Shell + effects seam** | Pure render tree is fused with browser effects, tracking, preview hooks |
@@ -85,6 +89,10 @@ Do not combine extraction + naming overhaul + behavior change + data model chang
 - Extract polymorphic logic out of JSX early.
 - When legacy and new formats coexist, isolate the translation layer instead of leaking conditionals.
 - When a vendor dominates a module, abstract from the product outward; do not let the external API define the internal shape. A thin provider contract + bridge/adapter beats leaking provider payloads into UI state or server actions.
+- AI flows get a first-class runtime/billing seam: keep prompt construction, runtime selection, pricing catalog, credit reservation/finalization/release, usage ledger, and document persistence as separate contracts.
+- In AI ledgers, do not collapse `assigned/planned model`, `runtime driver`, `executed model`, and `pricing model` into one string. If the provider can execute a different model than the commercial one, persist both.
+- User/tenant/domain data never belongs in the model `system` prompt. Put it in a user/context channel with an explicit untrusted-context marker and keep system prompts static or catalog-controlled.
+- Credit reservation happens before provider execution; finalize on confirmed usage; release on provider/persistence failure. Idempotency must live near the operation state machine, not in the UI caller.
 - Centralize base action logic; keep only scoped wrappers for revalidation and route-specific concerns.
 - Tenant-scoped writes: keep auth + ownership checks at the boundary, not inside leaf helpers.
 - Read-then-write flows: default to transactions.
@@ -143,6 +151,9 @@ These thoughts mean STOP and reconsider the seam:
 | "The mock has 8 cards so I'll make 8 leaves" | Pick seams by responsibility and volatility, not by mock boxes. |
 | "I'll skip the contract freeze, the change is small" | Contract freeze is cheap; regressions from skipped freezes are expensive. |
 | "A mock provider is overkill, we only have Google" | A mock provider is the test that proves the seam is real, not renamed Google code. |
+| "The executed model is close enough for billing" | Runtime and commercial pricing drift silently. Persist executed and pricing models separately. |
+| "We'll log usage after the document is saved" | Persistence can fail after provider spend. Plan reserve/finalize/release before coding. |
+| "The tenant context is helpful, so put it in system" | That turns tenant data into instructions. Keep dynamic data in an untrusted context block. |
 
 ## Stack Defaults
 
@@ -167,6 +178,7 @@ When finishing work done under this skill, leave:
 - Tests added or updated
 - Exact verification run (lint / targeted tests / build / project maps sync)
 - If providers or repeated entity contexts were involved: the contract used and why it belongs at that boundary
+- If AI, credits, or runtime providers were involved: the prompt boundary, runtime/pricing trace, credit lifecycle, and idempotency guarantee
 - Any remaining debt intentionally deferred
 
 ## Resources

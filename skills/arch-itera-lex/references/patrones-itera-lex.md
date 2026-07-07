@@ -1,6 +1,6 @@
 # Patrones Itera Lex
 
-Base tomada de refactorizaciones reales en `ITERA Lex`: biblioteca de archivos, `leadsService`, CRM/onboarding UI y `archivosService`.
+Base tomada de refactorizaciones reales en `ITERA Lex`: biblioteca de archivos, `leadsService`, CRM/onboarding UI, `archivosService` y auditorias de IA/Copilot/escritos.
 
 ## Patrones que si dieron retorno
 
@@ -11,6 +11,7 @@ Base tomada de refactorizaciones reales en `ITERA Lex`: biblioteca de archivos, 
 - Consolidar tipos serializados del feature para evitar drift entre vistas globales y tabs.
 - Mantener una fachada publica chica y mover internals a un directorio por responsabilidad.
 - Separar validaciones de ownership/FK antes de separar writes transaccionales.
+- En IA, separar temprano prompt, runtime, pricing/creditos, ledger y persistencia; si nacen juntos, el siguiente cambio rompe costo u observabilidad.
 - Deduplicar builders internos despues de extraer el modulo responsable, no antes.
 - Commitear cada corte chico cuando se trabaja en una tanda larga.
 
@@ -21,6 +22,10 @@ Base tomada de refactorizaciones reales en `ITERA Lex`: biblioteca de archivos, 
 - Integraciones externas fuertes, como Google Drive, empujan a sobreinvertir en UX especifica aunque el limite real venga por negocio, permisos o verificacion.
 - Los modulos grandes mezclan demasiado rapido responsabilidades de workspace local con responsabilidades del provider remoto.
 - Los services grandes esconden varios dominios bajo nombres genericos: invitaciones, onboarding, trial, emails, tracking, biblioteca, vinculacion, clasificacion y borrado.
+- Las features IA tienden a esconder demasiados dominios bajo una route/service: prompt builder, runtime selector, provider driver, creditos, ledger tecnico/comercial, persistencia e idempotencia.
+- Un solo campo `model` se vuelve ambiguo rapido: puede significar modelo asignado, driver runtime, modelo ejecutado o modelo de pricing. Esa ambiguedad rompe reconciliacion de costos.
+- Los fallos tardios despues de gastar provider (parseo, schema validation, persistencia de documento) generan creditos reservados o gastos invisibles si no existe release/finalize claro.
+- El contexto del tenant en prompts puede pasar de "evidencia" a "instrucciones" si se concatena al `system`.
 - La extension tenant de Prisma puede inyectar `tenantId` en runtime aunque el tipo generado lo exija; si aparece cast, conviene dejarlo acotado y comentado cerca del write.
 - Separar demasiado tarde los tipos/selects hace que los siguientes cortes arrastren imports publicos inestables.
 
@@ -37,6 +42,10 @@ Base tomada de refactorizaciones reales en `ITERA Lex`: biblioteca de archivos, 
 ## Regla especifica que aparecio en este repo
 
 Si el provider externo todavia no tiene adoption real o esta limitado por compliance/costos, priorizar la frontera `workspace vs provider` en vez de seguir puliendo UX del provider.
+
+Si una capacidad IA consume creditos o genera documentos, tratarla como flujo financiero-operacional:
+pricing catalogado, reserva previa, finalize/release, ledger reconciliable, provenance y claim idempotente.
+No alcanza con que la respuesta del modelo sea correcta.
 
 ## Secuencia probada en `archivos`
 
@@ -79,10 +88,24 @@ Si el provider externo todavia no tiene adoption real o esta limitado por compli
 9. Centralizar helpers de cleanup R2 compartidos.
 10. Frenar cuando la fachada baja a ~100 lineas y los internals quedan en tamanos razonables; seguir partiria flujo transaccional sin mucho retorno.
 
+## Secuencia probada en IA/Copilot/escritos tras auditoria Fable
+
+1. Hacer fallar cerrado el pricing desconocido (`AI_MODEL_PRICING_NOT_FOUND`) en vez de cobrar minimo silencioso.
+2. Agregar trazabilidad runtime/pricing al ledger: runtime driver, modelo ejecutado, pricing model y pricing version.
+3. Separar prompts: system estatico/controlado y contexto dinamico marcado como no confiable.
+4. Mover chat/titulos/sugerencias por gates de tenant/plan, budget, credit reserve, runtime, finalize/release y ledger.
+5. En escritos IA, reclamar slot de generacion antes del provider; si ya existe generated doc, devolverlo; si esta running, no duplicar gasto.
+6. Si falla provider, parseo o persistencia, liberar reserva o dejar estado compensable; no dejar operacion "running" indefinida.
+7. Hacer que usage logging/finalize no tape el resultado exitoso, pero siempre loguee errores con contexto suficiente.
+8. Endurecer runtime: mock no es default productivo y mock explicito en prod falla.
+9. Actualizar schema/manual SQL/manifest y verificar localmente con `pnpm db:schema:verify`.
+10. Proteger con tests focales: credit lifecycle, ledger runtime/pricing, prompt boundary, runtime selector y services/routes afectados.
+
 ## Criterios de meseta observados
 
 - Fachada menor a 150 lineas y sin logica de negocio pesada.
 - Internals con responsabilidades nombrables y sin mezclar lecturas/writes/externos.
+- Flujos IA con dinero y observabilidad reconciliables: pricing, reserve/finalize/release, runtime trace y provenance tienen dueño claro.
 - Archivos concentradores restantes por debajo de 300-400 lineas o con complejidad accidental baja.
 - Siguiente corte requiere cambiar contrato publico, prop drilling amplio o partir una transaccion delicada.
 - Las validaciones ya pasan y los docs vivos reflejan la nueva ubicacion.

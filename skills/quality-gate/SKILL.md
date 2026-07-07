@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: Audit a Next.js 16 + Prisma 7 + BetterAuth multi-tenant codebase for correctness, security, multi-tenancy, maintainability, and release readiness. Use when the user wants a structured quality report with severity, score, baseline comparison, and actionable follow-up before shipping or adding features.
+description: Audit a Next.js 16 + Prisma 7 + BetterAuth multi-tenant codebase for correctness, security, multi-tenancy, AI/runtime/credit safety, maintainability, and release readiness. Use when the user wants a structured quality report with severity, score, baseline comparison, and actionable follow-up before shipping or adding features.
 ---
 
 # Quality Gate
@@ -63,6 +63,7 @@ Use this skill for repo-wide audits, release-readiness passes, regression checks
 - A clean `lint/typecheck/build` does not mean the gate passes.
 - Any critical security or cross-tenant isolation bug forces a `NO-GO`, even if the numeric score looks acceptable.
 - Cualquier hit confirmado en `scans/client-env-leak.txt` (secreto real en bundle de browser; `NODE_ENV` no cuenta) = `NO-GO` automático.
+- En features con IA pagada: modelo sin pricing catalogado, mock como default productivo, gasto sin reserva previa, o ledger sin runtime/pricing trace = `NO-GO` o `ALTO` según blast radius.
 
 ## Resources
 

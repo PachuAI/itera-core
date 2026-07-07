@@ -20,6 +20,7 @@ Useful grep starting points:
 ```bash
 rg -n "use client|revalidateTag|updateTag|tenantSlug|requireActiveTenantWriteAccess|checkActiveTenantWriteAccess" src
 rg -n "export (async )?function|export const" src/<target-area>
+rg -n "generateText|generateObject|streamText|generateAiObject|runtimeDriver|executedModel|pricingModel|reserve|finalize|release|recordUsageEvent|logAiUsage" src
 rg -n "\\.test\\." src
 git log --oneline --decorate -- <target-path>
 ```
@@ -31,7 +32,7 @@ Before editing, write:
 1. **Source hotspot** — what file/feature is the target. In construction mode, this is the file you are about to create.
 2. **Stable contracts to preserve** — public exports, serialized shapes, guards, cache tags, caller expectations.
 3. **First seam to extract (or place)** — one seam from the catalog, with its rationale.
-4. **Risks to re-check after** — what could silently break (hydration, cache invalidation, tenant scope, billing guard, font scope in portals, etc.).
+4. **Risks to re-check after** — what could silently break (hydration, cache invalidation, tenant scope, billing guard, AI pricing/runtime trace, credit release, prompt boundary, font scope in portals, etc.).
 
 Good first seams:
 
@@ -103,6 +104,15 @@ If tests mock `$transaction`:
 
 - Confirm the mock transaction object includes every new Prisma model referenced inside the transaction.
 
+If AI runtime, credits, or usage ledgers changed:
+
+- Confirm the pricing model is catalog-backed; unknown models fail closed.
+- Confirm planned model, runtime driver, executed model, pricing model, and pricing version are not collapsed.
+- Confirm every provider call has a reserve-before / finalize-after / release-on-failure path.
+- Confirm dynamic tenant/user/domain context is outside `system` and marked as untrusted.
+- Confirm persistence failures after provider execution release credits or record compensating state.
+- Run focused tests for the credit lifecycle, runtime selector, ledger, and the affected route/service.
+
 ## 5. Definition Of Done
 
 A seam cut (construction or recovery) is done when:
@@ -114,6 +124,7 @@ A seam cut (construction or recovery) is done when:
 - Build passes when behavior changed.
 - Planning maps are synced when required.
 - Provider seams include a mock or second-provider test when applicable.
+- AI runtime/billing seams include a test for pricing trace and at least one failure path that releases credits.
 
 ## 6. Handoff Format
 

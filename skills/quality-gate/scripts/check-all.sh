@@ -359,6 +359,10 @@ capture_rg_or_note "console-calls" 'console\.(log|warn|error)' "${CODE_ROOTS[@]}
 capture_rg_or_note "any-types" ':\s*any\b|<any>|\bas any\b' "${CODE_ROOTS[@]}"
 capture_rg_or_note "img-tags" '<img\b' "${CODE_ROOTS[@]}"
 capture_rg_or_note "env-usage" 'process\.env\.[A-Z_]+' "${CODE_ROOTS[@]}"
+capture_rg_or_note "ai-runtime-pricing" '\b(runtimeDriver|executedModel|pricingModel|pricingVersion|assignedModel|resolvedModel|modelId|mock:|AI_RUNTIME|resolveAiRuntime|selectAiRuntime|assertKnownPricingModel)\b' "${CODE_ROOTS[@]}" "${PRISMA_ROOTS[@]}"
+capture_rg_or_note "ai-credit-flows" '\b(AiCredit(Account|LedgerEntry)|reserve(Stale|Credit)?|finalize(Credit)?|release(Credit)?|recordUsageEvent|logAiUsage|copilot_usage_ledger|CopilotUsageLedger)\b' "${CODE_ROOTS[@]}" "${PRISMA_ROOTS[@]}"
+capture_rg_or_note "ai-prompt-boundaries" '\b(systemPrompt|userPrompt|generateAiObject|generateObject|generateText|streamText|contexto_no_confiable|untrusted|prompt injection|PromptInjection)\b' "${CODE_ROOTS[@]}"
+capture_rg_or_note "ai-budget-limits" '\b(MAX_[A-Z0-9_]*(TOKENS|CHARS|COST)|maxOutputTokens|inputTokens|outputTokens|budgetPolicy|AI_GENERATION_(INPUT|OUTPUT|COST)_TOO_(LARGE|HIGH)|AI_MODEL_PRICING_NOT_FOUND)\b' "${CODE_ROOTS[@]}"
 
 capture_client_env_leaks
 capture_client_secret_names
