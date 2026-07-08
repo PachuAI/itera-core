@@ -51,9 +51,88 @@ Never generate from metadata, snippets, carátula, public card text, or `resumen
 
 Use when the user asks to process today's/new production RN entries.
 
+For "chequeá los 4 corpus", "lo nuevo de hoy", "barrida diaria RN", or equivalent,
+use the four-corpus daily sweep below. This is not a historical reconciliation.
+
+### Daily Four-Corpus Sweep
+
+1. Define the target day in ART (`America/Argentina/Buenos_Aires`). Treat "today" as that
+   exact date, not as a year or full snapshot.
+2. Query PROD read-only for the four operative corpus:
+   `fallos/stj`, `fallos/jurisdiccional`, `sumarios/stj`, `sumarios/jurisdiccional`.
+   Include every row with `fecha_sentencia = <day>`. Also include rows with
+   `(primer_visto_en AT TIME ZONE 'America/Argentina/Buenos_Aires')::date = <day>` only when
+   `fecha_sentencia` is recent (helper default: last 7 days) or NULL. This catches late same-week
+   publication without confusing historical backfills/imports with daily novelties.
+   Process the resulting exact `source_id`s.
+3. If a corpus has `0` daily `source_id`s, stop there for that corpus. Do not inspect older
+   years, do not run `--all-indexed`, and do not reconcile historical scopes unless the user
+   explicitly asks for a snapshot/backfill.
+4. Write per-corpus source-id files under `data/YYYY-MM-DD/` and operate from those files.
+   Use the repo helper when possible:
+   ```bash
+   cd /home/pachu/projects/saas/iteralex/itera-lex-tools/api
+   .venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+     --date <YYYY-MM-DD> \
+     --prepare-local
+   ```
+   This produces exact `daily_<tipo>_<ambito>_source_ids.txt`, pulls missing documents with
+   `missing_only`, captures local text and exports batches only for those IDs.
+5. If an included row has `fecha_sentencia` different from the target day, do not rely on
+   `--desde-fecha/--hasta-fecha`; use `--source-ids-file` with:
+   - `scripts/rio_negro_capture_fallo_text.py`;
+   - `scripts/rio_negro_capture_sumario_text.py`;
+   - `scripts/rio_negro_export_pending_for_extract.py`.
+6. Generate only the exported eligible rows with the matching RN skill:
+   `$rn-fallo-stj`, `$rn-fallo-jurisdiccional`, or `$rn-sumario-criterio`.
+7. Gate dry-run. Fix JSONL until `rechazados_gate=0`. Apply locally only after a clean gate.
+8. Before pushing extract-only batches, capture the same daily `source_id`s in PROD:
+   ```bash
+   .venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+     --date <YYYY-MM-DD> \
+     --capture-prod
+   ```
+   Then close/push explicit generated outs:
+   ```bash
+   .venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+     --date <YYYY-MM-DD> \
+     --finalize-out fallos/jurisdiccional:data/<YYYY-MM-DD>/out_*.jsonl \
+     --push-prod \
+     --confirm finalizar-tanda-extractos-stj
+   ```
+   `finalize_extract_batch.py --push-prod` remains extract-only and must stay scoped by the
+   `out.jsonl` IDs.
+9. Re-run the daily four-corpus check at the end. If new `source_id`s arrived while processing,
+   run a second daily pass for only those new IDs. The run is not complete until the final
+   PROD daily aggregate has no missing text/extracts for daily generable rows.
+10. Smoke public API with the current own-index query params:
+    `fecha_desde=<YYYY-MM-DD>&fecha_hasta=<YYYY-MM-DD>`; do not use legacy
+    `desde_fecha`/`hasta_fecha`.
+
+The common status line to report is, per corpus:
+
+```txt
+docs=<n> con_texto=<n> con_extracto=<n> con_tags=<n> con_anclas=<n> modelo_prompt=<n> review_true=0
+```
+
+Only after the daily sweep is complete should the final answer say "los 4 corpus fueron revisados".
+
+### Generic Novelty Flow
+
 1. Refresh local context from production or compare production/local freshness per the DB runbook. Do not print secrets.
 2. Count new documents by corpus and identify documents missing locally.
 3. Ingest/observe recent documents for all four corpus if needed.
+   - If PROD already has documents that LOCAL lacks, pull them first with content sync and
+     `missing_only`; do not use an ad-hoc Python snippet:
+     ```bash
+     cd /home/pachu/projects/saas/iteralex/itera-lex-tools/api
+     .venv/bin/python scripts/rio_negro_sync_content.py pull \
+       --tipo fallos --ambito jurisdiccional --anio 2026 \
+       --import-strategy missing_only \
+       --apply
+     ```
+     For `pull`, `--confirm` is not required. Use `merge` only when intentionally reconciling
+     existing rows.
 4. Capture `texto_oficial` for all newly observed docs:
    - fallos via `scripts/rio_negro_capture_fallo_text.py`;
    - sumarios via `scripts/rio_negro_capture_sumario_text.py` or the autofill hook.
@@ -76,6 +155,42 @@ Chequeá novedades RN en PROD desde el último dump, traelas a local y aplicales
 ## Retroactive Workflow
 
 Use when the user asks to complete a month/range/corpus going backward.
+
+For whole-year `sumarios` completion, prefer the compact repo helper. It keeps
+heavy logs in files, avoids printing hundreds of rows, and runs the full local
+pipeline:
+
+```bash
+cd /home/pachu/projects/saas/iteralex/itera-lex-tools/api
+.venv/bin/python scripts/rio_negro_complete_sumarios_year.py \
+  --ambito jurisdiccional \
+  --anio <AAAA> \
+  --apply-local \
+  --confirm finalizar-tanda-extractos-stj
+```
+
+Use this for prompts like "indexá/completá 2022 entero" when the active corpus is
+`sumarios/jurisdiccional`. In this context "complete/index year" means:
+observe metadata, capture `texto_oficial`, generate `sintesis_criterio`, gate,
+apply local, and verify `editorial_completeness_v2`.
+
+The helper writes artifacts under `data/sumarios-<ambito>-<YYYYMMDD>/`:
+`*_backfill.log`, `batch_*.jsonl`, `out_*.jsonl`, `gate_fail_*.jsonl`, and
+`quarantine_*.jsonl`. It also writes `summary_*.json` and
+`promotion_scopes_*.txt`; pass that scopes file directly to the fast snapshot
+promotion script if the user later asks to publish the completed year. It never
+pushes PROD. If gate is not clean, stop and fix only the failed `extracto_id`s
+in `out_*.jsonl`, then re-run finalize or the helper with `--skip-backfill`.
+
+Known friction removed by the helper:
+
+- admin `target_min_docs` is capped at `200`; this is just a planning guardrail,
+  not the real official total. Trust `total_upstream` and final completeness.
+- `finalize_extract_batch.py` needs `--anio` to print the right scope; pass it.
+- avoid `--summary` on big exports unless debugging; it prints one line per row.
+
+Use the manual flow below for fallos, exact month work, non-standard scopes, or
+when the helper reports gate failures that need inspection.
 
 1. Query official/local coverage for the requested corpus and date range.
 2. Backfill missing documents first if the official portal has rows absent locally.
@@ -100,6 +215,13 @@ Completá hacia atrás sumarios STJ de septiembre 2024 en local: texto oficial, 
 Production promotion is separate from generation.
 
 - Default to fast snapshot promotion when local is the intended source of truth and the user explicitly asks to promote RN to PROD.
+- If documents were pulled from PROD and then `texto_oficial` was captured only in LOCAL,
+  extract-only push is not a clean promotion: it would publish the extract while leaving PROD
+  without the official source text. Either promote the touched documents/text first, or run the
+  validated capture script against PROD for the exact scoped date/docs, then push extracts.
+  `scripts/rio_negro_sync_extracts.py` now blocks this by default when LOCAL has text and PROD does
+  not; do not bypass it with `--allow-target-missing-text` unless that mismatch is explicitly
+  intentional and documented.
 - Do not use `scripts/rio_negro_sync_content.py push --apply` for mass RN promotion. That CLI calls `verify_content_package()` after apply and can spend tens of minutes checking rows one by one.
 - Do not use `TRUNCATE ... CASCADE` on `documentos_rio_negro`: it deletes dependent telemetry/positioning tables (`query_documento_rio_negro`, `observaciones_posicion_rio_negro`, tags, etc.).
 - Use slow sync only for a surgical merge where PROD differences must be preserved or for a tiny `extracts_only` batch.
@@ -107,12 +229,15 @@ Production promotion is separate from generation.
 Fast snapshot promotion sequence:
 
 1. Prove local is a superset of production by document key `(tipo, ambito, id_fuente)`. If `PROD - LOCAL != 0`, stop and pull/merge first.
-2. Take a production backup of `documentos_rio_negro`, `extractos_rio_negro`, and `lotes_contenido_rio_negro` unless the user explicitly accepts skipping it.
+2. Take a production backup unless the user explicitly accepts skipping it. The fast helper defaults
+   to a scoped JSONL content backup for only the touched scopes; this is for scoped content restore,
+   not a direct full-table rollback. Use `--backup-mode full` when a full-table dump of
+   `documentos_rio_negro`, `extractos_rio_negro`, and `lotes_contenido_rio_negro` is required.
 3. Push set-based packages for only the scopes touched. Use bundled script:
 
 ```bash
 cd /home/pachu/projects/saas/iteralex/itera-lex-tools/api
-python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_fast_snapshot_push.py \
+.venv/bin/python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_fast_snapshot_push.py \
   --scope fallos/jurisdiccional/2026 \
   --scope fallos/stj/2026 \
   --scope sumarios/jurisdiccional/2024 \
@@ -123,7 +248,7 @@ python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_f
 This is dry-run by default. To apply:
 
 ```bash
-python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_fast_snapshot_push.py \
+.venv/bin/python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_fast_snapshot_push.py \
   --scope fallos/jurisdiccional/2026 \
   --scope fallos/stj/2026 \
   --scope sumarios/jurisdiccional/2024 \
@@ -132,22 +257,42 @@ python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_f
   --apply --confirm push-snapshot-rn-to-produccion
 ```
 
-Use `--default-demo-scopes` only when those exact five scopes are the desired promotion target. Use `--skip-backup` only after the user explicitly accepts the rollback tradeoff.
+If the yearly sumarios helper produced a scopes file, prefer that handoff instead of manually
+retyping scopes:
+
+```bash
+.venv/bin/python /home/pachu/projects/itera-core/skills/rn-pipeline-operativo/scripts/rn_fast_snapshot_push.py \
+  --scopes-file data/sumarios-jurisdiccional-YYYYMMDD/promotion_scopes_sum_jurisdiccional_<AAAA>.txt \
+  --apply --confirm push-snapshot-rn-to-produccion
+```
+
+Use `--default-demo-scopes` only when those exact five scopes are the desired promotion target. Use
+`--skip-backup` only after the user explicitly accepts the rollback tradeoff.
 
 After apply, verify with aggregate counts, not row-by-row:
 
 - local and PROD corpus totals match;
 - `prod docs missing in local = 0` and `local docs missing in prod = 0`;
 - active extracts have tags, anchors, model/prompt, and `review=0`;
-- public API `/jurisprudencia/rio-negro/indice/buscar` returns `200` with `ai_extract.status=generated` and tags for one sample per touched corpus;
+- public API `/jurisprudencia/rio-negro/indice/buscar` returns `200` with `ai_extract.status=generated`;
+  for current Tools API shape, inspect `ai_extract.text` and
+  `ai_extract.clasificacion_itera.tags_busqueda`, not legacy `ai_extract.extracto`/`ai_extract.tags`;
 - web routes return `200`.
 
 Known pitfalls from the 2026-07-06 push:
 
 - `--force-reviewed` must override legacy `manual`/`revisado` rows when local has the corrected generated extract; otherwise legacy gaps remain.
 - `requires_review` is metadata noise for this prototype and must not block promotion.
+- The fast snapshot import is set-based and avoids row-by-row verification. Its default backup is
+  now scoped JSONL content, so frequent yearly pushes no longer pay the full-table dump cost. Use
+  `--backup-mode full` only when the rollback plan explicitly needs a full-table `pg_dump`.
+- In dry-run mode, an aggregate local/PROD mismatch is informational; only `--apply` enforces exact
+  aggregate equality after the set-based import.
 - Avoid hand-escaped `psql` commands for multiline ops. Use repo tunnel helpers/scripts so secrets are not printed and quoting does not derail the operation.
 - If a process reaches post-apply `verify_content_package()` on a mass snapshot, stop it and switch to aggregate verification.
+- `finalize_extract_batch.py --push-prod` is extract-only. It is correct for a generated batch only
+  when the target already has the document and `texto_oficial` parity is true, or when text parity
+  was intentionally waived.
 
 Suggested user prompt:
 
@@ -163,5 +308,10 @@ A run is done only when:
 - no `needs_review`/`requiere_revision` state is left as an operational blocker;
 - fallos have `extracto`, `clasificacion.tags_busqueda`, `anclas.dispositivo`, `modelo`, `version_prompt`;
 - sumarios have `titular`, `resumen_itera`, `clasificacion.tags_busqueda`, `anclas.criterio`, `modelo`, `version_prompt`;
+- whole-year sumarios also have `wc -l batch/out/fail/quarantine` checked and the
+  final SQL aggregate confirms docs, text, extract, resumen, tags, anchor, model,
+  prompt, and `review_true=0`;
 - non-generable documents are explained as missing/insufficient official content, not silently left blank;
+- `.planning/STATE.md` records the local/prod status, date range, counts, files,
+  gate result, and any manual fixes;
 - the final answer states local vs production status clearly.

@@ -9,6 +9,7 @@ mass RN promotions.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -74,6 +75,19 @@ def parse_scope(raw: str) -> tuple[str, str, int]:
     except ValueError as exc:
         raise argparse.ArgumentTypeError("anio invalido") from exc
     return tipo, ambito, anio
+
+
+def read_scopes_file(path: Path) -> list[tuple[str, str, int]]:
+    scopes: list[tuple[str, str, int]] = []
+    for lineno, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        try:
+            scopes.append(parse_scope(line))
+        except argparse.ArgumentTypeError as exc:
+            raise argparse.ArgumentTypeError(f"{path}:{lineno}: {exc}") from exc
+    return scopes
 
 
 def load_repo_modules(api_root: Path) -> None:
@@ -163,6 +177,104 @@ def backup_prod_rn(prod_url: str, backup_dir: Path) -> Path:
     return dump
 
 
+def backup_prod_scopes(
+    *,
+    prod_url: str,
+    backup_dir: Path,
+    scopes: list[tuple[str, str, int]],
+) -> Path:
+    from scripts.rio_negro_sync_content import configure_database
+    from app.jurisprudencia.rio_negro_index import db
+    from app.jurisprudencia.rio_negro_index.content_sync import (
+        PACKAGE_SCHEMA_VERSION,
+        RioNegroContentScope,
+        _canonical_rows,
+        _content_checksum,
+        _fetch_export_documents,
+        _fetch_export_extracts,
+        _file_checksums,
+        _scope_payload,
+        _write_jsonl,
+    )
+
+    configure_database(prod_url)
+    db.init_rio_negro_index_db()
+    backup_root = (
+        backup_dir
+        / f"rn-prod-scoped-pre-snapshot-push-{datetime.now(ART).strftime('%Y%m%d-%H%M%S')}"
+    )
+    backup_root.mkdir(parents=True, exist_ok=False)
+
+    packages: list[dict] = []
+    total_docs = 0
+    total_extracts = 0
+    for tipo, ambito, anio in scopes:
+        created_at = datetime.now(ART)
+        scope = RioNegroContentScope(tipo=tipo, ambito=ambito, anio=anio)
+        scope_label = f"{tipo}/{ambito}/{anio}"
+        package_id = (
+            f"rn-content-produccion-backup-{tipo}-{ambito}-{anio}-"
+            f"{created_at.strftime('%Y%m%d-%H%M%S')}"
+        )
+        package_dir = backup_root / package_id
+        package_dir.mkdir(parents=False, exist_ok=False)
+        docs = _canonical_rows(_fetch_export_documents(scope))
+        extracts = _canonical_rows(_fetch_export_extracts(scope))
+        _write_jsonl(package_dir / "documentos.jsonl", docs)
+        _write_jsonl(package_dir / "extractos.jsonl", extracts)
+        checksums = _file_checksums(package_dir, ["documentos.jsonl", "extractos.jsonl"])
+        manifest = {
+            "schema_version": PACKAGE_SCHEMA_VERSION,
+            "package_id": package_id,
+            "source": "rio_negro",
+            "source_env": "produccion",
+            "operator": "rn-fast-snapshot-scoped-backup",
+            "created_at": created_at.isoformat(),
+            "scope": _scope_payload(scope),
+            "counts": {"documentos": len(docs), "extractos": len(extracts)},
+            "checksums": checksums,
+            "content_checksum": _content_checksum(checksums),
+        }
+        (package_dir / "manifest.json").write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        packages.append(
+            {
+                "scope": scope_label,
+                "package_dir": str(package_dir),
+                "counts": manifest["counts"],
+                "content_checksum": manifest["content_checksum"],
+            }
+        )
+        total_docs += len(docs)
+        total_extracts += len(extracts)
+
+    backup_manifest = {
+        "created_at": datetime.now(ART).isoformat(),
+        "kind": "rn_prod_scoped_content_backup",
+        "scopes": [f"{tipo}/{ambito}/{anio}" for tipo, ambito, anio in scopes],
+        "packages": packages,
+        "counts": {"documentos": total_docs, "extractos": total_extracts},
+        "rollback_hint": (
+            "Each package contains the pre-push content rows for its scope. For a scoped rollback "
+            "after adding rows, first remove or isolate the current target scope intentionally, then "
+            "re-import the relevant package with the repo content-sync importer. Use --backup-mode "
+            "full when the rollback plan requires a direct full-table restore."
+        ),
+    }
+    (backup_root / "scoped-backup-manifest.json").write_text(
+        json.dumps(backup_manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(
+        f"backup_scoped_ok {backup_root} scopes={len(scopes)} "
+        f"docs={total_docs} extractos={total_extracts}",
+        flush=True,
+    )
+    return backup_root
+
+
 def push_scopes(
     *,
     local_url: str,
@@ -225,10 +337,22 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fast RN local->production snapshot push.")
     parser.add_argument("--api-root", type=Path, default=Path.cwd())
     parser.add_argument("--scope", action="append", type=parse_scope, default=[])
+    parser.add_argument(
+        "--scopes-file",
+        type=Path,
+        default=None,
+        help="Archivo con un scope tipo/ambito/anio por linea. Permite blancos y comentarios #.",
+    )
     parser.add_argument("--default-demo-scopes", action="store_true")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--confirm", default="")
     parser.add_argument("--skip-backup", action="store_true")
+    parser.add_argument(
+        "--backup-mode",
+        choices=["scoped", "full"],
+        default="scoped",
+        help="En --apply, scoped guarda solo los scopes tocados; full hace pg_dump de tablas RN.",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -261,7 +385,10 @@ def main() -> int:
         prod_target,
     )
 
-    scopes = list(args.scope)
+    scopes = []
+    if args.scopes_file:
+        scopes.extend(read_scopes_file(args.scopes_file))
+    scopes.extend(args.scope)
     if args.default_demo_scopes:
         scopes.extend(DEFAULT_SCOPES)
     scopes = list(dict.fromkeys(scopes))
@@ -280,7 +407,10 @@ def main() -> int:
     with prod_target(config) as prod:
         assert_local_superset(local_url, prod.url)
         if args.apply and not args.skip_backup:
-            backup_prod_rn(prod.url, args.backup_dir)
+            if args.backup_mode == "full":
+                backup_prod_rn(prod.url, args.backup_dir)
+            else:
+                backup_prod_scopes(prod_url=prod.url, backup_dir=args.backup_dir, scopes=scopes)
         push_scopes(
             local_url=local_url,
             prod_url=prod.url,
@@ -293,6 +423,9 @@ def main() -> int:
     print_totals("local", local_totals)
     print_totals("prod", prod_totals)
     if local_totals != prod_totals:
+        if not args.apply:
+            print("aggregate_verify_skipped_dry_run_mismatch", flush=True)
+            return 0
         raise RuntimeError("Los totales agregados local/prod no coinciden.")
     print("aggregate_verify_ok", flush=True)
     return 0
