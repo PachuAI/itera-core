@@ -1,4 +1,4 @@
 interface:
   display_name: "RN Pipeline Operativo"
-  short_description: "Pipeline diario y retroactivo RN"
-  default_prompt: "Use $rn-pipeline-operativo to revisar novedades RN, completar extractos y promover con snapshot rápido local→PROD cuando corresponda."
+  short_description: "Barridas RN eficientes por día o rango"
+  default_prompt: "Use $rn-pipeline-operativo to revisar y actualizar los cuatro corpus RN en un rango, deduplicando IDs y verificando LOCAL y PROD."

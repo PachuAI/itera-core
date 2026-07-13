@@ -1,6 +1,6 @@
 ---
 name: rn-pipeline-operativo
-description: Operate the PJ Río Negro Itera Lex local-to-production pipeline for daily new documents and retroactive monthly backfills across fallos/sumarios × STJ/jurisdiccional. Use when Codex must check production/local freshness, pull new RN documents, capture texto_oficial, export pending extract batches, generate with the RN skills, ingest locally with the anti-garbage gate, verify editorial_completeness_v2, or promote the local RN snapshot to production with a fast set-based push. Do not use for writing individual extract prose only; use rn-fallo-stj, rn-fallo-jurisdiccional, or rn-sumario-criterio for generation.
+description: Operate the PJ Río Negro Itera Lex local-to-production pipeline for daily or date-range novelty sweeps and retroactive backfills across fallos/sumarios × STJ/jurisdiccional. Use when Codex must check production/local freshness, deduplicate weekly RN corpus updates, pull new documents, capture texto_oficial, generate and gate extract batches, verify editorial_completeness_v2, publish exact batches to production, or promote a validated local snapshot. Optimizes tunnel calls, duplicate generation, logs, tokens, and provider cost. Do not use for writing one extract only; use rn-fallo-stj, rn-fallo-jurisdiccional, or rn-sumario-criterio.
 ---
 
 # Pipeline Operativo RN
@@ -47,67 +47,93 @@ Editorial completeness SSOT is `editorial_completeness_v2`:
 
 Never generate from metadata, snippets, carátula, public card text, or `resumen_oficial="Fallo"`.
 
-## Daily Novelty Workflow
+## Novelty Sweep: Daily Or Range
 
-Use when the user asks to process today's/new production RN entries.
+Use the same bounded workflow for “today”, “this week”, or an explicit range. It is not a
+historical reconciliation. Prefer one range invocation over a loop of daily invocations: the helper
+queries PROD once, deduplicates `source_id`s that match both signature date and first-seen date,
+writes one ID file and one batch per corpus, and opens fewer tunnels.
 
-For "chequeá los 4 corpus", "lo nuevo de hoy", "barrida diaria RN", or equivalent,
-use the four-corpus daily sweep below. This is not a historical reconciliation.
+### Resolve The Catch-Up Window
 
-### Daily Four-Corpus Sweep
+Interpret the user's operational intent before running commands:
 
-1. Define the target day in ART (`America/Argentina/Buenos_Aires`). Treat "today" as that
-   exact date, not as a year or full snapshot.
-2. Query PROD read-only for the four operative corpus:
-   `fallos/stj`, `fallos/jurisdiccional`, `sumarios/stj`, `sumarios/jurisdiccional`.
-   Include every row with `fecha_sentencia = <day>`. Also include rows with
-   `(primer_visto_en AT TIME ZONE 'America/Argentina/Buenos_Aires')::date = <day>` only when
-   `fecha_sentencia` is recent (helper default: last 7 days) or NULL. This catches late same-week
-   publication without confusing historical backfills/imports with daily novelties.
-   Process the resulting exact `source_id`s.
-3. If a corpus has `0` daily `source_id`s, stop there for that corpus. Do not inspect older
-   years, do not run `--all-indexed`, and do not reconcile historical scopes unless the user
-   explicitly asks for a snapshot/backfill.
-4. Write per-corpus source-id files under `data/YYYY-MM-DD/` and operate from those files.
-   Use the repo helper when possible:
-   ```bash
-   cd /home/pachu/projects/saas/iteralex/itera-lex-tools/api
-   .venv/bin/python scripts/rio_negro_daily_four_corpus.py \
-     --date <YYYY-MM-DD> \
-     --prepare-local
-   ```
-   This produces exact `daily_<tipo>_<ambito>_source_ids.txt`, pulls missing documents with
-   `missing_only`, captures local text and exports batches only for those IDs.
-5. If an included row has `fecha_sentencia` different from the target day, do not rely on
-   `--desde-fecha/--hasta-fecha`; use `--source-ids-file` with:
-   - `scripts/rio_negro_capture_fallo_text.py`;
-   - `scripts/rio_negro_capture_sumario_text.py`;
-   - `scripts/rio_negro_export_pending_for_extract.py`.
-6. Generate only the exported eligible rows with the matching RN skill:
-   `$rn-fallo-stj`, `$rn-fallo-jurisdiccional`, or `$rn-sumario-criterio`.
-7. Gate dry-run. Fix JSONL until `rechazados_gate=0`. Apply locally only after a clean gate.
-8. Before pushing extract-only batches, capture the same daily `source_id`s in PROD:
-   ```bash
-   .venv/bin/python scripts/rio_negro_daily_four_corpus.py \
-     --date <YYYY-MM-DD> \
-     --capture-prod
-   ```
-   Then close/push explicit generated outs:
-   ```bash
-   .venv/bin/python scripts/rio_negro_daily_four_corpus.py \
-     --date <YYYY-MM-DD> \
-     --finalize-out fallos/jurisdiccional:data/<YYYY-MM-DD>/out_*.jsonl \
-     --push-prod \
-     --confirm finalizar-tanda-extractos-stj
-   ```
-   `finalize_extract_batch.py --push-prod` remains extract-only and must stay scoped by the
-   `out.jsonl` IDs.
-9. Re-run the daily four-corpus check at the end. If new `source_id`s arrived while processing,
-   run a second daily pass for only those new IDs. The run is not complete until the final
-   PROD daily aggregate has no missing text/extracts for daily generable rows.
-10. Smoke public API with the current own-index query params:
-    `fecha_desde=<YYYY-MM-DD>&fecha_hasta=<YYYY-MM-DD>`; do not use legacy
-    `desde_fecha`/`hasta_fecha`.
+- “chequeá hoy / lo nuevo de hoy” → `--date <today ART>`;
+- “ayer no chequeamos / revisá ayer y hoy” → range from yesterday through today;
+- “hace varios días que no entramos / desde el último chequeo / poneme al día” → read the latest
+  successful RN PROD recheck recorded in `api/.planning/STATE.md`, start on its following ART date,
+  and end today;
+- explicit dates always win;
+- if `STATE.md` does not prove the last completed PROD date, use the narrowest conservative range
+  supported by the user's wording and state the assumption. Do not silently treat it as today only.
+
+The unit of work is always the resolved inclusive window, not “one invocation per missed day”. A
+one-day window uses daily mode; two or more days use range mode. Re-query the whole same window at
+closure, but process only new or incomplete unique IDs.
+
+### Fast Path
+
+1. Resolve dates in ART (`America/Argentina/Buenos_Aires`). Use `--date` for one day or
+   `--date-from/--date-to` for up to 31 days.
+2. Run read-only first. Stop for zero-row corpora; never add `--all-indexed` unless the user asked
+   for reconciliation/backfill.
+
+```bash
+cd /home/pachu/projects/saas/iteralex/itera-lex-tools/api
+.venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+  --date-from <YYYY-MM-DD> --date-to <YYYY-MM-DD>
+```
+
+The selection is the union of:
+
+- `fecha_sentencia` inside the range;
+- `primer_visto_en` ART inside the range when the signature date is recent relative to that first
+  observation (default lookback 7 days) or NULL.
+
+Operate only on the resulting unique IDs. This catches late publication without importing
+historical backfills.
+
+3. If gaps exist, prepare LOCAL once for the whole range:
+
+```bash
+.venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+  --date-from <YYYY-MM-DD> --date-to <YYYY-MM-DD> \
+  --prepare-local
+```
+
+This writes `data/<from>_to_<to>/range_<tipo>_<ambito>_source_ids.txt`, runs at most one
+`missing_only` pull per affected corpus/year, captures by exact IDs and exports one deduplicated
+batch per corpus. Daily mode preserves `data/<date>/daily_*.txt`.
+
+4. Generate each non-empty batch once with its matching skill. Do not paste `texto_oficial` into
+chat or print full JSONL; pass absolute paths and inspect only failed rows. Use:
+
+- fallos normal: `gpt-5.4-mini`;
+- fallos `tier=escape`: treat carefully but keep in the same batch when small;
+- sumarios: `codex-5.5-medium`.
+
+5. Gate dry-run and apply LOCAL only when `rechazados_gate=0`. Re-run only failed IDs, never the
+whole clean batch.
+6. Push only when explicitly authorized. Capture the exact range IDs in PROD first, then finalize
+only explicit outs:
+
+```bash
+.venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+  --date-from <YYYY-MM-DD> --date-to <YYYY-MM-DD> \
+  --capture-prod
+
+.venv/bin/python scripts/rio_negro_daily_four_corpus.py \
+  --date-from <YYYY-MM-DD> --date-to <YYYY-MM-DD> \
+  --finalize-out fallos/jurisdiccional:data/<from>_to_<to>/out_*.jsonl \
+  --push-prod --confirm finalizar-tanda-extractos-stj
+```
+
+`finalize_extract_batch.py --push-prod` is extract-only and stays scoped by out IDs. Never waive
+missing PROD text silently.
+
+7. Re-run the same range read-only once at the end. If the unique ID set grew, process only the
+delta. Smoke `/jurisprudencia/rio-negro/indice/buscar` with `fecha_desde`/`fecha_hasta` and verify
+`ai_extract.text` plus `ai_extract.clasificacion_itera.tags_busqueda`.
 
 The common status line to report is, per corpus:
 
@@ -115,7 +141,18 @@ The common status line to report is, per corpus:
 docs=<n> con_texto=<n> con_extracto=<n> con_tags=<n> con_anclas=<n> modelo_prompt=<n> review_true=0
 ```
 
-Only after the daily sweep is complete should the final answer say "los 4 corpus fueron revisados".
+Only after the final range recheck should the answer say “los 4 corpus fueron revisados”.
+
+### Cost And Token Discipline
+
+- Prefer one range call; do not loop dates unless diagnosing day-level drift.
+- Keep heavy sync/backfill output in artifact logs. Report aggregate counters and paths.
+- Never load complete court texts into context before export eligibility is known.
+- Generate only rows without a complete active extract; do not rewrite complete v2 rows.
+- Deduplicate by `(tipo, ambito, source_id)` before capture, generation and push.
+- Reuse the generated out for gate, local apply and PROD push; do not regenerate between stages.
+- Use exact-ID extract pushes for small novelty batches and fast set-based snapshot promotion only
+  for broad validated scopes.
 
 ### Generic Novelty Flow
 
