@@ -276,6 +276,14 @@ Después de cada deploy/restart:
 5. Probar un host no listado con `curl -4` y `curl -6`; ambos deben fallar. Un `curl` sin flag puede
    ocultar que IPv4 está bloqueado pero IPv6 continúa abierto.
 
+Automatizar ese bloque con dos modos explícitos: `--apply` reemplaza reglas y `--check` sólo compara
+container/DNS/reglas y hace probes. El handler de error de `--check` tampoco puede ejecutar
+contención, stop o rollback. En un piloto real, un `catch` compartido convirtió un fallo de sintaxis
+del probe en un stop involuntario del runner y obligó a reiniciar la ventana de observación.
+
+Para el host de auth, comprobar que el código HTTP sea distinto de `000`; no usar `curl -f`. Un 401 o
+403 demuestra DNS, ruta, TLS y respuesta del destino, aunque no sea una página pública exitosa.
+
 Comprobación mínima, sin imprimir destinos ni credenciales:
 
 ```bash
@@ -293,6 +301,10 @@ fi
 
 No persistir una IP de container en documentación ni asignar IP estática en la red global. Persistir
 el procedimiento/hosts y regenerar las reglas a partir del estado efectivo.
+
+En ÍTERA Lex R9, el procedimiento quedó versionado en
+`.planning/build-week/scripts/configure-r9-runner-egress.sh --apply|--check`; usarlo en vez de copiar
+comandos iptables desde el historial de shell.
 
 ## GitHub App, auto-deploy y builds largos
 

@@ -50,6 +50,18 @@ restaurar con `app start --instant-deploy`, observar el deployment hasta `finish
 Reaplicar el egress IPv4+IPv6, validar auth/health y hacer smoke firmado antes de volver a habilitar
 runtime/tenant.
 
+Si existe un rollback automatizado, separar obligatoriamente dos caminos:
+
+- `--check`: inventario read-only; no login que cree sesión, no Server Actions, no flags, no stop y
+  ninguna contención desde el handler de error;
+- apply: apagar primero flag/runtime por el control plane durable, detener el runner aun si una
+  acción intermedia falla y verificar al final cero habilitados + runner fuera.
+
+No probar apply durante una observación para demostrar que está disponible: validar resolución de
+env/DB/acciones con `--check` y apoyar el camino mutante en la prueba controlada registrada. Si un
+check detuvo un servicio por error, restaurar, repetir health/auth/egress/smokes y reiniciar completa
+la ventana; no descontar la interrupción.
+
 ## Si una credencial de Coolify apareció en la salida
 
 `~/.config/coolify/config.json` contiene tokens reutilizables de todos los contextos. Nunca volcarlo
