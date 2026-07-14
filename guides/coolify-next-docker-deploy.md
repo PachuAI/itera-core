@@ -306,6 +306,11 @@ En ÍTERA Lex R9, el procedimiento quedó versionado en
 `.planning/build-week/scripts/configure-r9-runner-egress.sh --apply|--check`; usarlo en vez de copiar
 comandos iptables desde el historial de shell.
 
+Para una observación larga, no depender de `systemd-run` transitorio con `Restart=no`. Versionar una
+unit de usuario con `Restart=on-failure`, habilitarla sólo durante la ventana y hacer que NO-GO/fin
+normal salgan con código cero. Al cerrar, deshabilitar/detener la unit y conservar el template. Así
+un crash del recolector reinicia sin convertir deliberadamente un rollback en un nuevo arranque.
+
 ## GitHub App, auto-deploy y builds largos
 
 - Validar acceso al repo con la integracion elegida. Un 404 al clonar puede significar GitHub App
