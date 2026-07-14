@@ -108,7 +108,7 @@ coolify app create github \
   --health-check-path /
 ```
 
-Agregar env vars:
+Agregar env vars públicas que realmente deban existir durante el build:
 
 ```bash
 coolify app env create <app_uuid> \
@@ -137,11 +137,54 @@ coolify app env create <app_uuid> \
   --is-literal
 ```
 
-Verificar que queden disponibles en build/runtime:
+> **Guardrail obligatorio (validado el 2026-07-14):** `coolify app env create` crea las variables con
+> build y runtime habilitados por default. Agregar `--runtime` **no deshabilita build-time**; sólo vuelve
+> a afirmar el flag runtime. No usar ese comando sin corrección posterior para passwords, tokens,
+> secretos OAuth, claves HMAC, credenciales de storage o URLs privadas de base de datos.
+
+Para una variable sensible runtime-only, usar el bulk endpoint porque la CLI actual puede devolver 422
+al intentar expresar `--build-time=false`:
 
 ```bash
-coolify app env list <app_uuid> --format json \
-  | jq -r '.[] | [.key,.is_build_time,.is_runtime] | @tsv'
+set +x
+
+COOLIFY_FQDN="$(jq -r '.instances[] | select(.default==true).fqdn' ~/.config/coolify/config.json)"
+COOLIFY_TOKEN="$(jq -r '.instances[] | select(.default==true).token' ~/.config/coolify/config.json)"
+APP_UUID='<app_uuid>'
+ENV_KEY='GOOGLE_CLIENT_SECRET'
+ENV_VALUE='<valor obtenido desde el inventario local protegido>'
+
+payload="$(jq -n \
+  --arg key "$ENV_KEY" \
+  --arg value "$ENV_VALUE" \
+  '{data:[{
+    key:$key,
+    value:$value,
+    is_buildtime:false,
+    is_runtime:true,
+    is_preview:false,
+    is_literal:true
+  }]}')"
+
+status="$(curl -sS -o /dev/null -w '%{http_code}' \
+  -X PATCH "$COOLIFY_FQDN/api/v1/applications/$APP_UUID/envs/bulk" \
+  -H "Authorization: Bearer $COOLIFY_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data "$payload")"
+
+test "$status" = '201'
+unset payload ENV_VALUE COOLIFY_TOKEN
+```
+
+Verificar cada secreto inmediatamente. El nombre real del campo devuelto por Coolify es
+`is_buildtime`, no `is_build_time`:
+
+```bash
+coolify app env get <app_uuid> <key> --format json \
+  | jq '{key,is_buildtime,is_runtime}'
+
+# Resultado obligatorio para secretos:
+# { "key": "...", "is_buildtime": false, "is_runtime": true }
 ```
 
 Deploy:
@@ -171,14 +214,15 @@ inventar nombres de comando: confirmar con `--help` de la versión instalada.
   mantener tenants/servicios acotados y no volver a imprimir el valor.
 - No usar `-s/--show-sensitive` salvo que el valor sea estrictamente necesario. Para inventarios,
   reportar key, presencia y flags.
-- `NEXT_PUBLIC_*` suele necesitar build-time; claves privadas, passwords, HMAC y URLs de DB deben ser
-  runtime-only.
-- En variables existentes, `coolify app env update <app> <uuid|key> --value ...` preservo correctamente
-  `is_build_time=false` en CLI 1.6.2. Verificar siempre el resultado con `env list`; no confiar en los
-  defaults impresos por `--help`.
-- En create/update complejos, la CLI puede no poder expresar un booleano `false` o recibir 422. La API
-  acepta `is_buildtime:false`, `is_runtime:true`, `is_preview:false`, `is_literal:true`; usarla solo con
-  el token del contexto ya configurado y sin imprimir payloads secretos.
+- `NEXT_PUBLIC_*`/`VITE_*` puede necesitar build-time porque se incorpora al bundle público. Claves
+  privadas, passwords, OAuth client secrets, HMAC, credenciales de storage y URLs privadas de DB deben
+  ser runtime-only.
+- Nunca interpretar `--runtime` como “runtime-only”. En la CLI actual create deja también
+  `is_buildtime=true`; update con `--build-time=false` puede responder 422. Para secretos usar el bulk
+  PATCH anterior y verificar el recurso reconsultado.
+- La API acepta exactamente `is_buildtime:false`, `is_runtime:true`, `is_preview:false`,
+  `is_literal:true`. No usar el nombre parecido `is_build_time`: corresponde a ejemplos/versiones
+  inconsistentes y no es el campo observado en el recurso real.
 - Coolify puede crear un par production/preview para una key. Inspeccionar ambas filas y no asumir que
   actualizar una modifico la otra.
 - Algunas respuestas de update serializan settings como `null` aunque hayan persistido. La prueba es
