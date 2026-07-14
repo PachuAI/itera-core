@@ -66,7 +66,10 @@ Si un token aparece en stdout/stderr, tratarlo como expuesto aunque la sesión s
 4. rotar el token del contexto y actualizar las máquinas autorizadas;
 5. validar la CLI con inventarios sin secretos antes de reanudar desde un nuevo preflight.
 
-No reutilizar el token expuesto para "terminar rápido" ni declarar GO antes de la rotación.
+El default es no declarar GO antes de la rotación. En un entorno operado por una sola persona, el
+operador puede aceptar explícitamente diferirla hasta el cierre para completar desarrollo o un canary
+interno ya contenido. Registrar fecha/alcance, no ampliar tenants/servicios y mantener la rotación en
+el checklist final.
 
 ## Cancelacion de un deploy en curso
 

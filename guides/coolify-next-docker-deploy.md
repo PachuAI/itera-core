@@ -166,8 +166,9 @@ inventar nombres de comando: confirmar con `--help` de la versión instalada.
 - Para API directa, seleccionar el contexto con `jq` y asignar FQDN/token a variables de proceso sin
   imprimirlas. No loguear el header `Authorization`, el body sensible ni la expansión del comando.
 - Si un token aparece en salida, considerarlo expuesto aunque no se haya publicado fuera de la
-  sesión: detener operaciones sensibles, aplicar el rollback seguro del recurso y rotar el token
-  antes de continuar.
+  sesión. El default es rollback seguro y rotación. Un operador único puede aceptar explícitamente
+  diferirla hasta el cierre para terminar un canary interno ya contenido; registrar la excepción,
+  mantener tenants/servicios acotados y no volver a imprimir el valor.
 - No usar `-s/--show-sensitive` salvo que el valor sea estrictamente necesario. Para inventarios,
   reportar key, presencia y flags.
 - `NEXT_PUBLIC_*` suele necesitar build-time; claves privadas, passwords, HMAC y URLs de DB deben ser
@@ -420,6 +421,20 @@ Las asignaciones anteriores no producen salida. Ejecutarlas con `set +x`; nunca 
 volcar el JSON completo ni pegar el header expandido en logs o documentación.
 
 ## Diagnostico por sintomas
+
+### Smoke Node por stdin falla antes de llamar al servicio
+
+En Node 22, `node` leyendo stdin no puede decidir el formato si el mismo script mezcla `require()` y
+`top-level await`; devuelve `ERR_AMBIGUOUS_MODULE_SYNTAX`. No diagnosticarlo como fallo de red o del
+runner: envolver el harness CommonJS en `async function main()` o usar imports ESM consistentes.
+
+### Timestamps productivos aparecen corridos tres horas
+
+Prisma suele mapear `DateTime` a `timestamp without time zone`. Si el proceso tiene
+`TZ=America/Argentina/Buenos_Aires`, `pg` puede reserializar el valor como `Date` agregando tres horas
+aunque PostgreSQL tenga `TimeZone=UTC`. Para una ventana operacional, capturar el epoch/UTC del evento
+y contrastar `current_setting('TimeZone')`, `now()` y `to_char(createdAt, ...)`; no copiar el ISO de un
+objeto `Date` sin esa verificación.
 
 ### `ERR_PNPM_IGNORED_BUILDS`
 
