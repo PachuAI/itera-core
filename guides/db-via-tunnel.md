@@ -44,7 +44,7 @@ El método es idéntico para todos los repos. Cambia solo:
 - IP del VPS
 - Contexto Coolify
 - Container UUID del PG (estable entre deploys; es el UUID de Coolify)
-- App UUID (para obtener `DATABASE_URL` del env del container de la app)
+- App UUID (para obtener `DATABASE_URL` exclusivamente desde Coolify CLI)
 - DB name
 - DB user
 
@@ -61,32 +61,38 @@ PG_UUID=uxoszayiqygjp8rib3kdddvg
 APP_UUID=t1ect6gnjp8068ccu7lah6n8
 DB_NAME=shopear
 DB_USER=postgres
+LOCAL_PORT=5433
+SSH_SOCKET=/tmp/${REPO_NAME:-repo}-db-tunnel.sock
 
 # 1. Obtener IP actual del container PG (no es estable entre restarts)
 CONTAINER_IP=$(ssh root@$VPS \
   "docker inspect $PG_UUID --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'")
 
-# 2. Obtener password fresca del env del app container
-APP_NAME=$(ssh root@$VPS "docker ps --format '{{.Names}}' | grep $APP_UUID | head -1")
-DB_PASS=$(ssh root@$VPS "docker inspect $APP_NAME --format '{{range .Config.Env}}{{println .}}{{end}}' | grep ^DATABASE_URL=" | sed -E 's|.*://[^:]+:([^@]+)@.*|\1|')
+# 2. Obtener DATABASE_URL desde Coolify sin imprimirla y parsearla localmente
+DATABASE_URL=$(coolify app env list "$APP_UUID" --context "$COOLIFY_CONTEXT" \
+  --format json -s | jq -er '.[] | select(.key=="DATABASE_URL" and .is_preview!=true) | .value' | head -1)
+DB_PASS=$(DATABASE_URL="$DATABASE_URL" node -e 'const u=new URL(process.env.DATABASE_URL); process.stdout.write(decodeURIComponent(u.password))')
 
-# 3. Abrir tunnel en background
-ssh -fNL 5433:$CONTAINER_IP:5432 root@$VPS
+# 3. Abrir tunnel con socket de control único
+rm -f "$SSH_SOCKET"
+ssh -M -S "$SSH_SOCKET" -fNT \
+  -L "$LOCAL_PORT:$CONTAINER_IP:5432" root@$VPS
 
 # 4. Esperar a que el puerto responda (max ~1.5s)
-for i in 1 2 3 4 5; do nc -z localhost 5433 2>/dev/null && break; sleep 0.3; done
+for i in 1 2 3 4 5; do nc -z localhost "$LOCAL_PORT" 2>/dev/null && break; sleep 0.3; done
 
 # 5. Conectar
-PGPASSWORD="$DB_PASS" psql -h localhost -p 5433 -U $DB_USER -d $DB_NAME
+PGPASSWORD="$DB_PASS" psql -h localhost -p "$LOCAL_PORT" -U $DB_USER -d $DB_NAME
 
-# 6. Al salir de psql, cerrar el tunnel
-pkill -f "ssh -fNL 5433:$CONTAINER_IP:5432"
+# 6. Al salir de psql, cerrar exactamente este tunnel
+ssh -S "$SSH_SOCKET" -O exit root@$VPS
+rm -f "$SSH_SOCKET"
 ```
 
 Para query one-shot sin entrar al shell interactivo:
 
 ```bash
-PGPASSWORD="$DB_PASS" psql -h localhost -p 5433 -U $DB_USER -d $DB_NAME \
+PGPASSWORD="$DB_PASS" psql -h localhost -p "$LOCAL_PORT" -U $DB_USER -d $DB_NAME \
   -c "SELECT COUNT(*) FROM \"users\";"
 ```
 
@@ -102,7 +108,7 @@ mkdir -p ~/dumps/$REPO_NAME
 DUMP=~/dumps/$REPO_NAME/$REPO_NAME-prod-$(date +%Y%m%d-%H%M).dump
 
 PGPASSWORD="$DB_PASS" pg_dump -Fc --no-owner --no-privileges \
-  -h localhost -p 5433 -U $DB_USER -d $DB_NAME \
+  -h localhost -p "$LOCAL_PORT" -U $DB_USER -d $DB_NAME \
   -f $DUMP
 
 # Verificar integridad sin restaurar
@@ -110,7 +116,8 @@ pg_restore --list $DUMP | head -20
 ls -lh $DUMP
 
 # Cerrar tunnel
-pkill -f "ssh -fNL 5433:$CONTAINER_IP:5432"
+ssh -S "$SSH_SOCKET" -O exit root@$VPS
+rm -f "$SSH_SOCKET"
 ```
 
 Flags clave:
@@ -156,30 +163,57 @@ Si el schema difiere (ej: DB local desactualizada), primero sincronizar con `pnp
 
 ## Troubleshooting
 
-| Síntoma | Causa | Fix |
-|---|---|---|
-| `ssh: Could not resolve hostname` | VPS no responde | `ping`, ver si está en `itera-context/infra/vps-overview.md` |
-| Container IP vacía | Container no corriendo, UUID mal escrito | `ssh root@$VPS "docker ps"` + verificar UUID |
-| `connection refused on localhost:5433` | Tunnel no se estableció | Esperar 1–2s extra, verificar que el puerto 5433 esté libre localmente (`ss -tlnp \| grep 5433`) |
-| `FATAL: password authentication failed` | Password mal obtenida del env | `ssh root@$VPS "docker inspect $APP_NAME --format '{{range .Config.Env}}{{println .}}{{end}}' \| grep DATABASE_URL"` manual y parsear a ojo |
-| `pg_dump: server version mismatch` | Cliente local < server | Actualizar `pg_dump` local a versión ≥ server |
-| `pg_restore: could not execute query` | Schema local ≠ dump | `prisma db push` antes del restore, o recrear DB limpia |
-| Tunnel zombi (no se cerró) | Olvidaste el `pkill` | `pgrep -fa "ssh -fNL"` y mato manualmente |
-| La IP del container cambió entre operaciones | Restart del container (deploy, reboot del VPS) | Re-obtener IP antes de cada tunnel. La IP NO es estable. |
+| Síntoma                                      | Causa                                                | Fix                                                                                                                                             |
+| -------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ssh: Could not resolve hostname`            | VPS no responde                                      | `ping`, ver si está en `itera-context/infra/vps-overview.md`                                                                                    |
+| Container IP vacía                           | Container no corriendo, UUID mal escrito             | `ssh root@$VPS "docker ps"` + verificar UUID                                                                                                    |
+| `connection refused on localhost:5433`       | Tunnel no se estableció                              | Esperar 1–2s extra, verificar que el puerto 5433 esté libre localmente (`ss -tlnp \| grep 5433`)                                                |
+| `FATAL: password authentication failed`      | URL/user/password incorrectos o fila preview elegida | Releer `DATABASE_URL` desde Coolify, validar la fila production y parsear con `URL`; nunca imprimirla ni "mirarla a ojo"                        |
+| `pg_dump: server version mismatch`           | Cliente local < server                               | Actualizar `pg_dump` local a versión ≥ server                                                                                                   |
+| `pg_restore: could not execute query`        | Schema local ≠ dump                                  | `prisma db push` antes del restore, o recrear DB limpia                                                                                         |
+| Tunnel zombi (no se cerró)                   | No se ejecutó el cleanup del socket                  | `ssh -S "$SSH_SOCKET" -O exit root@$VPS`; si el socket ya no responde, identificar PID con `pgrep -af 'ssh .*<puerto>'` y terminar sólo ese PID |
+| La IP del container cambió entre operaciones | Restart del container (deploy, reboot del VPS)       | Re-obtener IP antes de cada tunnel. La IP NO es estable.                                                                                        |
+
+### SSH y stdin
+
+No combinar `ssh -n` con heredoc o comandos que leen stdin: `-n` redirige stdin desde `/dev/null` y el
+script remoto llega vacio. Para scripts remotos usar heredoc sin `-n`, o transferir/ejecutar un archivo
+explicito. Reservar `-n` para tunnels/comandos que no consumen stdin.
+
+No cerrar tunnels con `pkill -f "ssh ..."` desde un shell cuyo propio command line contiene ese mismo
+patrón: `pkill` puede matarse a sí mismo y cortar el resto del gate. El socket `ControlMaster` hace el
+cleanup determinista y no depende de buscar procesos por texto. En scripts usar además `trap`:
+
+```bash
+cleanup() {
+  ssh -S "$SSH_SOCKET" -O exit root@$VPS >/dev/null 2>&1 || true
+  rm -f "$SSH_SOCKET"
+}
+trap cleanup EXIT
+```
+
+### Rollouts selectivos
+
+Antes de DDL: backup custom bajo la convencion del repo y `pg_restore --list`. Comparar manifest,
+checksums, schema e historial. Si el runner general aplicaria archivos fuera del alcance, usar el
+selector `--only` documentado por el repo o detenerse; nunca ejecutar un apply amplio "y separar por
+tipo despues". Aplicar primero el conjunto autorizado, verificarlo, y luego otro conjunto solo si
+tambien esta autorizado. Los rollouts aditivos de tablas/enums no se revierten destructivamente en un
+rollback de aplicacion.
 
 ---
 
 ## Comparativa con el método legacy (`docker exec`)
 
-| Aspecto | Legacy (`ssh + docker exec`) | Tunnel |
-|---|---|---|
-| Cliente que corre | `psql`/`pg_dump` del container (versión fija) | Tus binarios locales (autocompletado, `.psqlrc`, `pgcli`, `pg_dump` con flags custom) |
-| GUI (DBeaver, Prisma Studio) | ❌ imposible | ✅ apuntan a `localhost:5433` |
-| `pg_dump -Fc` binario | Frágil por STDOUT de SSH | Directo |
-| Password en transit | `docker exec -e PGPASSWORD=...` → visible en `ps aux` del VPS durante ejecución | Nunca viaja al VPS como comando |
-| Escape hell | Triple comillas entre bash + ssh + docker | Cero |
-| Multi-cliente paralelo al mismo tunnel | No | Sí |
-| Scripts locales que hablan Postgres | Wrap en SSH con escape | Directo |
+| Aspecto                                | Legacy (`ssh + docker exec`)                                                    | Tunnel                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Cliente que corre                      | `psql`/`pg_dump` del container (versión fija)                                   | Tus binarios locales (autocompletado, `.psqlrc`, `pgcli`, `pg_dump` con flags custom) |
+| GUI (DBeaver, Prisma Studio)           | ❌ imposible                                                                    | ✅ apuntan a `localhost:5433`                                                         |
+| `pg_dump -Fc` binario                  | Frágil por STDOUT de SSH                                                        | Directo                                                                               |
+| Password en transit                    | `docker exec -e PGPASSWORD=...` → visible en `ps aux` del VPS durante ejecución | Nunca viaja al VPS como comando                                                       |
+| Escape hell                            | Triple comillas entre bash + ssh + docker                                       | Cero                                                                                  |
+| Multi-cliente paralelo al mismo tunnel | No                                                                              | Sí                                                                                    |
+| Scripts locales que hablan Postgres    | Wrap en SSH con escape                                                          | Directo                                                                               |
 
 El patrón legacy queda bien para:
 
@@ -201,9 +235,9 @@ El patrón legacy queda bien para:
 
 ## Repos que implementan este método
 
-| Repo | Ver datos específicos en |
-|---|---|
-| `shope-ar` | `shope-ar/CLAUDE.md` § "DB operations" |
+| Repo        | Ver datos específicos en                |
+| ----------- | --------------------------------------- |
+| `shope-ar`  | `shope-ar/CLAUDE.md` § "DB operations"  |
 | `itera-lex` | `itera-lex/CLAUDE.md` § "DB operations" |
 
 Al agregar un repo nuevo: sumar fila acá + crear sección "DB operations" en el `CLAUDE.md` del repo con VPS, PG UUID, App UUID, DB name, user, comando de obtención de password. **No duplicar el método** en cada repo.

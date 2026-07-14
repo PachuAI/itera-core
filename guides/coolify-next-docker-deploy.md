@@ -1,8 +1,9 @@
 # Coolify + Next.js Docker — guia operativa
 
 > Guia para desplegar apps Next.js con `output: "standalone"` en Coolify usando Dockerfile.
-> Caso validado: deploy de `iteralat/itera-lex-tools-web` en `herramientas.iteralex.com`
-> el 2026-05-21.
+> Casos validados: app Next.js publica (`itera-lex-tools-web`, 2026-05-21) y app Next.js
+>
+> - runner privado Compose (`itera-lex`, Coolify 4.1.2 / CLI 1.6.2, 2026-07-14).
 
 ## Cuando usarla
 
@@ -24,6 +25,12 @@ Antes de crear o redeployar:
 - La imagen final tiene `curl` o `wget` real para que Coolify pueda ejecutar healthcheck.
 - El healthcheck de Coolify apunta a `/` o a una ruta simple que no dependa de servicios externos fragiles.
 - El DNS existe en Cloudflare autoritativo, no solo "creo que esta creado".
+- La GitHub App elegida puede leer efectivamente `owner/repo`; dos integraciones con nombres parecidos
+  no son intercambiables.
+- Antes de hacer push, confirmar si auto-deploy esta activo. Un push puede empezar un build aunque la
+  intencion fuera solamente publicar commits.
+- En un worktree nuevo, correr `pnpm install --offline --frozen-lockfile` y el generador de Prisma del
+  repo antes de interpretar imports o clientes generados faltantes como defectos de codigo.
 
 ## Dockerfile canonico
 
@@ -141,9 +148,178 @@ Deploy:
 
 ```bash
 coolify deploy uuid <app_uuid> --force --format json
+coolify deploy get <deployment_uuid> --format json
 coolify app deployments list <app_uuid> --format json
-coolify app deployments logs <app_uuid> <deployment_uuid> --format json
+coolify app deployments logs <app_uuid> <deployment_uuid> --lines 200
 ```
+
+`coolify app deploy <app_uuid>` es alias de `app start`. La respuesta humana contiene el UUID del
+deploy aunque `--format json` no siempre produzca JSON parseable; capturar la salida y extraer la linea
+`Deployment UUID:`. En CLI 1.6.2 son válidos tanto `coolify deploy get` como
+`coolify app deployments list|logs`; el segundo carril permite filtrar por app y seguir logs. No
+inventar nombres de comando: confirmar con `--help` de la versión instalada.
+
+## Variables: runtime, build, preview y secretos
+
+- No usar `-s/--show-sensitive` salvo que el valor sea estrictamente necesario. Para inventarios,
+  reportar key, presencia y flags.
+- `NEXT_PUBLIC_*` suele necesitar build-time; claves privadas, passwords, HMAC y URLs de DB deben ser
+  runtime-only.
+- En variables existentes, `coolify app env update <app> <uuid|key> --value ...` preservo correctamente
+  `is_build_time=false` en CLI 1.6.2. Verificar siempre el resultado con `env list`; no confiar en los
+  defaults impresos por `--help`.
+- En create/update complejos, la CLI puede no poder expresar un booleano `false` o recibir 422. La API
+  acepta `is_buildtime:false`, `is_runtime:true`, `is_preview:false`, `is_literal:true`; usarla solo con
+  el token del contexto ya configurado y sin imprimir payloads secretos.
+- Coolify puede crear un par production/preview para una key. Inspeccionar ambas filas y no asumir que
+  actualizar una modifico la otra.
+- Algunas respuestas de update serializan settings como `null` aunque hayan persistido. La prueba es
+  el recurso reconsultado y, despues del redeploy, el env efectivo del container; no el body del PATCH.
+
+## Runner o servicio privado con Docker Compose
+
+Para un servicio interno sin HTTP publico, preferir Compose cuando se necesiten controles de
+hardening. En Coolify 4.1.2, la conversion de `docker run` a Compose puede omitir silenciosamente
+`read_only`, `tmpfs` y `pids_limit`.
+
+Contrato minimo:
+
+```yaml
+services:
+  runner:
+    build:
+      context: .
+      dockerfile: services/runner/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    user: "10001:10001"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    pids_limit: 128
+    cpus: 1
+    mem_limit: 1g
+    volumes:
+      - runner-home:/home/runner/.runner
+    networks:
+      coolify:
+        aliases:
+          - private-runner
+
+volumes:
+  runner-home:
+
+networks:
+  coolify:
+    external: true
+```
+
+Guardrails comprobados:
+
+- Coolify resuelve el Compose desde la raiz del repo. Si el archivo esta anidado, `build.context` sigue
+  siendo `.` cuando el Dockerfile necesita el repo completo; no usar una ruta relativa al YAML por
+  intuicion.
+- Declarar explicitamente la red externa `coolify`. Coolify tambien agrega su red de proyecto; eso es
+  esperado.
+- No fijar una IP estatica dentro de la red global `coolify` auto-IPAM y nunca recrear esa red: puede
+  romper todos los recursos del host. Usar alias DNS privado y resolverlo desde la app.
+- Crear el recurso sin dominio ni puerto publico. `app create` puede asignar un dominio temporal
+  `sslip.io`; limpiarlo con `coolify app update <uuid> --domains ''` y verificar `fqdn` vacio.
+- La API rechaza algunos `null` (por ejemplo `ports_exposes:null`). Omitir el campo o usar el comando
+  CLI que representa el estado deseado.
+- Si Compose declara el volumen, borrar metadatos de storage stale de intentos anteriores y dejar que
+  Compose sea el unico owner. Montar solo el directorio persistente necesario: no repo, Docker socket,
+  DB ni secretos de otras apps.
+- `app create`/`app start` pueden poner el recurso en marcha sin `--instant-deploy`. Mirar deploys y
+  containers antes de volver a ejecutar el comando.
+- Coolify ejecuta el healthcheck dentro de la imagen. Instalar el cliente real (`curl` o `wget`) y sus
+  certificados CA. `curl` sin `ca-certificates` falla TLS aunque DNS y egress esten bien.
+- Un runtime minimalista puede no tener `curl`; para probes ad-hoc de una app Node usar `node -e` con
+  `fetch`. No instalar herramientas en caliente para maquillar la imagen.
+
+Para CLIs autenticadas dentro del runner:
+
+- Hacer device auth dentro del container/volumen productivo y con el usuario no-root; no copiar auth
+  desde el desktop.
+- Comprobar primero el comando soportado por la version pinneada.
+- No asumir que el binario esta en `PATH`: invocar la variable declarada por la imagen, por ejemplo
+  `"$CODEX_BIN" login status`.
+- Validar el JSON/body del smoke, no solo HTTP. Un modelo inexistente puede responder HTTP 200 con un
+  resultado interno `failed`.
+- Las reglas de egress aplicadas con iptables en vivo no sobreviven necesariamente a un redeploy o
+  reboot. Documentar hosts y reaplicarlas antes de reactivar el servicio; no declararlas persistentes
+  si no lo son.
+
+### Egress allowlist: dos redes e IPv6
+
+Un Compose Coolify queda normalmente conectado a la red externa `coolify` y a una red de proyecto.
+La ruta default puede salir por cualquiera: una regla `DOCKER-USER` ligada sólo a la IPv4 del alias
+privado no cubre necesariamente el tráfico real. Además, Docker puede asignar IPv6 global; bloquear
+sólo con `iptables` deja abierta esa ruta mediante `ip6tables`.
+
+Después de cada deploy/restart:
+
+1. Obtener con `docker inspect` todas las IPv4 y `GlobalIPv6Address` actuales del container.
+2. Reemplazar —no acumular— los saltos `/32` hacia la cadena allowlist IPv4 y los `/128` hacia la
+   cadena IPv6. Conservar `RELATED,ESTABLISHED`, destinos TCP/443 resueltos de los hosts autorizados y
+   un `DROP` final.
+3. Resolver nuevamente los A/AAAA de cada host autorizado y comparar el conjunto exacto con las
+   reglas. Los CDN cambian; una regla vieja puede bloquear auth o dejar destinos obsoletos.
+4. Probar auth/smoke contra un host permitido.
+5. Probar un host no listado con `curl -4` y `curl -6`; ambos deben fallar. Un `curl` sin flag puede
+   ocultar que IPv4 está bloqueado pero IPv6 continúa abierto.
+
+Comprobación mínima, sin imprimir destinos ni credenciales:
+
+```bash
+C=<container>
+docker inspect "$C" --format \
+  '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{.GlobalIPv6Address}}{{"\n"}}{{end}}'
+
+if timeout 8 docker exec "$C" curl -4 -fsS --max-time 5 https://example.com >/dev/null 2>&1; then
+  echo 'NO-GO: IPv4 no listado accesible'; exit 1
+fi
+if timeout 8 docker exec "$C" curl -6 -fsS --max-time 5 https://example.com >/dev/null 2>&1; then
+  echo 'NO-GO: IPv6 no listado accesible'; exit 1
+fi
+```
+
+No persistir una IP de container en documentación ni asignar IP estática en la red global. Persistir
+el procedimiento/hosts y regenerar las reglas a partir del estado efectivo.
+
+## GitHub App, auto-deploy y builds largos
+
+- Validar acceso al repo con la integracion elegida. Un 404 al clonar puede significar GitHub App
+  equivocada, no repo inexistente. En el host Modern, `coolify-itera-lat` fue la integracion correcta;
+  la integracion `modern` no podia leer `iteralat/itera-lex`.
+- `coolify github repos <uuid>` en CLI 1.6.2 puede tratar un UUID como bigint y devolver HTML/500; no
+  usar ese fallo como prueba de permisos. La prueba final es `git ls-remote`/clone del deploy.
+- Desactivar auto-deploy antes de un push operacional que aun no debe salir. Verificar el setting
+  releyendo Coolify y comprobar que no aparecio un deploy nuevo.
+- Que un recurso trackee la rama pusheada no prueba que auto-deploy esté activo. Después de un push,
+  consultar `app deployments list` y comparar UUID/commit antes de apagar o reconstruir por
+  inferencia; en el runner R9 la rama coincidía pero no nació ningún deployment.
+- Cancelar un deploy puede cambiar su estado a `cancelled` y aun devolver HTTP 500 (`Undefined variable
+$application`). Verificar el estado y el container real antes de reintentar.
+- `app stop` puede quedar queued o mostrar estado stale. La fuente final es `docker ps`/health del
+  container en el servidor.
+- `app start --instant-deploy` no es un simple start del container anterior: puede iniciar un build
+  nuevo. Durante ese build `app get` llegó a mostrar `exited:unhealthy`; verificar
+  `app deployments list` y esperar `finished` antes de declarar fallo o disparar otro deploy.
+- Despues de un deploy `finished`, `app get` puede seguir mostrando el SHA anterior y
+  `running:unknown`. Cruzar commit del deployment, tag de la imagen del container activo, env efectivo
+  y HTTP; la metadata stale no demuestra que el switch haya fallado.
+- Un build Next grande puede consumir ~7.6 GiB de RAM, llenar 4 GiB de swap y dejar CLI/SSH lentos. Si
+  el helper, `docker build`/Buildx o los workers siguen activos, esperar: no disparar un segundo deploy.
+  El container anterior sigue sirviendo hasta el switch saludable. Revisar `uptime`, `free -m`, helper,
+  procesos de build y ultimo timestamp del log.
+- Coolify puede quedar varios minutos sin log visible durante `COPY node_modules`, TypeScript o page
+  data. Silencio no equivale a hang.
+- El executor puede terminar `docker exec ... build.sh` con exit 255 despues de que Next completo
+  compile/typecheck/static pages, sin OOM y con disco disponible. Confirmar kernel, Docker, espacio y
+  que la imagen no llego a exportarse. Si fue un corte transitorio del canal remoto, hacer un solo retry
+  sin `--force` para reutilizar cache; `--force` agrega `docker build --no-cache` y repite toda la carga.
+- El warning generico sobre `NODE_ENV=production` en build-time no es fatal si el Dockerfile multi-stage
+  instala dependencias del builder y la metadata final confirma un build correcto.
 
 ## Smoke test local antes de redeploy
 

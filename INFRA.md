@@ -65,8 +65,9 @@
 | **URL marketing** | https://iteralex.com |
 | **Puerto dev** | 3000 |
 | **Coolify UUID app** | `r40kockgo40wowg4w84soc4s` |
+| **Coolify UUID runner IA** | `vu36ethj2v9cticvldtf0cdp` (privado, sin dominio/puerto publico) |
 | **Coolify UUID PG** | `jcsokwcw0ks08k8wwwk4wwc0` |
-| **Notas** | Multi-dominio via `src/proxy.ts`. También: www.iteralex.com |
+| **Notas** | Multi-dominio via `src/proxy.ts`. También: www.iteralex.com. Runner Codex R9 en red privada `coolify`, alias `iteralex-codex-runner`; volumen unico para `CODEX_HOME`. Coolify agrega además red de proyecto e IPv6: el egress vivo debe regenerar reglas para todas las IPs tras cada deploy. |
 
 **Env vars:**
 | Variable | Proposito |
@@ -96,6 +97,11 @@
 | DEMO_USER_PASSWORD | Credenciales demo para testing |
 | ADMIN_RECLASSIFY_SECRET | Secret para reclasificacion admin |
 | NODE_ENV | production |
+| AI_CODEX_TRANSPORT | Transporte remoto al runner privado |
+| AI_CODEX_RUNNER_URL | URL privada, nunca dominio publico |
+| AI_CODEX_RUNNER_HMAC_SECRET | HMAC unico compartido solo SaaS/runner |
+| AI_AGENT_ACTION_PLANNING_CLI_MODEL | Slug exacto de GPT-5.6 validado en catalogo autenticado |
+| AI_AGENT_ACTION_EXECUTION_PREVIEW_CLI_MODEL | Slug exacto de GPT-5.6 para preview |
 
 ---
 
@@ -633,7 +639,7 @@ Datos vivos al 2026-05-22 vía `coolify database list --format json`. Todas con 
 
 ## Coolify CLI
 
-Instalado en ambas maquinas Linux Mint. Binario en `/usr/local/bin/coolify` (v1.6.1). Usar `coolify context use <nombre>` antes de operar, o pasar `--context <nombre>` por comando. El contexto default actual es `modern-linux-desktop`.
+Instalado en ambas maquinas Linux Mint. Binario en `/usr/local/bin/coolify` (v1.6.2 al 2026-07-14). Usar `coolify context use <nombre>` antes de operar, o pasar `--context <nombre>` por comando. El contexto default actual es `modern-linux-desktop`.
 
 | Contexto | FQDN | VPS |
 |----------|------|-----|
@@ -660,7 +666,13 @@ coolify database delete <uuid>                  # eliminar DB (pide confirmació
 ```
 
 **Notas:**
-- Todos los deploys usan auto-deploy via GitHub App (`coolify-itera-modern`).
-- Post-deployment command estandar para proyectos con Prisma: `npx prisma db push`.
+- La GitHub App correcta depende del repo. Para `iteralat/itera-lex`, la integracion validada es
+  `coolify-itera-lat`; `modern` devolvio repo 404. Verificar acceso real, no elegir por nombre parecido.
+- No todos los recursos usan auto-deploy. El runner privado y operaciones con DDL previo pueden tenerlo
+  desactivado; verificar por recurso antes de cada push.
+- No existe un post-deployment universal `prisma db push`: seguir el carril de rollout del repo. En
+  `itera-lex`, produccion usa rollouts SQL versionados/selectivos con backup e historial.
 - itera-tube no aparece en ningún contexto Coolify — nunca fue deployado.
 - Valores con `=`, `$` u otros caracteres especiales (passwords, tokens base64) → usar `--is-literal` para evitar interpolación + 422 Validation.
+- Runbook detallado para Compose privado, env flags, healthchecks, builds largos y errores reales:
+  `guides/coolify-next-docker-deploy.md`. Rollback validado: `guides/deploy-rollback.md`.

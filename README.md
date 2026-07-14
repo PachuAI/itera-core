@@ -40,10 +40,12 @@ Sistema de productividad para proyectos Next.js con Claude Code. Contiene el tem
 ├── TOOLING-STANDARD.md     # Contrato canonico de scripts y tooling cross-repo
 ├── INFRA.md                # Indice de deploy (Coolify UUIDs, URLs, puertos, DBs)
 ├── E2E-TESTING-GUIDE.md    # Guia de testing E2E con Playwright (setup, patrones, workflow IA)
-├── guides/                 # Metodos canonicos cross-repo (DB ops: carriles 1/2/3)
+├── guides/                 # Metodos canonicos cross-repo (DB, Coolify, deploy y rollback)
 │   ├── seed-via-api.md         # Carril 1 — seed / reset / provision via API
 │   ├── db-via-tunnel.md        # Carril 2 — query / pg_dump / restore via SSH tunnel
-│   └── db-schema-rollout.md    # Carril 3 — schema rollout manual (DDL / indices / enums)
+│   ├── db-schema-rollout.md    # Carril 3 — schema rollout manual (DDL / indices / enums)
+│   ├── coolify-next-docker-deploy.md # Apps publicas y servicios Compose privados
+│   └── deploy-rollback.md      # Revert, runtime off/API y cancelacion verificada
 ├── reference_brevo_smtp.md             # Guia de integracion Brevo SMTP (metodo: COMO)
 ├── reference_brevo_usage_inventory.md  # Inventario de uso Brevo (source-of-truth: QUE proyectos)
 ├── reference_itera_image_api.md        # API interna del generador de imagenes
