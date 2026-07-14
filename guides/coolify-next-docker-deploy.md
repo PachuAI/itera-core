@@ -161,6 +161,13 @@ inventar nombres de comando: confirmar con `--help` de la versión instalada.
 
 ## Variables: runtime, build, preview y secretos
 
+- `~/.config/coolify/config.json` contiene tokens reutilizables de todos los contextos. Nunca
+  mostrarlo completo con `cat`, `sed`, un editor volcado a stdout ni un trace `set -x`.
+- Para API directa, seleccionar el contexto con `jq` y asignar FQDN/token a variables de proceso sin
+  imprimirlas. No loguear el header `Authorization`, el body sensible ni la expansión del comando.
+- Si un token aparece en salida, considerarlo expuesto aunque no se haya publicado fuera de la
+  sesión: detener operaciones sensibles, aplicar el rollback seguro del recurso y rotar el token
+  antes de continuar.
 - No usar `-s/--show-sensitive` salvo que el valor sea estrictamente necesario. Para inventarios,
   reportar key, presencia y flags.
 - `NEXT_PUBLIC_*` suele necesitar build-time; claves privadas, passwords, HMAC y URLs de DB deben ser
@@ -408,6 +415,9 @@ curl -fsS -X PATCH "$COOLIFY_FQDN/api/v1/projects/<project_uuid>" \
   -H "Content-Type: application/json" \
   --data '{"name":"Nuevo nombre","description":"Descripcion"}'
 ```
+
+Las asignaciones anteriores no producen salida. Ejecutarlas con `set +x`; nunca anteponer `echo`,
+volcar el JSON completo ni pegar el header expandido en logs o documentación.
 
 ## Diagnostico por sintomas
 

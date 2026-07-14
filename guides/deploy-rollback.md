@@ -50,6 +50,24 @@ restaurar con `app start --instant-deploy`, observar el deployment hasta `finish
 Reaplicar el egress IPv4+IPv6, validar auth/health y hacer smoke firmado antes de volver a habilitar
 runtime/tenant.
 
+## Si una credencial de Coolify apareció en la salida
+
+`~/.config/coolify/config.json` contiene tokens reutilizables de todos los contextos. Nunca volcarlo
+completo con `cat`, `sed`, un editor a stdout ni `set -x`. Una llamada directa debe extraer sólo el
+contexto elegido con `jq`, guardar FQDN/token en variables de proceso y no imprimir token, header ni
+payload sensible.
+
+Si un token aparece en stdout/stderr, tratarlo como expuesto aunque la sesión sea privada:
+
+1. detener el rollout sensible y aplicar el estado seguro del recurso (flag/runtime off; runner
+   detenido si corresponde);
+2. verificar cero tenants o servicios no autorizados activos;
+3. preservar DB/audit para diagnóstico, sin copiar el valor expuesto a tickets o documentos;
+4. rotar el token del contexto y actualizar las máquinas autorizadas;
+5. validar la CLI con inventarios sin secretos antes de reanudar desde un nuevo preflight.
+
+No reutilizar el token expuesto para "terminar rápido" ni declarar GO antes de la rotación.
+
 ## Cancelacion de un deploy en curso
 
 ```bash
