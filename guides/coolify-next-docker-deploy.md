@@ -311,6 +311,10 @@ unit de usuario con `Restart=on-failure`, habilitarla sólo durante la ventana y
 normal salgan con código cero. Al cerrar, deshabilitar/detener la unit y conservar el template. Así
 un crash del recolector reinicia sin convertir deliberadamente un rollback en un nuevo arranque.
 
+Versionar también un resumidor fail-closed del log: debe comprobar duración objetivo, primer/último
+snapshot, gap máximo, cantidad de fallos de recolección, ausencia de críticos y los invariantes del
+servicio. Un `tail` verde o el último health aislado no prueban una observación de 24 horas.
+
 ## GitHub App, auto-deploy y builds largos
 
 - Validar acceso al repo con la integracion elegida. Un 404 al clonar puede significar GitHub App
