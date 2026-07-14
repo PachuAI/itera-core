@@ -55,7 +55,9 @@ Si existe un rollback automatizado, separar obligatoriamente dos caminos:
 - `--check`: inventario read-only; no login que cree sesión, no Server Actions, no flags, no stop y
   ninguna contención desde el handler de error;
 - apply: apagar primero flag/runtime por el control plane durable, detener el runner aun si una
-  acción intermedia falla y verificar al final cero habilitados + runner fuera.
+  acción intermedia falla y verificar al final cero habilitados + runner fuera. Si son varios writes
+  versionados, ante falla parcial releer el estado durable y reintentar una sola vez; no reutilizar
+  versiones stale ni hacer un loop infinito.
 
 No probar apply durante una observación para demostrar que está disponible: validar resolución de
 env/DB/acciones con `--check` y apoyar el camino mutante en la prueba controlada registrada. Si un
