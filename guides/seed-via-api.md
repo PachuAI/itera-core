@@ -155,5 +155,6 @@ Validar respuesta `200 OK` y el payload con el resultado del target.
 |---|---|---|
 | `shope-ar` | B (Bearer + sesión platform admin) | `shope-ar/CLAUDE.md` § Seed en prod |
 | `itera-lex` | A (Bearer only) | `itera-lex/CLAUDE.md` § Seed en prod |
+| `presskit-ar` | A (Bearer only) — targets `superadmin`, `qa`, `all` | `presskit-ar/CLAUDE.md` § Seed en prod |
 
 Al agregar un repo nuevo: sumar fila acá + crear sección "Seed en prod" en el `CLAUDE.md` del repo con los datos específicos. **No duplicar el método en cada repo.**
